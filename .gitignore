@@ -20,11 +20,16 @@ $RECYCLE.BIN/
 
 # Matlab MAT files
 *.mat
+*.asv
 
-# Image Files
+# Image & Movie Files
 *.png
 *.jpg
 *.eps
+*.fig
+*.avi
+*.wav
+*.mp4
 
 # Microsoft Files
 *.ppt
@@ -32,6 +37,11 @@ $RECYCLE.BIN/
 *.docx
 *.pdf
 *.xlsx
+
+# Other Files
+*.rar
+*.zip
+
 
 # =========================
 # Operating System Files
