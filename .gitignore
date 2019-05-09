@@ -18,6 +18,21 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Matlab MAT files
+*.mat
+
+# Image Files
+*.png
+*.jpg
+*.eps
+
+# Microsoft Files
+*.ppt
+*.doc
+*.docx
+*.pdf
+*.xlsx
+
 # =========================
 # Operating System Files
 # =========================
