@@ -40,10 +40,6 @@ while i == 1
         %Call graph analysis function
         Graph=graph_analysis(network(networkNum),network_load,simulations,simNum);
         %Save Graph analysis data
-        save_state=lower(input('Would you like to save the Graph Analysis? y or n \n','s'));
-        if save_state=='y'
-            save_graph(Graph,network(networkNum),network_load);
-        end
         i=i+1;
     elseif analysis_type=='l'
         %% LDA Analysis
@@ -136,7 +132,12 @@ while i == 1
     if analysis_type=='g' || analysis_type=='n'
         plot_state=lower(input('Would you like to plot Graph Analysis? y or n \n','s'));
         if plot_state=='y'
-            plot_graph(Graph,network(networkNum),simulations,sim_loaded,simNum)
+            Graph=plot_graph(Graph,network(networkNum),network_load,simulations,sim_loaded,simNum);
+        end
+        i=i+1;
+        save_state=lower(input('Would you like to save the Graph Analysis? y or n \n','s'));
+        if save_state=='y'
+            save_graph(Graph,network(networkNum),network_load);
         end
         i=i+1;
     end
@@ -321,15 +322,12 @@ Graph.P = participation_coef(net_mat,Graph.Ci);
 Graph.MZ = module_degree_zscore(net_mat,Graph.Ci);
 %Ci from 'community_louvain.m'
 
-% CIRCUIT RANK -- measure of recurrent loops (feedback loops)
-% look in Zdenka's code for this
-
 %save network matrix to graph struct
 Graph.network=net_mat;
 Graph.IndexTime=IndexTime;
 end
 
-function plot_graph(Graph, network, simulations,sim_loaded,simNum)
+function Graph=plot_graph(Graph, network,network_load, simulations,sim_loaded,simNum)
 save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Figures\Graph Analysis\';
 
 IndexTime=Graph.IndexTime;
@@ -368,21 +366,22 @@ colorbar
 title(['Closeness Centrality Scores Timestamp ' num2str(IndexTime)])
 if sim_loaded==1
     highlight(p2,highlightElec,'MarkerSize',7); %change simulation number
+    labelnode(p2,[1:size(node_indices,2)],cellstr(num2str(node_indices'))); %label each node with original node number
     labelnode(p2,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
-
 end
 
 %Node size graph:
 f3=figure;
 p3=plot(g);
-deg_ranks=Graph.DEG(threshold);
-edges = linspace(min(deg_ranks),max(deg_ranks),7);
-bins = discretize(deg_ranks,edges);
+Graph.DEG_threshold=Graph.DEG(threshold);
+edges = linspace(min(Graph.DEG_threshold),max(Graph.DEG_threshold),7);
+bins = discretize(Graph.DEG_threshold,edges);
 p3.MarkerSize = bins;
 p3.NodeColor='r';
 title(['Degree Size Timestamp ' num2str(IndexTime)]);
 if sim_loaded==1
     highlight(p3,highlightElec,'NodeColor','green'); %change simulation number
+    labelnode(p3,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
     labelnode(p3,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
 end
 text(-5,-6.2,'Min Degrees - 1 (small dot) | Max Degrees - 44 (large dot)');
@@ -394,23 +393,31 @@ p4.MarkerSize = bins;
 p4.NodeCData=ucc;
 colormap jet
 colorbar
-labelnode(p3,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
+labelnode(p4,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
+
+labelnode(p4,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
 title(['Centrality Score and Degree Size Timestamp ' num2str(IndexTime)]);
 text(-5.5,-6.2,'Min Degrees = 1 (small dot) | Max Degrees = 44 (large dot)');
 
 %Histogram of degree distribution:
 f5=figure;
-h1=histogram(Graph.DEG(threshold));
+h1=histogram(Graph.DEG_threshold);
 title(['Distribution of Connectivity of Nodes Timestamp ' num2str(IndexTime)]);
 xlabel('Number of Connections (Degrees)');
 ylabel('Frequency');
+Graph.avgDEG=mean(Graph.DEG(threshold));
+Graph.stdDEG=std(Graph.DEG(threshold));
+ylim([0 30]);
+text(4,16,['Mean: ' num2str(Graph.avgDEG) ' | SD: ' num2str(Graph.stdDEG)]);
 
 %Cluster Analysis:
 f6=figure;
 p6=plot(g);
 p6.MarkerSize = 4;
 p6.NodeCData=Graph.Ci(threshold);
-labelnode(p3,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
+labelnode(p6,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
+
+labelnode(p6,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
 colormap hsv(6) %change number of colors here if there are more/less than 6 clusters
 title(['Cluster Analysis ' num2str(IndexTime)]);
 
@@ -423,7 +430,9 @@ edges2 = linspace(min(p_ranks),max(p_ranks),7);
 bins2 = discretize(p_ranks,edges2);
 p7.MarkerSize=bins2;
 colormap hsv(6)
-labelnode(p3,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
+labelnode(p7,[1:size(node_indices,2)],cellstr(num2str(node_indices'))); %label each node with original node number
+
+labelnode(p7,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
 text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P(threshold))) ' (large dot)']);
 title(['Participant Coefficient Analysis Timestamp ' num2str(IndexTime)]);
 
@@ -436,7 +445,9 @@ edges3 = linspace(min(mod_ranks),max(mod_ranks),7);
 bins3 = discretize(mod_ranks,edges3);
 p8.MarkerSize=bins3;
 colormap hsv(6)
-labelnode(p3,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
+labelnode(p8,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
+
+labelnode(p8,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
 text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ(threshold))) ' (small dot) | Max P Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
 title(['Module Degree z-Score Analysis Timestamp ' num2str(IndexTime)]);
 
@@ -467,8 +478,16 @@ p9.EdgeCData=wd3;%log10(wd);
 p9.MarkerSize=2;
 colormap jet
 colorbar
-labelnode(p3,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
+labelnode(p9,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
+labelnode(p9,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
+
 title(['Communicability Analysis Timestamp ' num2str(IndexTime) ' (log10)']);
+
+
+% CIRCUIT RANK -- measure of recurrent loops (feedback loops)
+% based on analyze_network.py
+%circuit rank = num edges - num nodes + num connected components
+Graph.CircuitRank = numedges(g) - numnodes(g) + sum(conncomp(g));
 
 %Save
 network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
@@ -491,6 +510,7 @@ saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_G
 saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Module_Degree_Z_Score_Analysis_Timestamp' num2str(IndexTime)],'eps');
 saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Communicability_Analysis_Timestamp' num2str(IndexTime)],'jpg');
 saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Communicability_Analysis_Timestamp' num2str(IndexTime)],'eps');
+
 end
 
 function save_graph(Graph,network,network_load)
@@ -499,7 +519,7 @@ if strcmp(network_load,'z')%Zdenka Code:
     save([save_directory 'Zdenka_' num2str(network.number_of_wires) 'nw_Graph_Analysis_' date],'Graph');
 elseif strcmp(network_load,'a') %adrian code
     network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
-    save([save_directory 'Adrian_' num2str(network.Name) 'Graph_Analysis_' date],'Graph');
+    save([save_directory 'Adrian_' num2str(network.Name) 'Graph_Analysis_' num2str(Graph.IndexTime) '_Timestamp_' date],'Graph');
 end
 end
 
