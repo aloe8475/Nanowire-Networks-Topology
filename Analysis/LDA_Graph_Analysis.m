@@ -29,7 +29,13 @@ if load_data_question~='a'
     end
 end
 
-fprintf(['Simulation: ' network(networkNum).Name simulations(simNum).Name ' selected \n\n']);
+if size(simulations,1)==1
+    currentSim=simulations{simNum};
+else 
+    currentSim=simulations(simNum);
+end 
+    fprintf(['Simulation: ' network(networkNum).Name currentSim.Name ' selected \n\n']);
+fprintf(['Simulation: ' network(networkNum).Name currentSim.Name ' selected \n\n']);
 
 i = 1;
 while i == 1
@@ -38,20 +44,20 @@ while i == 1
     %% Graph Analysis
     if analysis_type=='g'
         %Call graph analysis function
-        Graph=graph_analysis(network(networkNum),network_load,simulations,simNum);
+        Graph=graph_analysis(network(networkNum),network_load,currentSim);
         %Save Graph analysis data
         i=i+1;
     elseif analysis_type=='l'
         %% LDA Analysis
         %THIS IS WHERE YOU CHANGE THE VARIABLES FOR LDA
-        drain1=[full(simulations(simNum).Data.IDrain1)]; %full(simulations(2).Data.IDrain1)];
-        drain2=[full(simulations(simNum).Data.IDrain2)]; %full(simulations(2).Data.IDrain2)];
+        drain1=[full(currentSim.Data.IDrain1)]; %full(simulations(2).Data.IDrain1)];
+        drain2=[full(currentSim.Data.IDrain2)]; %full(simulations(2).Data.IDrain2)];
         %Current source
-        source1=[full(simulations(simNum).Data.ISource1)]; %full(simulations(2).Data.ISource1)];
-        source2=[full(simulations(simNum).Data.ISource2)]; %full(simulations(2).Data.ISource2)];
+        source1=[full(currentSim.Data.ISource1)]; %full(simulations(2).Data.ISource1)];
+        source2=[full(currentSim.Data.ISource2)]; %full(simulations(2).Data.ISource2)];
         %Voltage source
-        source1Voltage=full(simulations(simNum).Data.VSource1);
-        source2Voltage=full(simulations(simNum).Data.VSource2);
+        source1Voltage=full(currentSim.Data.VSource1);
+        source2Voltage=full(currentSim.Data.VSource2);
         Input = [source1 source2];
         Output = [drain1 drain2]; %OUTPUT is column (variable) x row (observations)
         Target = source1Voltage(:,1)>0.001;% uncomment for current: [source1(:,1)> 1.0e-04 *0.001 & source2<0];%TARGET is the classifier we expect
@@ -132,7 +138,7 @@ while i == 1
     if analysis_type=='g' || analysis_type=='n'
         plot_state=lower(input('Would you like to plot Graph Analysis? y or n \n','s'));
         if plot_state=='y'
-            Graph=plot_graph(Graph,network(networkNum),network_load,simulations,sim_loaded,simNum);
+            Graph=plot_graph(Graph,network(networkNum),network_load,currentSim,sim_loaded);
         end
         i=i+1;
         save_state=lower(input('Would you like to save the Graph Analysis? y or n \n','s'));
@@ -279,14 +285,14 @@ elseif strcmp(network_load,'z')
     cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
 end
 end
-function Graph=graph_analysis(network,network_load,simulations,simNum)
+function Graph=graph_analysis(network,network_load,currentSim)
 %% Mac's Analysis: (Graph)
 if strcmp(network_load,'z')%Zdenka Code:
     net_mat=network.adj_matrix; %symmetrical matrix
 elseif strcmp(network_load,'a') %adrian code
     IndexTime=input('What Timestamp do you want to analyse? 1-2000 \n'); %CHOOSE TIMESTAMP
     %this gives an adj matrix for the network used for a chosen simulation at a specific timestamp
-    a= full(simulations(simNum).Data.Rmat{IndexTime});
+    a= full(currentSim.Data.Rmat{IndexTime});
     a(a==5000)=1;
     a(a==5000000)=0;  %binarising the resistance
     net_mat=a;
@@ -327,7 +333,7 @@ Graph.network=net_mat;
 Graph.IndexTime=IndexTime;
 end
 
-function Graph=plot_graph(Graph, network,network_load, simulations,sim_loaded,simNum)
+function Graph=plot_graph(Graph, network,network_load, currentSim,sim_loaded)
 save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Figures\Graph Analysis\';
 
 IndexTime=Graph.IndexTime;
@@ -342,9 +348,9 @@ p1=plot(g);
 %find electrodes:
 node_indices=find(threshold==1); %find nodes with threshold == 1
 for i=1:4
-    if ~isempty(find(node_indices==simulations(simNum).Electrodes.PosIndex(i)))
-        new_electrodes(i).PosIndex=find(node_indices==simulations(simNum).Electrodes.PosIndex(i));
-        new_electrodes(i).Name=simulations(simNum).Electrodes.Name(i);
+    if ~isempty(find(node_indices==currentSim.Electrodes.PosIndex(i)))
+        new_electrodes(i).PosIndex=find(node_indices==currentSim.Electrodes.PosIndex(i));
+        new_electrodes(i).Name=currentSim.Electrodes.Name(i);
     end
 end
 
@@ -453,7 +459,7 @@ title(['Module Degree z-Score Analysis Timestamp ' num2str(IndexTime)]);
 
 
 % Communicability at different times:
-Adj=(simulations(simNum).Data.AdjMat{IndexTime});%convert 498x498 matrix to EdgeCData ~(1x6065)
+Adj=(currentSim.Data.AdjMat{IndexTime});%convert 498x498 matrix to EdgeCData ~(1x6065)
 Adj=Adj(threshold,threshold);
 [j,i,~]=find(tril(Adj));
 wd=zeros(1,length(j));
@@ -462,7 +468,7 @@ for k=1:length(j)
     wd(k)=Graph.COMM(i(k),j(k));
 end
 
-Adj2=(simulations(simNum).Data.AdjMat{IndexTime});%convert 498x498 matrix to EdgeCData ~(1x6065)
+Adj2=(currentSim.Data.AdjMat{IndexTime});%convert 498x498 matrix to EdgeCData ~(1x6065)
 Adj2=Adj2(threshold,threshold);
 [j,i,~]=find(tril(Adj2));
 wd2=zeros(1,length(j));
