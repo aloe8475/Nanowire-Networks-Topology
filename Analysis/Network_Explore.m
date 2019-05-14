@@ -1,5 +1,11 @@
+%---------------------------
 % 22/04/19
-% Network Analysis Code v1.0
+% Network Explore Code v1.1
+%
+% Author: Alon Loeffler
+%
+% Changelog:
+% 13/05/19 - Added support for simulation files with only 1 simulation
 % --------------------------
 dbstop if error
 load_data_question=lower(input('Load network data, Analysis Data Only or None? N - None, D - Network Data, A - Analysis Data\n','s'));
@@ -13,39 +19,44 @@ elseif load_data_question=='a'
     clear LDA_Analysis
     close all
     %Load previous LDA analysis data
-    networkNum=input('Which Network # do you want to test? 1=500nw 2=100nw \n'); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
-    simNum=input('Which Simulation # do you want to test? \n'); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
+    networkNum=input(['Which Network # do you want to explore ? 1 - ' num2str(length(network)) '\n']);
+    simNum=input(['Which Simulation # do you want to explore? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
     [LDA_Analysis(simNum)] = load_LDA_data();
 end
 
 %%
 %---
 if load_data_question~='a'
-    networkNum=input('Which Network # do you want to train? 1=500nw 2=100nw \n');
-    if networkNum==1
-        simNum=input('Which Simulation # do you want to train? (1-5) \n'); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
-    elseif networkNum==2
-        simNum=6;
-    end
+    networkNum=input(['Which Network # do you want to explore ? 1 - ' num2str(length(network)) '\n']);
+    simNum=input(['Which Simulation # do you want to explore? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
 end
 
 if size(simulations,1)==1
     currentSim=simulations{simNum};
-else 
+else
     currentSim=simulations(simNum);
-end 
-    fprintf(['Simulation: ' network(networkNum).Name currentSim.Name ' selected \n\n']);
+end
 fprintf(['Simulation: ' network(networkNum).Name currentSim.Name ' selected \n\n']);
 
 i = 1;
 while i == 1
-    analysis_type=lower(input('Which analysis would you like to perform? G - graph, L - LDA, N - none \n','s'));
+    analysis_type=lower(input('Which analysis would you like to perform? E - Exploration G - graph, L - LDA, N - none \n','s'));
     
     %% Graph Analysis
     if analysis_type=='g'
         %Call graph analysis function
         Graph=graph_analysis(network(networkNum),network_load,currentSim);
         %Save Graph analysis data
+        i=i+1;
+    elseif analysis_type=='e'
+        %call Exploratary analysis of simulation
+        Explore=explore_simulation(currentSim,network,simNum);
+          %% Saving LDA
+        save_state=lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
+        if save_state=='y'
+            save_explore(Explore,network(networkNum),network_load);
+            i=i+1; %get out of while loop this loop finishes
+        end
         i=i+1;
     elseif analysis_type=='l'
         %% LDA Analysis
@@ -114,12 +125,8 @@ while i == 1
         %% Apply LDA Training to testing data (different simulation)
         apply_LDA=lower(input('Would you like to apply the loaded LDA analysis to another network or simulation? y or n \n','s'));
         if apply_LDA=='y'
-            networkNum=input('Which Network # do you want to test? 1=500nw 2=100nw \n');
-            if networkNum==1
-                simulationChoice=input('Which simulation # would you like to apply LDA to? (1-5) \n');
-            elseif networkNum==2
-                simulationChoice=6;
-            end
+            networkNum=input(['Which Network # do you want to Test ? 1 - ' num2str(length(network)) '\n']);
+            simulationChoice=input(['Which Simulation # do you want to apply LDA to? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
             LDA_Analysis(simulationChoice).Output=[full(simulations(simulationChoice).Data.IDrain1) full(simulations(simulationChoice).Data.IDrain2)];
             LDA_Analysis(simulationChoice).Input=[full(simulations(simulationChoice).Data.ISource1) full(simulations(simulationChoice).Data.ISource2)];
             LDA_Analysis(simulationChoice).Target=[full(simulations(simulationChoice).Data.VSource1 >0.001)];
@@ -131,8 +138,8 @@ while i == 1
             end
         end
         i=i+1; %get out of while loop this loop finishes
-    elseif analysis_type~='l' &&  analysis_type~='g' && analysis_type~='n'
-        fprintf('Please type either G, L or N only');
+    elseif analysis_type~='l' &&  analysis_type~='g' && analysis_type~='n' && analysis_type~='e'
+        fprintf('Please type either G, L or N only \n');
     end
     
     if analysis_type=='g' || analysis_type=='n'
@@ -157,6 +164,202 @@ end
 
 
 %% FUNCTIONS
+
+function Explore = explore_simulation(Sim,network,simNum)
+[NodeList.String,NodeList.UserData]=GetNodeList(Sim);
+NodeList.Value=1;
+
+%% Network View:
+Layout=Sim.SelLayout;
+
+% These are all aspects of the network that are used to graph it.
+x1=diag(Layout.X1);
+x2=diag(Layout.X2);
+y1=diag(Layout.Y1);
+y2=diag(Layout.Y2);
+X=full([x1' ; x2']); % X = Wires 'x' value
+Y=full([y1' ; y2']); % Y = Wires 'y' value
+Gr=Layout.SelGraph; % graph
+[~,~,Cx]=find(Layout.CX); %CX = Junctions 'x' value
+[~,~,Cy]=find(Layout.CY); % CY = Junctions 'y' value
+Adj=triu(Layout.AdjMat); % Adjacency matrix
+NumEl=height(Sim.Electrodes); %Number of electrodes
+
+
+%Plot Network:
+f1=figure;
+currAx=gca; %current axis
+plot(currAx,X,Y,'b'); % plot wires
+hold on
+scatter(currAx,Cx,Cy,2,'r'); %scatterplot junctions
+hold(currAx,'on');
+
+%PlotElectrodes
+IdxEl=Sim.Electrodes.PosIndex(NodeList.Value(NodeList.Value<=NumEl)); %Find Electrode Junction Position
+Xe=X(:,IdxEl);Ye=Y(:,IdxEl); %Find X and Y (wires) for electrode
+Cxe=(x2(IdxEl)+x1(IdxEl))./2;Cye=(y1(IdxEl)+y2(IdxEl))./2; %Find X and Y (junctions) for electrode
+text(currAx,Cxe-1.7,Cye+0.7,'Electrode'); %Write 'Electrode' where it is placed
+
+%Choose a time to Explore Simulation:
+IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(size(Sim.Data,1)) '\n']); %CHOOSE TIMESTAMP
+
+%Plot Currents:
+currs=triu(Sim.Data.Currents{IndexTime}); % Find values of currents
+Imat=full(abs(currs)); %full current matrix (instead of sparse double) + absolute value
+Cx=Layout.CX(Adj~=0); %'x' coordinates for junctions that are 1 in the Adj matrix
+Cy=Layout.CY(Adj~=0);%'y' coordinates for junctions that are 1 in the Adj matrix
+Ilist=Imat(Adj~=0); % current list for junctions that are 1 in the Adj matrix
+I=linspace(0,Sim.SimInfo.MaxI,10*length(Ilist)); %generates 10*length(Ilist)) points between 0 and max current
+cmap=jet(10*length(Ilist)); %creates jet colormap with 10*length(Ilist) colorvalues
+c=interp1(I,cmap,full(Ilist)); % %creates interpolation table with colormap - not sure what this is
+PlotNetworkAux(currAx,X,Y,Cx,Cy,'curr',c);
+labels=strsplit(num2str(1:length(Ilist))); %all junctions
+% text(Cx,Cy,labels,'HorizontalAlignment','left');%label each junction with its number
+clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI]; %minimum and maximum currents
+
+%colorbar
+colormap(currAx,cmap);
+colorbar(currAx);
+caxis(currAx,clim);
+
+%Plot Network for Figure 2
+f2=figure;
+currAx=gca; %current axis
+plot(currAx,X,Y,'b'); % plot wires
+hold on
+scatter(currAx,Cx,Cy,2,'r'); %scatterplot junctions
+hold(currAx,'on');
+
+%PlotElectrodes
+IdxEl=Sim.Electrodes.PosIndex(NodeList.Value(NodeList.Value<=NumEl)); %Find Electrode Junction Position
+Xe=X(:,IdxEl);Ye=Y(:,IdxEl); %Find X and Y (wires) for electrode
+Cxe=(x2(IdxEl)+x1(IdxEl))./2;Cye=(y1(IdxEl)+y2(IdxEl))./2; %Find X and Y (junctions) for electrode
+text(currAx,Cxe-1.7,Cye+0.7,'Electrode'); %Write 'Electrode' where it is placed
+
+
+%Plot Resistance
+Rmat=triu(Sim.Data.Rmat{IndexTime});
+Cx=Layout.CX(Adj~=0);
+Cy=Layout.CY(Adj~=0);
+Rlist=Rmat(Adj~=0);
+R=linspace(min([Sim.Settings.Roff Sim.Settings.Ron]),max([Sim.Settings.Roff Sim.Settings.Ron]),10*length(Rlist));
+cmap=flipud(gray(10*length(Rlist)));
+c=interp1(R,cmap,full(Rlist));
+PlotNetworkAux(currAx,X,Y,Cx,Cy,'curr',c);
+clim=[min([Sim.Settings.Roff Sim.Settings.Ron]) max([Sim.Settings.Roff Sim.Settings.Ron])];
+%colorbar
+colormap(currAx,cmap);
+colorbar(currAx);
+caxis(currAx,clim);
+
+%% Graph View
+
+%Plot Graph
+Layout=Sim.SelLayout;
+G=Layout.SelGraph;
+Adj=(Layout.AdjMat);
+f3=figure;
+currAx=gca;
+p=plot(currAx,G);
+set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
+set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
+p.NodeColor='red';
+p.EdgeColor='white';
+p.NodeLabel={};
+
+%Plot Currents
+p.MarkerSize=1.5;
+p.LineWidth=1.5;
+currs=(abs(Sim.Data.Currents{IndexTime}));
+[j,i,~]=find(tril(Adj));
+cc=zeros(1,length(j));
+for k=1:length(j)
+    cc(k)=currs(i(k),j(k));
+end
+clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
+p.EdgeCData=cc;
+colormap(currAx,gcurrmap);%gcurrmap
+colorbar(currAx);
+caxis(currAx,clim);
+
+%Highlight Electrodes:
+for i=1:size(Sim.Electrodes.PosIndex,1)
+    new_electrodes(i).PosIndex=Sim.Electrodes.PosIndex(i);
+    new_electrodes(i).Name=Sim.Electrodes.Name(i);
+end
+
+highlightElec={new_electrodes.PosIndex};
+highlightElec=cell2num(highlightElec);
+highlight(p,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
+labelnode(p,highlightElec,{new_electrodes.Name{1}}); %need to make this automated.
+
+
+%Plot Graph
+f4=figure;
+currAx=gca;
+p1=plot(currAx,G);
+set(currAx,'Color',[0.35 0.35 0.35]);
+set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
+p1.NodeColor='red';
+p1.EdgeColor='white';
+p1.NodeLabel={};
+
+%Plot Resistance
+p1.MarkerSize=0.5;
+p1.LineWidth=1.5;
+res=(Sim.Data.Rmat{IndexTime});
+[j,i,~]=find(tril(Adj));
+wd=zeros(1,length(j));
+for k=1:length(j)
+    wd(k)=res(i(k),j(k));
+end
+clim=[min([Sim.Settings.Roff Sim.Settings.Ron]) max([Sim.Settings.Roff Sim.Settings.Ron])];
+p1.EdgeCData=wd;
+colormap(currAx,flipud(gcurrmap));%flipud(gray);
+colorbar(currAx);
+caxis(currAx,clim);
+
+%Highlight Electrodes:
+highlight(p1,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
+labelnode(p1,highlightElec,{new_electrodes.Name{1}}); %need to make this automated.
+%% Save
+%Save Variables
+Explore.IndexTime=IndexTime;
+Explore.Name=Sim.Name;
+Explore.NetworkView.currents=Ilist; %save currents at each junction at the IndexTime
+Explore.NetworkView.resistance=Rlist; %save currents at each junction at the IndexTime
+Explore.NetworkView.junctions=labels;
+Explore.NetworkView.ElectrodePosition=IdxEl;
+Explore.GraphView.currents=Sim.Data.Currents{IndexTime};
+Explore.GraphView.resistance=Sim.Data.Rmat{IndexTime};
+Explore.GraphView.Nodes=G.Nodes;
+Explore.GraphView.Edges=G.Edges;
+Explore.GraphView.ElectrodePosition=Sim.Electrodes.PosIndex;
+
+%% Save Plots
+save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Figures\Explore Analysis\';
+network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
+
+saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'jpg');
+saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'eps');
+saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
+saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'eps');
+saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Explore_GraphView_Currents_Timestamp' num2str(IndexTime)],'jpg');
+saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Explore_GraphView_Currents_Timestamp' num2str(IndexTime)],'eps');
+saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Explore_GraphView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
+saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Explore_GraphView_Resistance_Timestamp' num2str(IndexTime)],'eps');
+end
+
+function save_explore(Explore,network,network_load)
+save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Network Exploration Analysis\';
+if strcmp(network_load,'z')%Zdenka Code:
+    save([save_directory 'Zdenka_' num2str(network.number_of_wires) 'nw_Exploration_Analysis_' date],'Explore');
+elseif strcmp(network_load,'a') %adrian code
+    network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
+    save([save_directory 'Adrian_' num2str(network.Name) 'Exploration_Analysis' num2str(Explore.IndexTime) '_Timestamp_' date],'Explore');
+end
+end 
+
 function plot_LDA(LDA_Analysis, simNum, networkName)
 save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Figures\LDA\LDA Training\';
 %plot LDA
@@ -219,7 +422,6 @@ saveas(LDAff,[save_directory num2str(networkName) '_6MaySim_logLDA_Classificatio
 
 end
 
-
 function plot_LDA_Applied(LDA_Analysis,simNum,simulationChoice,networkName)
 save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Figures\LDA\LDA Testing\';
 appliedF=figure;
@@ -260,39 +462,14 @@ load(f);
 cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
 end
 
-function [network, network_load, simulations, sim_loaded] = load_data()
-
-%% Load Data
-%Ask to load Zdenka or Adrian:
-network_load=lower(input('Which Network do you want to analyse? Z - Zdenka, A - Adrian \n','s'));
-
-if strcmp(network_load,'a')
-    %Get current network - Adrian
-    [network,sim_loaded]=Load_Adrian_Code();
-    %unpack simulation data into simulation variable
-    if sim_loaded==1
-        for i = 1:length(network.Simulations)
-            simulations(i)=network.Simulations(i);
-        end
-    else
-        simulations=network.Simulations;
-    end
-    cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
-elseif strcmp(network_load,'z')
-    %Get network - Zdenka:
-    % D:\alon_\Research\POSTGRAD\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
-    network=Load_Zdenka_Code();
-    cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
-end
-end
 function Graph=graph_analysis(network,network_load,currentSim)
 %% Mac's Analysis: (Graph)
 if strcmp(network_load,'z')%Zdenka Code:
     net_mat=network.adj_matrix; %symmetrical matrix
 elseif strcmp(network_load,'a') %adrian code
-    IndexTime=input('What Timestamp do you want to analyse? 1-2000 \n'); %CHOOSE TIMESTAMP
-    %this gives an adj matrix for the network used for a chosen simulation at a specific timestamp
-    a= full(currentSim.Data.Rmat{IndexTime});
+    IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(size(currentSim.Data,1)) '\n']); %CHOOSE TIMESTAMP
+    %this gives a resistance matrix for the network used for a chosen simulation at a specific timestamp
+    a= full(currentSim.Data.Rmat{IndexTime}); %Using Resistance
     a(a==5000)=1;
     a(a==5000000)=0;  %binarising the resistance
     net_mat=a;
@@ -347,7 +524,7 @@ p1=plot(g);
 
 %find electrodes:
 node_indices=find(threshold==1); %find nodes with threshold == 1
-for i=1:4
+for i=1:size(currentSim.Electrodes.PosIndex,1)
     if ~isempty(find(node_indices==currentSim.Electrodes.PosIndex(i)))
         new_electrodes(i).PosIndex=find(node_indices==currentSim.Electrodes.PosIndex(i));
         new_electrodes(i).Name=currentSim.Electrodes.Name(i);
@@ -517,6 +694,32 @@ saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_G
 saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Communicability_Analysis_Timestamp' num2str(IndexTime)],'jpg');
 saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Communicability_Analysis_Timestamp' num2str(IndexTime)],'eps');
 
+end
+
+function [network, network_load, simulations, sim_loaded] = load_data()
+
+%% Load Data
+%Ask to load Zdenka or Adrian:
+network_load=lower(input('Which Network do you want to analyse? Z - Zdenka, A - Adrian \n','s'));
+
+if strcmp(network_load,'a')
+    %Get current network - Adrian
+    [network,sim_loaded]=Load_Adrian_Code();
+    %unpack simulation data into simulation variable
+    if sim_loaded==1
+        for i = 1:length(network.Simulations)
+            simulations(i)=network.Simulations(i);
+        end
+    else
+        simulations=network.Simulations;
+    end
+    cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
+elseif strcmp(network_load,'z')
+    %Get network - Zdenka:
+    % D:\alon_\Research\POSTGRAD\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
+    network=Load_Zdenka_Code();
+    cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
+end
 end
 
 function save_graph(Graph,network,network_load)
