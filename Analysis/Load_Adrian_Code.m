@@ -11,10 +11,46 @@ f=fullfile(PathName,FileName);
 load(f);
 
 % Define network variable
-network=SelNet;
+network(1)=SelNet;
 clear SelNet
 % Delete default simulation data:
-network.Simulations = [];
+network(1).Simulations = [];
+
+i=1;
+second_network=input('Do you want to load a second Network? \n','s');
+if second_network=='y'
+    while i==1
+        %prompt for the network .mat file with button
+        promptMessage = sprintf('Select the second Network saved data');
+        button = questdlg(promptMessage, 'Load Second Network Data', 'OK','Cancel','OK');
+        if strcmp(button, 'Cancel')
+            numNetworks=1; %if they change their mind and cancel, skip to simulations
+            break;
+        elseif strcmp(button,'OK')
+            % if they want a second network, prompt for second network data
+            [FileName2,PathName2] = uigetfile('*.mat','Select the Network saved data');
+            f2=fullfile(PathName2,FileName2);
+            if f2==f
+                %if they select the same network for 1 and 2, ask them to
+                %select a different network
+                waitfor(msgbox('Error: Cannot load same network twice. Please select a different Network'));
+            else
+                load(f2);
+                % Define network variable
+                network(2)=SelNet;
+                % Delete default simulation data:
+                network(2).Simulations = [];
+                % save a var with number of networks
+                numNetworks=2;
+                i=i+1; %can also use break
+            end
+        end
+        
+    end
+elseif second_network=='n'
+    % save a var with number of networks
+    numNetworks=1;
+end
 
 %% Load Simulation Data
 sims_load=input('Load Simulation Data too? y or n? \n','s');
@@ -22,16 +58,42 @@ if sims_load=='y'
     %Select which Simulation to Load
     sim_loaded=1;
     cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only');
-    waitfor(msgbox('Select the Simulation saved data'))
-    [FileName,PathName] = uigetfile('*.mat','Select the  saved data');
+    waitfor(msgbox('Select the Training Simulation saved data'))
+    [FileName,PathName] = uigetfile('*.mat','Select the Training saved data');
     f=fullfile(PathName,FileName);
     load(f);
     
     %Add simulation data to network struct:
-    network.Simulations = SelSims;
+    if numNetworks==2
+        training_network=input('Which Network was the Training simulation from? 1 or 2 \n');
+    end
+    temp1=SelSims;
+    
     clear SelSims
+    
+    waitfor(msgbox('Select the Testing Simulation saved data'))
+    [FileNameTest,PathNameTest] = uigetfile('*.mat','Select the Testing saved data');
+    f_test=fullfile(PathNameTest,FileNameTest);
+    load(f_test);
+    
+    %Add simulation data to network struct:
+    if numNetworks==2
+        testing_network=input('Which Network was the Testing simulation from? 1 or 2 \n');
+    end
+    temp2 = SelSims;%save simulations from test network
+    
+    if numNetworks==1 %if both training and testing are from same networks, just combine the simulations
+        network.Simulations=[temp1 temp2];
+        network.Simulations{1}.Type='Training Simulation'; %label the training sim
+    elseif numNetworks==2 %if the two networks are different, save the simulations in the different networks 
+        network(training_network).Simulations=temp1;
+        network(testing_network).Simulations=temp2;
+        network(training_network).Simulations{1}.Type='Training Simulation'; %label which is the training sim
+        network(training_network).Type='Training Network';
+        clear SelSims
+    end
 else
-        sim_loaded=0;
-end 
+    sim_loaded=0;
+end
 end
 
