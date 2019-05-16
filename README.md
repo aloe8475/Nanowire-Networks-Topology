@@ -17,4 +17,4 @@ The code is split into a number of sections:
   - **LDA Analysis**
   - **Graph Theory Analysis**
   - **Network Exploration**
-4) **Data** - This folder houses the data saved from Adrian and Zdenka's models, as well as any figures or analysis data from the Analysis folder.
+4) **Data** - This folder houses the data saved from Adrian and Zdenka's models, as well as any figures or analysis data from the Analysis folder. This folder is not included in the repository, as it is much too large for GitHub. To access any of the Data, please email Alon Loeffler at aloe8475@uni.sydney.edu.au to request an upload to our shared Dropbox.
