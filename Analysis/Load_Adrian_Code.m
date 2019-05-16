@@ -1,7 +1,7 @@
 % 20/04/19
 % Loading Function for Adrian's Code v0.1
 
-function [network, sim_loaded] = Load_Adrian_Code()
+function [network, sim_loaded, explore_network, numNetworks] = Load_Adrian_Code()
 %% Load Network Data:
 %choose network to load
 cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks')
@@ -55,42 +55,55 @@ end
 %% Load Simulation Data
 sims_load=input('Load Simulation Data too? y or n? \n','s');
 if sims_load=='y'
+    explore_network=lower(input('Do you want Training + Testing Data, or Just Explore Data? - T or E \n','s'));
     %Select which Simulation to Load
     sim_loaded=1;
-    cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only');
-    waitfor(msgbox('Select the Training Simulation saved data'))
-    [FileName,PathName] = uigetfile('*.mat','Select the Training saved data');
-    f=fullfile(PathName,FileName);
-    load(f);
-    
-    %Add simulation data to network struct:
-    if numNetworks==2
-        training_network=input('Which Network was the Training simulation from? 1 or 2 \n');
-    end
-    temp1=SelSims;
-    
-    clear SelSims
-    
-    waitfor(msgbox('Select the Testing Simulation saved data'))
-    [FileNameTest,PathNameTest] = uigetfile('*.mat','Select the Testing saved data');
-    f_test=fullfile(PathNameTest,FileNameTest);
-    load(f_test);
-    
-    %Add simulation data to network struct:
-    if numNetworks==2
-        testing_network=input('Which Network was the Testing simulation from? 1 or 2 \n');
-    end
-    temp2 = SelSims;%save simulations from test network
-    
-    if numNetworks==1 %if both training and testing are from same networks, just combine the simulations
-        network.Simulations=[temp1 temp2];
-        network.Simulations{1}.Type='Training Simulation'; %label the training sim
-    elseif numNetworks==2 %if the two networks are different, save the simulations in the different networks 
-        network(training_network).Simulations=temp1;
-        network(testing_network).Simulations=temp2;
-        network(training_network).Simulations{1}.Type='Training Simulation'; %label which is the training sim
-        network(training_network).Type='Training Network';
+    if explore_network=='t'
+        cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only');
+        waitfor(msgbox('Select the Training Simulation saved data'))
+        [FileName,PathName] = uigetfile('*.mat','Select the Training saved data');
+        f=fullfile(PathName,FileName);
+        load(f);
+        
+        %Add simulation data to network struct:
+        if numNetworks==2
+            training_network=input('Which Network was the Training simulation from? 1 or 2 \n');
+        end
+        temp1=SelSims;
+        
         clear SelSims
+        
+        waitfor(msgbox('Select the Testing Simulation saved data'))
+        [FileNameTest,PathNameTest] = uigetfile('*.mat','Select the Testing saved data');
+        f_test=fullfile(PathNameTest,FileNameTest);
+        load(f_test);
+        
+        %Add simulation data to network struct:
+        if numNetworks==2
+            testing_network=input('Which Network was the Testing simulation from? 1 or 2 \n');
+        end
+        temp2 = SelSims;%save simulations from test network
+        
+        if numNetworks==1 %if both training and testing are from same networks, just combine the simulations
+            network.Simulations=[temp1 temp2];
+            network.Simulations{1}.Type='Training Simulation'; %label the training sim
+            network.Simulations{2:end}.Type='Testing Simulation';
+        elseif numNetworks==2 %if the two networks are different, save the simulations in the different networks
+            network(training_network).Simulations=temp1;
+            network(testing_network).Simulations=temp2;
+            network(training_network).Simulations{1}.Type='Training Simulation'; %label which is the training sim
+            network(training_network).Type='Training Network';
+            clear SelSims
+        end
+    else
+        cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only');
+        waitfor(msgbox('Select the Explore Simulation saved data'))
+        [FileName,PathName] = uigetfile('*.mat','Select the Explore saved data');
+        f_explore=fullfile(PathName,FileName);
+        load(f_explore);
+        network.Simulations=SelSims;
+        %Need to change to only allow explore of 1 network
+        clear SelSims;
     end
 else
     sim_loaded=0;

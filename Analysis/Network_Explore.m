@@ -14,21 +14,26 @@ if load_data_question=='d'
     clearvars -except load_data_question
     close all
     %load network data
-    [network, network_load, simulations,sim_loaded]= load_data();
+    [network, network_load, simulations,sim_loaded,numNetworks]= load_data();
 elseif load_data_question=='a'
     clear LDA_Analysis
     close all
     %Load previous LDA analysis data
-    networkNum=input(['Which Network # do you want to explore ? 1 - ' num2str(length(network)) '\n']);
-    simNum=input(['Which Simulation # do you want to explore? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
+    networkNum=input(['Which Network # do you want to load? 1 - ' num2str(length(network)) '\n']);
+    simNum=input(['Which Simulation # do you want to load? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
     [LDA_Analysis(simNum)] = load_LDA_data();
 end
 
 %%
 %---
 if load_data_question~='a'
-    networkNum=input(['Which Network # do you want to explore ? 1 - ' num2str(length(network)) '\n']);
+    if explore_network=='t'
+    networkNum=input(['Which Network # do you want to select for Training? 1 - ' num2str(length(network)) '\n']);
+    simNum=input(['Which Simulation # do you want to select for Training? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
+    else
+    networkNum=input(['Which Network # do you want to explore? 1 - ' num2str(length(network)) '\n']);
     simNum=input(['Which Simulation # do you want to explore? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
+    end  
 end
 
 if size(simulations,1)==1
@@ -36,22 +41,23 @@ if size(simulations,1)==1
 else
     currentSim=simulations(simNum);
 end
+
 fprintf(['Simulation: ' network(networkNum).Name currentSim.Name ' selected \n\n']);
 
 i = 1;
 while i == 1
-    analysis_type=lower(input('Which analysis would you like to perform? E - Exploration G - graph, L - LDA, N - none \n','s'));
+    analysis_type=lower(input('Which analysis would you like to perform? E - Exploration, G - graph, L - LDA, N - none \n','s'));
     
     %% Graph Analysis
     if analysis_type=='g'
         %Call graph analysis function
-        Graph=graph_analysis(network(networkNum),network_load,currentSim);
+        [Graph, threshold_network]=graph_analysis(network(networkNum),network_load,currentSim,[]);
         %Save Graph analysis data
         i=i+1;
     elseif analysis_type=='e'
         %call Exploratary analysis of simulation
-        Explore=explore_simulation(currentSim,network,simNum);
-          %% Saving LDA
+        Explore=explore_simulation(currentSim,network,network_load,simNum);
+        %% Saving LDA
         save_state=lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
         if save_state=='y'
             save_explore(Explore,network(networkNum),network_load);
@@ -123,41 +129,59 @@ while i == 1
         end
         
         %% Apply LDA Training to testing data (different simulation)
-        apply_LDA=lower(input('Would you like to apply the loaded LDA analysis to another network or simulation? y or n \n','s'));
-        if apply_LDA=='y'
-            networkNum=input(['Which Network # do you want to Test ? 1 - ' num2str(length(network)) '\n']);
-            simulationChoice=input(['Which Simulation # do you want to apply LDA to? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
-            LDA_Analysis(simulationChoice).Output=[full(simulations(simulationChoice).Data.IDrain1) full(simulations(simulationChoice).Data.IDrain2)];
-            LDA_Analysis(simulationChoice).Input=[full(simulations(simulationChoice).Data.ISource1) full(simulations(simulationChoice).Data.ISource2)];
-            LDA_Analysis(simulationChoice).Target=[full(simulations(simulationChoice).Data.VSource1 >0.001)];
-            LDA_Analysis(simulationChoice).TypeOfData='Testing';
-            [LDA_Analysis(simulationChoice).appliedP, LDA_Analysis(simulationChoice).appliedL, LDA_Analysis(simulationChoice).normalisedOutput, LDA_Analysis(simulationChoice).normalisedInput]=LDA_Apply(LDA_Analysis(simNum).normalisedW,LDA_Analysis(simulationChoice).Output, LDA_Analysis(simulationChoice).Input);
-            plot_state2=lower(input('Would you like to plot the applied LDA results? y or n \n','s'));
-            if plot_state2=='y'
-                plot_LDA_Applied(LDA_Analysis(simulationChoice),simNum,simulationChoice,network(networkNum).Name);
+        if analysis_type~='n'
+            apply_LDA=lower(input('Would you like to apply the loaded LDA analysis to another simulation? y or n \n','s'));
+            if apply_LDA=='y'
+                if numNetworks>1 %if we have two networks, offer to test second network
+                    networkNum2=input(['Which Network # do you want to select your Simulation from ? 1 - ' num2str(length(network)) '\n']);
+                else
+                    networkNum2=1;
+                end
+                if numNetworks>1 %if we have more than 1 simulation, they can input 1 as an option
+                    simulationChoice=input(['Which Simulation # do you want to apply LDA to? 1 - '  num2str(length(network(networkNum2).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
+                else % otherwise, can only input 2 or higher
+                    while 1
+                        simulationChoice=input(['Which Simulation # do you want to apply LDA to? 2 - '  num2str(length(network(networkNum2).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
+                        if simulationChoice >1 && simulationChoice <=length(network(networkNum2).Simulations)
+                            break;
+                        elseif simulationChoice ==1
+                            fprintf('Cannot Train and Test the same Simulation, please choose again \n');
+                        else
+                            fprintf(['Please Choose a number between 2 and ' num2str(length(network(networkNum2).Simulations))]);
+                        end
+                    end
+                    LDA_Analysis(simulationChoice).Output=[full(simulations(simulationChoice).Data.IDrain1) full(simulations(simulationChoice).Data.IDrain2)];
+                    LDA_Analysis(simulationChoice).Input=[full(simulations(simulationChoice).Data.ISource1) full(simulations(simulationChoice).Data.ISource2)];
+                    LDA_Analysis(simulationChoice).Target=[full(simulations(simulationChoice).Data.VSource1 >0.001)];
+                    LDA_Analysis(simulationChoice).TypeOfData='Testing';
+                    [LDA_Analysis(simulationChoice).appliedP, LDA_Analysis(simulationChoice).appliedL, LDA_Analysis(simulationChoice).normalisedOutput, LDA_Analysis(simulationChoice).normalisedInput]=LDA_Apply(LDA_Analysis(simNum).normalisedW,LDA_Analysis(simulationChoice).Output, LDA_Analysis(simulationChoice).Input);
+                    plot_state2=lower(input('Would you like to plot the applied LDA results? y or n \n','s'));
+                    if plot_state2=='y'
+                        plot_LDA_Applied(LDA_Analysis(simulationChoice),simNum,simulationChoice,network(networkNum2).Name);
+                    end
+                end
             end
+            i=i+1; %get out of while loop when this loop finishes
+        elseif analysis_type~='l' &&  analysis_type~='g' && analysis_type~='n' && analysis_type~='e'
+            fprintf('Please type either G, L or N only \n');
         end
-        i=i+1; %get out of while loop this loop finishes
-    elseif analysis_type~='l' &&  analysis_type~='g' && analysis_type~='n' && analysis_type~='e'
-        fprintf('Please type either G, L or N only \n');
+        
+        if analysis_type=='g' || analysis_type=='n'
+            plot_state=lower(input('Would you like to plot Graph Analysis? y or n \n','s'));
+            if plot_state=='y'
+                Graph=plot_graph(Graph,network(networkNum),network_load,currentSim,sim_loaded);
+            end
+            i=i+1;
+            save_state=lower(input('Would you like to save the Graph Analysis? y or n \n','s'));
+            if save_state=='y'
+                save_graph(Graph,network(networkNum),network_load);
+            end
+            i=i+1;
+        end
+        %% Insert Further Analysis Below
+        % -------------------------------
+        % -------------------------------
     end
-    
-    if analysis_type=='g' || analysis_type=='n'
-        plot_state=lower(input('Would you like to plot Graph Analysis? y or n \n','s'));
-        if plot_state=='y'
-            Graph=plot_graph(Graph,network(networkNum),network_load,currentSim,sim_loaded);
-        end
-        i=i+1;
-        save_state=lower(input('Would you like to save the Graph Analysis? y or n \n','s'));
-        if save_state=='y'
-            save_graph(Graph,network(networkNum),network_load);
-        end
-        i=i+1;
-    end
-    
-    %% Insert Further Analysis Below
-    % -------------------------------
-    % -------------------------------
 end
 
 %--------------------------------------------------------------------------
@@ -165,7 +189,7 @@ end
 
 %% FUNCTIONS
 
-function Explore = explore_simulation(Sim,network,simNum)
+function Explore = explore_simulation(Sim,network,network_load,simNum)
 [NodeList.String,NodeList.UserData]=GetNodeList(Sim);
 NodeList.Value=1;
 
@@ -322,6 +346,112 @@ caxis(currAx,clim);
 %Highlight Electrodes:
 highlight(p1,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
 labelnode(p1,highlightElec,{new_electrodes.Name{1}}); %need to make this automated.
+
+%Voltage at each Node:
+
+
+%% Overlay Graph Theory:
+[Graph, threshold_network]=graph_analysis(network,network_load,Sim,IndexTime);
+
+f5=figure;
+currAx=gca;
+p2=plot(currAx,G);
+set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
+set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
+p2.NodeColor='red';
+p2.EdgeColor='white';
+p2.NodeLabel={};
+
+%Plot Currents
+p2.MarkerSize=1.5;
+p2.LineWidth=1.5;
+currs=(abs(Sim.Data.Currents{IndexTime}));
+[j,i,~]=find(tril(Adj));
+cc=zeros(1,length(j));
+for k=1:length(j)
+    cc(k)=currs(i(k),j(k));
+end
+clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
+p2.EdgeCData=cc;
+colormap(currAx,gcurrmap);%gcurrmap
+colorbar(currAx);
+caxis(currAx,clim);
+hold on
+
+% Plot Participant Coefficients
+if threshold_network=='y'
+    p2.NodeCData=Graph.Ci(threshold);
+    p_ranks=Graph.P(threshold);
+else
+    p2.NodeCData=Graph.Ci;
+    p_ranks=Graph.P;
+end
+edges2 = linspace(min(p_ranks),max(p_ranks),7);
+bins2 = discretize(p_ranks,edges2);
+p2.MarkerSize=bins2;
+
+%Label Source
+labelnode(p2,highlightElec,{new_electrodes.Name{1}}); %need to make this automated.
+
+%Need to figure out how to change colormap for Nodes seperately.
+
+if threshold_network=='y'
+    text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P(threshold))) ' (large dot)']);
+else
+    text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P)) ' (large dot)']);
+end
+title(['Participant Coefficient Analysis Timestamp ' num2str(IndexTime)]);
+
+%Modular z-Score:
+f6=figure;
+currAx=gca;
+p3=plot(currAx,G);
+set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
+set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
+p3.NodeColor='red';
+p3.EdgeColor='white';
+p3.NodeLabel={};
+
+%Plot Currents
+p3.MarkerSize=1.5;
+p3.LineWidth=1.5;
+currs=(abs(Sim.Data.Currents{IndexTime}));
+[j,i,~]=find(tril(Adj));
+cc=zeros(1,length(j));
+for k=1:length(j)
+    cc(k)=currs(i(k),j(k));
+end
+clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
+p3.EdgeCData=cc;
+colormap(currAx,gcurrmap);%gcurrmap
+colorbar(currAx);
+caxis(currAx,clim);
+hold on
+
+%Plot Currents:
+if threshold_network=='y'
+    p3.NodeCData=Graph.Ci(threshold);
+    mod_ranks=Graph.MZ(threshold);
+else
+    p3.NodeCData=Graph.Ci;
+    mod_ranks=Graph.MZ;
+end
+edges3 = linspace(min(mod_ranks),max(mod_ranks),7);
+bins3 = discretize(mod_ranks,edges3);
+p3.MarkerSize=bins3;
+
+%Label Source
+labelnode(p3,highlightElec,{new_electrodes.Name{1}}); %need to make this automated.
+
+%Need to figure out how to change colormap for Nodes seperately.
+
+if threshold_network=='y'
+    text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ(threshold))) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
+else
+    text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ)) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
+end
+title(['Module Degree z-Score Analysis Timestamp ' num2str(IndexTime)]);
+
 %% Save
 %Save Variables
 Explore.IndexTime=IndexTime;
@@ -358,7 +488,7 @@ elseif strcmp(network_load,'a') %adrian code
     network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
     save([save_directory 'Adrian_' num2str(network.Name) 'Exploration_Analysis' num2str(Explore.IndexTime) '_Timestamp_' date],'Explore');
 end
-end 
+end
 
 function plot_LDA(LDA_Analysis, simNum, networkName)
 save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Figures\LDA\LDA Training\';
@@ -462,17 +592,24 @@ load(f);
 cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
 end
 
-function Graph=graph_analysis(network,network_load,currentSim)
+function [Graph, threshold_network]=graph_analysis(network,network_load,currentSim,IndexTime)
 %% Mac's Analysis: (Graph)
 if strcmp(network_load,'z')%Zdenka Code:
     net_mat=network.adj_matrix; %symmetrical matrix
 elseif strcmp(network_load,'a') %adrian code
-    IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(size(currentSim.Data,1)) '\n']); %CHOOSE TIMESTAMP
+    if isempty(IndexTime)
+        IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(size(currentSim.Data,1)) '\n']); %CHOOSE TIMESTAMP
+    end
     %this gives a resistance matrix for the network used for a chosen simulation at a specific timestamp
-    a= full(currentSim.Data.Rmat{IndexTime}); %Using Resistance
-    a(a==5000)=1;
-    a(a==5000000)=0;  %binarising the resistance
-    net_mat=a;
+    threshold_network=input('Do you want to threshold the network using Resistance? \n','s');
+    if threshold_network=='y'
+        a= full(currentSim.Data.Rmat{IndexTime}); %Using Resistance
+        a(a==5000)=1;
+        a(a==5000000)=0;  %binarising the resistance
+        net_mat=a;
+    else
+        net_mat=currentSim.SelLayout.AdjMat; %use standard adjacency matrix
+    end
     %    net_mat=full(simulations(simNum).Data.AdjMat{IndexTime}); %this gives an adj matrix for the network used for a chosen simulation at a specific timestamp
 end
 
@@ -504,6 +641,13 @@ Graph.P = participation_coef(net_mat,Graph.Ci);
 %module degree z-score --> an estimate of how segregated a node is
 Graph.MZ = module_degree_zscore(net_mat,Graph.Ci);
 %Ci from 'community_louvain.m'
+
+
+%Network Density:
+% This is defined, for a given set of nodes, as the number of actual edges
+% divided by the number of potential edges.
+% I.e., the percentage of possible connections that actually exist.
+
 
 %save network matrix to graph struct
 Graph.network=net_mat;
@@ -631,7 +775,7 @@ colormap hsv(6)
 labelnode(p8,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
 
 labelnode(p8,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
-text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ(threshold))) ' (small dot) | Max P Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
+text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ(threshold))) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
 title(['Module Degree z-Score Analysis Timestamp ' num2str(IndexTime)]);
 
 
@@ -672,6 +816,7 @@ title(['Communicability Analysis Timestamp ' num2str(IndexTime) ' (log10)']);
 %circuit rank = num edges - num nodes + num connected components
 Graph.CircuitRank = numedges(g) - numnodes(g) + sum(conncomp(g));
 
+
 %Save
 network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
 
@@ -696,7 +841,7 @@ saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_G
 
 end
 
-function [network, network_load, simulations, sim_loaded] = load_data()
+function [network, network_load, simulations, sim_loaded, numNetworks] = load_data()
 
 %% Load Data
 %Ask to load Zdenka or Adrian:
@@ -704,9 +849,17 @@ network_load=lower(input('Which Network do you want to analyse? Z - Zdenka, A - 
 
 if strcmp(network_load,'a')
     %Get current network - Adrian
-    [network,sim_loaded]=Load_Adrian_Code();
+    [network,sim_loaded, explore_network, numNetworks]=Load_Adrian_Code();
     %unpack simulation data into simulation variable
     if sim_loaded==1
+        if explore_network=='t' %if we have training and testing simulations
+            tempSim=network.Simulations{2};
+            tempSim=num2cell(tempSim);
+            network.Simulations(2) = [];
+            network.Simulations=[network.Simulations tempSim];
+            fprintf(['Your Training Simulation is Simulation 1 \n']);
+            fprintf(['Your Testing Simulations are Simulations 2 - ' num2str(length(network.Simulations)] '\n');
+        end
         for i = 1:length(network.Simulations)
             simulations(i)=network.Simulations(i);
         end
