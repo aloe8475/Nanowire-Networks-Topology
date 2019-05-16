@@ -82,12 +82,18 @@ if sims_load=='y'
         if numNetworks==2
             testing_network=input('Which Network was the Testing simulation from? 1 or 2 \n');
         end
-        temp2 = SelSims;%save simulations from test network
+        if exist('SelSims','var') == 1
+        temp2 = SelSims;%save simulations from test network if it hasn't been changed
+        else 
+        temp2 = network.Simulations;%save simulations from test network if it has been changed
+        end 
         
         if numNetworks==1 %if both training and testing are from same networks, just combine the simulations
             network.Simulations=[temp1 temp2];
             network.Simulations{1}.Type='Training Simulation'; %label the training sim
-            network.Simulations{2:end}.Type='Testing Simulation';
+            for i=2:length(network.Simulations)
+            network.Simulations{i}.Type='Testing Simulation';
+            end 
         elseif numNetworks==2 %if the two networks are different, save the simulations in the different networks
             network(training_network).Simulations=temp1;
             network(testing_network).Simulations=temp2;
