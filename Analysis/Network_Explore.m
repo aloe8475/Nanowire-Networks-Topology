@@ -14,7 +14,7 @@ if load_data_question=='d'
     clearvars -except load_data_question
     close all
     %load network data
-    [network, network_load, simulations,sim_loaded,numNetworks]= load_data();
+    [network, network_load, simulations,sim_loaded,numNetworks, explore_network]= load_data();
 elseif load_data_question=='a'
     clear LDA_Analysis
     close all
@@ -28,12 +28,12 @@ end
 %---
 if load_data_question~='a'
     if explore_network=='t'
-    networkNum=input(['Which Network # do you want to select for Training? 1 - ' num2str(length(network)) '\n']);
-    simNum=input(['Which Simulation # do you want to select for Training? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
+        networkNum=input(['Which Network # do you want to select for Training? 1 - ' num2str(length(network)) '\n']);
+        simNum=input(['Which Simulation # do you want to select for Training? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
     else
-    networkNum=input(['Which Network # do you want to explore? 1 - ' num2str(length(network)) '\n']);
-    simNum=input(['Which Simulation # do you want to explore? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
-    end  
+        networkNum=input(['Which Network # do you want to explore? 1 - ' num2str(length(network)) '\n']);
+        simNum=input(['Which Simulation # do you want to explore? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
+    end
 end
 
 if size(simulations,1)==1
@@ -46,8 +46,11 @@ fprintf(['Simulation: ' network(networkNum).Name currentSim.Name ' selected \n\n
 
 i = 1;
 while i == 1
-    analysis_type=lower(input('Which analysis would you like to perform? E - Exploration, G - graph, L - LDA, N - none \n','s'));
-    
+    if explore_network=='t'
+        analysis_type=lower(input('Which analysis would you like to perform? G - graph, E - Explore Network,L - LDA, N - none \n','s'));
+    elseif explore_network=='e' % we don't want to allow LDA if just exploring
+        analysis_type=lower(input('Which analysis would you like to perform? G - graph, E - Explore Network, N - none \n','s'));
+    end
     %% Graph Analysis
     if analysis_type=='g'
         %Call graph analysis function
@@ -841,7 +844,7 @@ saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_G
 
 end
 
-function [network, network_load, simulations, sim_loaded, numNetworks] = load_data()
+function [network, network_load, simulations, sim_loaded, numNetworks, explore_network] = load_data()
 
 %% Load Data
 %Ask to load Zdenka or Adrian:
@@ -858,7 +861,7 @@ if strcmp(network_load,'a')
             network.Simulations(2) = [];
             network.Simulations=[network.Simulations tempSim];
             fprintf(['Your Training Simulation is Simulation 1 \n']);
-            fprintf(['Your Testing Simulations are Simulations 2 - ' num2str(length(network.Simulations)] '\n');
+            fprintf(['Your Testing Simulations are Simulations 2 - ' num2str(length(network.Simulations)) '\n']);
         end
         for i = 1:length(network.Simulations)
             simulations(i)=network.Simulations(i);
