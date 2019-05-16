@@ -33,6 +33,7 @@ $RECYCLE.BIN/
 
 # Microsoft Files
 *.ppt
+*.pptx
 *.doc
 *.docx
 *.pdf
