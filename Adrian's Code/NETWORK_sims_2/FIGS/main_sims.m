@@ -415,13 +415,15 @@ guidata(hObject,handles);
 % --- Executes on button press in OpenButton
 function OpenButton_Callback(hObject, eventdata, handles)
 % Open a previous simulation/list of networks saved as a mat file
-
+cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\');
 [FileName,PathName] = uigetfile('*.mat','Select the Network saved data');
 f=fullfile(PathName,FileName);
 s=load(f);
 if ~isfield(s,'SelNet')
     return;
 end
+cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\FIGS');
+
 ParNet=s.SelNet;
 [handles.Networks,handles.NetList.String,handles.NetList.Value]=AddDeleteDataList('add',...
     handles.Networks,ParNet);
@@ -442,19 +444,24 @@ guidata(hObject,handles);
 function handles = OpenButton_SimsCallback(hObject, eventdata, handles)
 % Open a previous network saved as a mat file, the network contains
 % all the previous simulations (that have not been deleted)
-
+cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only');
 [FileName,PathName] = uigetfile('*.mat','Select the Simulation saved data');
 f=fullfile(PathName,FileName);
 s=load(f);
-if ~isfield(s,'SelSims')
+if ~isfield(s,'SelSims') && ~isfield(s,'network')
     return;
 end
 if isempty(handles.Networks) %if there is no current network saved, make an alert and then return
     uialert(handles.figure1,'Please Load the Correct Network and Try Again','Error');
     return;
 end
+cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\FIGS');
 IndNet=handles.NetList.Value; %need for the index
+if isfield(s,'SelSims')
 ParSims=s.SelSims;
+else
+ParSims=s.network.Simulations;
+end 
 if isempty(handles.Networks{IndNet}.Simulations)
     temp=AddDeleteDataListNoName('add',...
     handles.Networks{IndNet}.Simulations,ParSims);
@@ -487,11 +494,11 @@ SelNet=handles.Networks{IndNet}; %need for the name
 SelSims=SelNet.Simulations;
 
 %Alon Code 08/04/19
-NameSims=[SelNet.Name 'SimsOnly_' date];
+NameSims=[SelNet.Name SelSims{1}.Settings.Model '_' SelSims{1}.Settings.SigType '_' num2str(length(SelSims)) 'SimsOnly_' num2str(SelSims{1}.Settings.Time) '_Sec_Vmax_' num2str(SelSims{1}.Settings.Vmax) '_' date];
 NameSims=strrep(NameSims,':','_');
 NameSims=strrep(NameSims,'/','_');
 NameSims=strcat(NameSims,'.mat');
-
+cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only');
 SelDir=uigetdir();
 if ~isequal(SelDir,0)
     nameSims=fullfile(SelDir,NameSims); %Alon - Save simulations only
@@ -499,6 +506,7 @@ if ~isequal(SelDir,0)
 else
     return;
 end
+cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\FIGS');
 
 % --- Executes on button press in SaveButton.
 
@@ -509,7 +517,6 @@ function SaveButton_Callback(hObject, eventdata, handles)
 % in the folder that you choose
 IndNet=handles.NetList.Value;
 SelNet=handles.Networks{IndNet};
-SelSims=handles.Networks{IndNet}.Simulations; % save sims only - Alon 08/04/19
 % Will have to figure out how to load these another time (see commented out
 % code above).
 
@@ -518,21 +525,17 @@ Name=strrep(Name,':','_');
 Name=strrep(Name,'/','_');
 Name=strcat(Name,'.mat');
 
-%Alon Code 08/04/19
-NameSims=[SelNet.Name 'SimsOnly_' date];
-NameSims=strrep(NameSims,':','_');
-NameSims=strrep(NameSims,'/','_');
-NameSims=strcat(NameSims,'.mat');
 
+cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\');
 SelDir=uigetdir();
 if ~isequal(SelDir,0)
     name=fullfile(SelDir,Name);
-    nameSims=fullfile(SelDir,NameSims'); %Alon - Save simulations only
     save(name,'SelNet','-v7.3');
-    save(nameSims,'SelSims','-v7.3'); %Alon - Save simulations only
 else
     return;
 end
+cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\FIGS');
+
 %uisave('SelNet',Name);
 
 
