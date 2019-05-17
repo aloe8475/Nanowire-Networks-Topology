@@ -153,9 +153,9 @@ while i == 1
                             fprintf(['Please Choose a number between 2 and ' num2str(length(network(networkNum2).Simulations))]);
                         end
                     end
-                    LDA_Analysis(simulationChoice).Output=[full(simulations(simulationChoice).Data.IDrain1) full(simulations(simulationChoice).Data.IDrain2)];
-                    LDA_Analysis(simulationChoice).Input=[full(simulations(simulationChoice).Data.ISource1) full(simulations(simulationChoice).Data.ISource2)];
-                    LDA_Analysis(simulationChoice).Target=[full(simulations(simulationChoice).Data.VSource1 >0.001)];
+                    LDA_Analysis(simulationChoice).Output=[full(simulations{simulationChoice}.Data.IDrain1) full(simulations{simulationChoice}.Data.IDrain2)];
+                    LDA_Analysis(simulationChoice).Input=[full(simulations{simulationChoice}.Data.ISource1) full(simulations{simulationChoice}.Data.ISource2)];
+                    LDA_Analysis(simulationChoice).Target=[full(simulations{simulationChoice}.Data.VSource1 >0.001)];
                     LDA_Analysis(simulationChoice).TypeOfData='Testing';
                     [LDA_Analysis(simulationChoice).appliedP, LDA_Analysis(simulationChoice).appliedL, LDA_Analysis(simulationChoice).normalisedOutput, LDA_Analysis(simulationChoice).normalisedInput]=LDA_Apply(LDA_Analysis(simNum).normalisedW,LDA_Analysis(simulationChoice).Output, LDA_Analysis(simulationChoice).Input);
                     plot_state2=lower(input('Would you like to plot the applied LDA results? y or n \n','s'));
@@ -294,16 +294,16 @@ p.NodeColor='red';
 p.EdgeColor='white';
 p.NodeLabel={};
 
-%Plot Currents
+%Plot Currents (log10)
 p.MarkerSize=1.5;
 p.LineWidth=1.5;
-currs=(abs(Sim.Data.Currents{IndexTime}));
+currs=log10((abs(Sim.Data.Currents{IndexTime})));
 [j,i,~]=find(tril(Adj));
 cc=zeros(1,length(j));
 for k=1:length(j)
     cc(k)=currs(i(k),j(k));
 end
-clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
+clim=[log10(Sim.SimInfo.MinI) log10(Sim.SimInfo.MaxI)];
 p.EdgeCData=cc;
 colormap(currAx,gcurrmap);%gcurrmap
 colorbar(currAx);
@@ -350,63 +350,30 @@ caxis(currAx,clim);
 highlight(p1,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
 labelnode(p1,highlightElec,{new_electrodes.Name{1}}); %need to make this automated.
 
-%Voltage at each Node:
-
-
-%% Overlay Graph Theory:
-[Graph, threshold_network]=graph_analysis(network,network_load,Sim,IndexTime);
-
+%Voltage at each Node: %17/05/19
 f5=figure;
 currAx=gca;
 p2=plot(currAx,G);
-set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
+set(currAx,'Color',[0.35 0.35 0.35]);
 set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
 p2.NodeColor='red';
 p2.EdgeColor='white';
 p2.NodeLabel={};
 
-%Plot Currents
-p2.MarkerSize=1.5;
-p2.LineWidth=1.5;
-currs=(abs(Sim.Data.Currents{IndexTime}));
-[j,i,~]=find(tril(Adj));
-cc=zeros(1,length(j));
-for k=1:length(j)
-    cc(k)=currs(i(k),j(k));
-end
-clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
-p2.EdgeCData=cc;
-colormap(currAx,gcurrmap);%gcurrmap
+%Plot Voltage (log10)
+vlist=log10(Sim.Data.Voltages{IndexTime});
+p2.NodeCData=full(vlist);
+p2.MarkerSize=3;
+colormap(currAx,hot);
 colorbar(currAx);
-caxis(currAx,clim);
-hold on
+caxis([log10(Sim.SimInfo.MinV) log10(Sim.SimInfo.MaxV)]);
 
-% Plot Participant Coefficients
-if threshold_network=='y'
-    p2.NodeCData=Graph.Ci(threshold);
-    p_ranks=Graph.P(threshold);
-else
-    p2.NodeCData=Graph.Ci;
-    p_ranks=Graph.P;
-end
-edges2 = linspace(min(p_ranks),max(p_ranks),7);
-bins2 = discretize(p_ranks,edges2);
-p2.MarkerSize=bins2;
-
-%Label Source
 labelnode(p2,highlightElec,{new_electrodes.Name{1}}); %need to make this automated.
 
-%Need to figure out how to change colormap for Nodes seperately.
+%% Overlay Graph Theory:
+[Graph, threshold_network]=graph_analysis(network,network_load,Sim,IndexTime);
 
-if threshold_network=='y'
-    text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P(threshold))) ' (large dot)']);
-else
-    text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P)) ' (large dot)']);
-end
-title(['Participant Coefficient Analysis Timestamp ' num2str(IndexTime)]);
-
-%Modular z-Score:
-f6=figure;
+f5=figure;
 currAx=gca;
 p3=plot(currAx,G);
 set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
@@ -431,20 +398,70 @@ colorbar(currAx);
 caxis(currAx,clim);
 hold on
 
-%Plot Currents:
+% Plot Participant Coefficients
 if threshold_network=='y'
     p3.NodeCData=Graph.Ci(threshold);
-    mod_ranks=Graph.MZ(threshold);
+    p_ranks=Graph.P(threshold);
 else
     p3.NodeCData=Graph.Ci;
+    p_ranks=Graph.P;
+end
+edges2 = linspace(min(p_ranks),max(p_ranks),7);
+bins2 = discretize(p_ranks,edges2);
+p3.MarkerSize=bins2;
+
+%Label Source
+labelnode(p3,highlightElec,{new_electrodes.Name{1}}); %need to make this automated.
+
+%Need to figure out how to change colormap for Nodes seperately.
+
+if threshold_network=='y'
+    text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P(threshold))) ' (large dot)']);
+else
+    text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P)) ' (large dot)']);
+end
+title(['Participant Coefficient Analysis Timestamp ' num2str(IndexTime)]);
+
+%Modular z-Score:
+f7=figure;
+currAx=gca;
+p4=plot(currAx,G);
+set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
+set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
+p4.NodeColor='red';
+p4.EdgeColor='white';
+p4.NodeLabel={};
+
+%Plot Currents
+p4.MarkerSize=1.5;
+p4.LineWidth=1.5;
+currs=(abs(Sim.Data.Currents{IndexTime}));
+[j,i,~]=find(tril(Adj));
+cc=zeros(1,length(j));
+for k=1:length(j)
+    cc(k)=currs(i(k),j(k));
+end
+clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
+p4.EdgeCData=cc;
+colormap(currAx,gcurrmap);%gcurrmap
+colorbar(currAx);
+caxis(currAx,clim);
+hold on
+
+%Plot Currents:
+if threshold_network=='y'
+    p4.NodeCData=Graph.Ci(threshold);
+    mod_ranks=Graph.MZ(threshold);
+else
+    p4.NodeCData=Graph.Ci;
     mod_ranks=Graph.MZ;
 end
 edges3 = linspace(min(mod_ranks),max(mod_ranks),7);
 bins3 = discretize(mod_ranks,edges3);
-p3.MarkerSize=bins3;
+p4.MarkerSize=bins3;
 
 %Label Source
-labelnode(p3,highlightElec,{new_electrodes.Name{1}}); %need to make this automated.
+labelnode(p4,highlightElec,{new_electrodes.Name{1}}); %need to make this automated.
 
 %Need to figure out how to change colormap for Nodes seperately.
 
@@ -862,6 +879,9 @@ if strcmp(network_load,'a')
             network.Simulations=[network.Simulations tempSim];
             fprintf(['Your Training Simulation is Simulation 1 \n']);
             fprintf(['Your Testing Simulations are Simulations 2 - ' num2str(length(network.Simulations)) '\n']);
+            
+            fprintf('\n -------------------------- \nStart Analysis: \n');
+            
         end
         for i = 1:length(network.Simulations)
             simulations(i)=network.Simulations(i);

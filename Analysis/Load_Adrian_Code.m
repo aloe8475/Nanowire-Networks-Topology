@@ -114,5 +114,7 @@ if sims_load=='y'
 else
     sim_loaded=0;
 end
+fprintf('Network and Simulations Loaded \n');
+fprintf('\n--------------------------------- \n\n');
 end
 
