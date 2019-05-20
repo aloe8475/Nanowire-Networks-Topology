@@ -1,5 +1,6 @@
-function [normalisedVar]=LDA_normalise(normaliseVariable)
-avgVar=nanmean(normaliseVariable);
-sdVar=nanstd(normaliseVariable);
-normalisedVar=(normaliseVariable-avgVar)./sdVar;
+function [normalisedVar]=LDA_normalise(data)
+% normalisedVar = reshape(zscore(data(:)),size(data,1),size(data,2));
+avgVar=nanmean(data);
+sdVar=nanstd(data);
+normalisedVar=(data-avgVar)./sdVar;
 end 

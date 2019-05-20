@@ -81,12 +81,12 @@ while i == 1
         Input = [source1 source2];
         Output = [drain1 drain2]; %OUTPUT is column (variable) x row (observations)
         Target = source1Voltage(:,1)>0.001;% uncomment for current: [source1(:,1)> 1.0e-04 *0.001 & source2<0];%TARGET is the classifier we expect
-        
+                
         %visualise drain1 and drain2
         figure
         plot(drain1); hold on
         plot(drain2);
-        
+               
         % Calculate linear discriminant coefficients - finding a line that
         % differentiate Output & Target
         LDA_Analysis(simNum).W = LDA(Output,Target);
@@ -107,13 +107,12 @@ while i == 1
         LDA_Analysis(simNum).Input=Input;
         LDA_Analysis(simNum).Target=Target;
         
-        %% normalise LDA data:
         LDA_Analysis(simNum).normalisedOutput=LDA_normalise(Output);
-        LDA_Analysis(simNum).normalisedInput=LDA_normalise(Input);
-        
+        LDA_Analysis(simNum).normalisedInput=LDA_normalise(Input);            
         LDA_Analysis(simNum).normalisedW=LDA(LDA_Analysis(simNum).normalisedOutput,Target);
         LDA_Analysis(simNum).normalisedL=[ones(size(LDA_Analysis(simNum).normalisedOutput,1),1) LDA_Analysis(simNum).normalisedOutput] * LDA_Analysis(simNum).normalisedW';
         LDA_Analysis(simNum).normalisedP=exp(LDA_Analysis(simNum).normalisedL) ./ repmat(sum(exp(LDA_Analysis(simNum).normalisedL),2),[1 2]);
+        
         LDA_Analysis(simNum).TypeOfData='Training';
         clear drain1 drain2 source1 source2 Input Target Output
         i=i+1;%get out of while loop this loop finishes
@@ -318,7 +317,7 @@ end
 highlightElec={new_electrodes.PosIndex};
 highlightElec=cell2num(highlightElec);
 highlight(p,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
-labelnode(p,highlightElec,{new_electrodes.Name{1}}); %need to make this automated.
+labelnode(p,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
 
 
 %Plot Graph
@@ -348,7 +347,7 @@ caxis(currAx,clim);
 
 %Highlight Electrodes:
 highlight(p1,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
-labelnode(p1,highlightElec,{new_electrodes.Name{1}}); %need to make this automated.
+labelnode(p1,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
 
 %Voltage at each Node: %17/05/19
 f5=figure;
@@ -368,12 +367,12 @@ colormap(currAx,hot);
 colorbar(currAx);
 caxis([log10(Sim.SimInfo.MinV) log10(Sim.SimInfo.MaxV)]);
 
-labelnode(p2,highlightElec,{new_electrodes.Name{1}}); %need to make this automated.
+labelnode(p2,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
 
 %% Overlay Graph Theory:
 [Graph, threshold_network]=graph_analysis(network,network_load,Sim,IndexTime);
 
-f5=figure;
+f6=figure;
 currAx=gca;
 p3=plot(currAx,G);
 set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
@@ -411,7 +410,7 @@ bins2 = discretize(p_ranks,edges2);
 p3.MarkerSize=bins2;
 
 %Label Source
-labelnode(p3,highlightElec,{new_electrodes.Name{1}}); %need to make this automated.
+labelnode(p3,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
 
 %Need to figure out how to change colormap for Nodes seperately.
 
@@ -461,7 +460,7 @@ bins3 = discretize(mod_ranks,edges3);
 p4.MarkerSize=bins3;
 
 %Label Source
-labelnode(p4,highlightElec,{new_electrodes.Name{1}}); %need to make this automated.
+labelnode(p4,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
 
 %Need to figure out how to change colormap for Nodes seperately.
 
@@ -470,7 +469,10 @@ if threshold_network=='y'
 else
     text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ)) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
 end
-title(['Module Degree z-Score Analysis Timestamp ' num2str(IndexTime)]);
+title(['Within Module Degree z-Score Analysis Timestamp ' num2str(IndexTime)]);
+
+%Shortest Path (Distance)
+d = distances(G); %calculate all the shortest path distance across all node pairs in the network. 
 
 %% Save
 %Save Variables
@@ -485,19 +487,26 @@ Explore.GraphView.resistance=Sim.Data.Rmat{IndexTime};
 Explore.GraphView.Nodes=G.Nodes;
 Explore.GraphView.Edges=G.Edges;
 Explore.GraphView.ElectrodePosition=Sim.Electrodes.PosIndex;
+Explore.GraphView.Distances=d;
 
 %% Save Plots
 save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Figures\Explore Analysis\';
 network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
 
-saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'eps');
-saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'eps');
-saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Explore_GraphView_Currents_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Explore_GraphView_Currents_Timestamp' num2str(IndexTime)],'eps');
-saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Explore_GraphView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Explore_GraphView_Resistance_Timestamp' num2str(IndexTime)],'eps');
+saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'jpg');
+saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'eps');
+saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
+saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'eps');
+saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Currents_Timestamp' num2str(IndexTime)],'jpg');
+saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Currents_Timestamp' num2str(IndexTime)],'eps');
+saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
+saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Resistance_Timestamp' num2str(IndexTime)],'eps');
+saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Voltage_Timestamp' num2str(IndexTime)],'jpg');
+saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Voltage_Timestamp' num2str(IndexTime)],'eps');
+saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Participant-Coefficient_Timestamp' num2str(IndexTime)],'jpg');
+saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Participant-Coefficient_Timestamp' num2str(IndexTime)],'eps');
+saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Module-zScore_Timestamp' num2str(IndexTime)],'jpg');
+saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Module-zScore_Timestamp' num2str(IndexTime)],'eps');
 end
 
 function save_explore(Explore,network,network_load)
@@ -514,7 +523,7 @@ function plot_LDA(LDA_Analysis, simNum, networkName)
 save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Figures\LDA\LDA Training\';
 %plot LDA
 LDAf=figure;
-sgtitle('Electrode LDA Classification Training');
+sgtitle('LDA Classification Training');
 subplot(4,1,1)
 plot(LDA_Analysis.Input)
 title('Source Electrodes');
@@ -538,7 +547,7 @@ ylabel('Voltage > 0');
 
 %plot Log LDA
 LDAff=figure;
-sgtitle('Log-Scale LDA Electrode Classification Training');
+sgtitle('Log-Scale LDA Classification Training');
 subplot(4,1,1)
 semilogy(LDA_Analysis.Input) %log y axis plot
 title('Source Electrodes');
@@ -560,15 +569,40 @@ title('LDA Target Classification (class labels) - Source1 > 0V')
 xlabel('Timestamp(0.01sec)');
 ylabel('Voltage > 0');
 
+LDAnormf=figure;
+sgtitle('Normalised LDA Classification Training');
+subplot(4,1,1)
+plot(LDA_Analysis.normalisedInput)
+title('Normalised Source Electrodes');
+ylabel('Current (A)')
+xlabel('Timestamp (0.01sec)')
+subplot(4,1,2)
+plot(LDA_Analysis.normalisedOutput)
+title('Normalised Drain Electrodes');
+ylabel('Current (A)')
+xlabel('Timestamp (0.01sec)')
+subplot(4,1,3)
+plot(LDA_Analysis.normalisedP(:,2))
+title('LDA class probability (P)');
+xlabel('Timestamp (0.01sec)')
+ylabel('Probability');
+subplot(4,1,4)
+plot(LDA_Analysis.Target)
+title('LDA Target Classification (class labels) - Source1 > 0V')
+xlabel('Timestamp(0.01sec)');
+ylabel('Voltage > 0');
+
 networkName(regexp(networkName,'[/:]'))=[]; %remove '/' character because it gives us saving problems
 
 %Save
 %Note; change the date of the simulation in the name if using a different
 %set of simulations
-saveas(LDAf,[save_directory num2str(networkName) '_6MaySim_LDA_Classification_Training_Simulation' num2str(simNum)],'jpg'); % CHANGE DATE OF SIMULATION
-saveas(LDAf,[save_directory num2str(networkName) '_6MaySim_LDA_Classification_Training_Simulation' num2str(simNum)],'eps');
-saveas(LDAff,[save_directory num2str(networkName) '_6MaySim_logLDA_Classification_Training_Simulation' num2str(simNum)],'jpg');
-saveas(LDAff,[save_directory num2str(networkName) '_6MaySim_logLDA_Classification_Training_Simulation' num2str(simNum)],'eps');
+saveas(LDAf,[save_directory num2str(networkName) 'Simulation' num2str(simNum) '_LDA_Classification_Training_Simulation' num2str(simNum)],'jpg'); % CHANGE DATE OF SIMULATION
+saveas(LDAf,[save_directory num2str(networkName) 'Simulation' num2str(simNum) '_LDA_Classification_Training_Simulation' num2str(simNum)],'eps');
+saveas(LDAff,[save_directory num2str(networkName) 'Simulation' num2str(simNum) '_logLDA_Classification_Training_Simulation' num2str(simNum)],'jpg');
+saveas(LDAff,[save_directory num2str(networkName) 'Simulation' num2str(simNum) '_logLDA_Classification_Training_Simulation' num2str(simNum)],'eps');
+saveas(LDAnormf,[save_directory num2str(networkName) 'Simulation' num2str(simNum) '_normalised_LDA_Classification_Training_Simulation' num2str(simNum)],'jpg');
+saveas(LDAnormf,[save_directory num2str(networkName) 'Simulation' num2str(simNum) '_normalised_Classification_Training_Simulation' num2str(simNum)],'eps');
 
 end
 
