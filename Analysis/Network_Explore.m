@@ -8,6 +8,7 @@
 % 13/05/19 - Added support for simulation files with only 1 simulation
 % --------------------------
 dbstop if error
+%% Load Data
 load_data_question=lower(input('Load network data, Analysis Data Only or None? N - None, D - Network Data, A - Analysis Data\n','s'));
 
 if load_data_question=='d'
@@ -24,8 +25,9 @@ elseif load_data_question=='a'
     [LDA_Analysis(simNum)] = load_LDA_data();
 end
 
-%%
-%---
+%% Choose Simulations
+%-------
+%Choose Network and Simulation for training or exploring
 if load_data_question~='a'
     if explore_network=='t'
         networkNum=input(['Which Network # do you want to select for Training? 1 - ' num2str(length(network)) '\n']);
@@ -44,23 +46,24 @@ end
 
 fprintf(['Simulation: ' network(networkNum).Name currentSim.Name ' selected \n\n']);
 
+%% Analysis:
 i = 1;
 while i == 1
+    %Choose Analysis to perform
     if explore_network=='t'
         analysis_type=lower(input('Which analysis would you like to perform? G - graph, E - Explore Network,L - LDA, N - none \n','s'));
     elseif explore_network=='e' % we don't want to allow LDA if just exploring
         analysis_type=lower(input('Which analysis would you like to perform? G - graph, E - Explore Network, N - none \n','s'));
     end
-    %% Graph Analysis
     if analysis_type=='g'
-        %Call graph analysis function
+    %% Graph Analysis
         [Graph, threshold_network]=graph_analysis(network(networkNum),network_load,currentSim,[]);
-        %Save Graph analysis data
+        %% Save Graph analysis data
         i=i+1;
     elseif analysis_type=='e'
-        %call Exploratary analysis of simulation
+        %% Exploratary analysis of simulation
         Explore=explore_simulation(currentSim,network,network_load,simNum);
-        %% Saving LDA
+        %% Saving Explore
         save_state=lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
         if save_state=='y'
             save_explore(Explore,network(networkNum),network_load);
@@ -69,62 +72,11 @@ while i == 1
         i=i+1;
     elseif analysis_type=='l'
         %% LDA Analysis
-        %THIS IS WHERE YOU CHANGE THE VARIABLES FOR LDA
-        drain1=[full(currentSim.Data.IDrain1)]; %full(simulations(2).Data.IDrain1)];
-        drain2=[full(currentSim.Data.IDrain2)]; %full(simulations(2).Data.IDrain2)];
-        %Current source
-        source1=[full(currentSim.Data.ISource1)]; %full(simulations(2).Data.ISource1)];
-        source2=[full(currentSim.Data.ISource2)]; %full(simulations(2).Data.ISource2)];
-        %Voltage source
-        source1Voltage=full(currentSim.Data.VSource1);
-        source2Voltage=full(currentSim.Data.VSource2);
-        Input = [source1 source2];
-        Output = [drain1 drain2]; %OUTPUT is column (variable) x row (observations)
-        Target = source1Voltage(:,1)>0.001;% uncomment for current: [source1(:,1)> 1.0e-04 *0.001 & source2<0];%TARGET is the classifier we expect
-                
-        %visualise drain1 and drain2
-        figure
-        plot(drain1); hold on
-        plot(drain2);
-               
-        % Calculate linear discriminant coefficients - finding a line that
-        % differentiate Output & Target
-        LDA_Analysis(simNum).W = LDA(Output,Target);
-        
-        % % Calulcate linear scores for training data - what are the loadings for
-        % that line - how would you get to 'x' from that line
-        LDA_Analysis(simNum).L = [ones(size(Output,1),1) Output] * LDA_Analysis(simNum).W';
-        %
-        % % Calculate class probabilities
-        LDA_Analysis(simNum).P = exp(LDA_Analysis(simNum).L) ./ repmat(sum(exp(LDA_Analysis(simNum).L),2),[1 2]);
-        
-        %Save all variables into struct
-        LDA_Analysis(simNum).drain1=drain1;
-        LDA_Analysis(simNum).drain2=drain2;
-        LDA_Analysis(simNum).source1=source1;
-        LDA_Analysis(simNum).source2=source2;
-        LDA_Analysis(simNum).Output=Output;
-        LDA_Analysis(simNum).Input=Input;
-        LDA_Analysis(simNum).Target=Target;
-        
-        LDA_Analysis(simNum).normalisedOutput=LDA_normalise(Output);
-        LDA_Analysis(simNum).normalisedInput=LDA_normalise(Input);            
-        LDA_Analysis(simNum).normalisedW=LDA(LDA_Analysis(simNum).normalisedOutput,Target);
-        LDA_Analysis(simNum).normalisedL=[ones(size(LDA_Analysis(simNum).normalisedOutput,1),1) LDA_Analysis(simNum).normalisedOutput] * LDA_Analysis(simNum).normalisedW';
-        LDA_Analysis(simNum).normalisedP=exp(LDA_Analysis(simNum).normalisedL) ./ repmat(sum(exp(LDA_Analysis(simNum).normalisedL),2),[1 2]);
-        
-        LDA_Analysis(simNum).TypeOfData='Training';
-        clear drain1 drain2 source1 source2 Input Target Output
-        i=i+1;%get out of while loop this loop finishes
-        %% Saving LDA
-        save_state=lower(input('Would you like to save the LDA Analysis? y or n \n','s'));
-        if save_state=='y'
-            save_LDA(LDA_Analysis(simNum),network(networkNum),network_load,sim_loaded);
-            i=i+1; %get out of while loop this loop finishes
-        end
-        %% Plotting LDA
+        LDA_Analysis=lda_analysis(currentSim,network,network_load,simNum);
+        i=i+1;
     end
     if analysis_type=='l' || analysis_type=='n'
+        %% Plotting LDA
         plot_state=lower(input('Would you like to plot LDA Analysis? y or n \n','s'));
         if plot_state=='y'
             plot_LDA(LDA_Analysis(simNum),simNum,network(networkNum).Name);
@@ -134,34 +86,7 @@ while i == 1
         if analysis_type~='n'
             apply_LDA=lower(input('Would you like to apply the loaded LDA analysis to another simulation? y or n \n','s'));
             if apply_LDA=='y'
-                if numNetworks>1 %if we have two networks, offer to test second network
-                    networkNum2=input(['Which Network # do you want to select your Simulation from ? 1 - ' num2str(length(network)) '\n']);
-                else
-                    networkNum2=1;
-                end
-                if numNetworks>1 %if we have more than 1 simulation, they can input 1 as an option
-                    simulationChoice=input(['Which Simulation # do you want to apply LDA to? 1 - '  num2str(length(network(networkNum2).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
-                else % otherwise, can only input 2 or higher
-                    while 1
-                        simulationChoice=input(['Which Simulation # do you want to apply LDA to? 2 - '  num2str(length(network(networkNum2).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
-                        if simulationChoice >1 && simulationChoice <=length(network(networkNum2).Simulations)
-                            break;
-                        elseif simulationChoice ==1
-                            fprintf('Cannot Train and Test the same Simulation, please choose again \n');
-                        else
-                            fprintf(['Please Choose a number between 2 and ' num2str(length(network(networkNum2).Simulations))]);
-                        end
-                    end
-                    LDA_Analysis(simulationChoice).Output=[full(simulations{simulationChoice}.Data.IDrain1) full(simulations{simulationChoice}.Data.IDrain2)];
-                    LDA_Analysis(simulationChoice).Input=[full(simulations{simulationChoice}.Data.ISource1) full(simulations{simulationChoice}.Data.ISource2)];
-                    LDA_Analysis(simulationChoice).Target=[full(simulations{simulationChoice}.Data.VSource1 >0.001)];
-                    LDA_Analysis(simulationChoice).TypeOfData='Testing';
-                    [LDA_Analysis(simulationChoice).appliedP, LDA_Analysis(simulationChoice).appliedL, LDA_Analysis(simulationChoice).normalisedOutput, LDA_Analysis(simulationChoice).normalisedInput]=LDA_Apply(LDA_Analysis(simNum).normalisedW,LDA_Analysis(simulationChoice).Output, LDA_Analysis(simulationChoice).Input);
-                    plot_state2=lower(input('Would you like to plot the applied LDA results? y or n \n','s'));
-                    if plot_state2=='y'
-                        plot_LDA_Applied(LDA_Analysis(simulationChoice),simNum,simulationChoice,network(networkNum2).Name);
-                    end
-                end
+                [LDA_Analysis, simulationChoice]=lda_apply_func(numNetworks,network,LDA_Analysis,simNum);
             end
             i=i+1; %get out of while loop when this loop finishes
         elseif analysis_type~='l' &&  analysis_type~='g' && analysis_type~='n' && analysis_type~='e'
@@ -169,11 +94,13 @@ while i == 1
         end
         
         if analysis_type=='g' || analysis_type=='n'
+            %% Plotting Graph
             plot_state=lower(input('Would you like to plot Graph Analysis? y or n \n','s'));
             if plot_state=='y'
                 Graph=plot_graph(Graph,network(networkNum),network_load,currentSim,sim_loaded);
             end
             i=i+1;
+            %% Saving Graph
             save_state=lower(input('Would you like to save the Graph Analysis? y or n \n','s'));
             if save_state=='y'
                 save_graph(Graph,network(networkNum),network_load);
@@ -190,6 +117,43 @@ end
 
 
 %% FUNCTIONS
+
+function [network, network_load, simulations, sim_loaded, numNetworks, explore_network] = load_data()
+
+%% Load Data
+%Ask to load Zdenka or Adrian:
+network_load=lower(input('Which Network do you want to analyse? Z - Zdenka, A - Adrian \n','s'));
+
+if strcmp(network_load,'a')
+    %Get current network - Adrian
+    [network,sim_loaded, explore_network, numNetworks]=Load_Adrian_Code();
+    %unpack simulation data into simulation variable
+    if sim_loaded==1
+        if explore_network=='t' %if we have training and testing simulations
+            tempSim=network.Simulations{2};
+            tempSim=num2cell(tempSim);
+            network.Simulations(2) = [];
+            network.Simulations=[network.Simulations tempSim];
+            fprintf(['Your Training Simulation is Simulation 1 \n']);
+            fprintf(['Your Testing Simulations are Simulations 2 - ' num2str(length(network.Simulations)) '\n']);
+            
+            fprintf('\n -------------------------- \nStart Analysis: \n');
+            
+        end
+        for i = 1:length(network.Simulations)
+            simulations(i)=network.Simulations(i);
+        end
+    else
+        simulations=network.Simulations;
+    end
+    cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
+elseif strcmp(network_load,'z')
+    %Get network - Zdenka:
+    % D:\alon_\Research\POSTGRAD\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
+    network=Load_Zdenka_Code();
+    cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
+end
+end
 
 function Explore = explore_simulation(Sim,network,network_load,simNum)
 [NodeList.String,NodeList.UserData]=GetNodeList(Sim);
@@ -247,6 +211,7 @@ clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI]; %minimum and maximum currents
 colormap(currAx,cmap);
 colorbar(currAx);
 caxis(currAx,clim);
+title(['Current Flow Network View Timestamp ' num2str(IndexTime)]);
 
 %Plot Network for Figure 2
 f2=figure;
@@ -278,6 +243,9 @@ colormap(currAx,cmap);
 colorbar(currAx);
 caxis(currAx,clim);
 
+title(['Resistance Network View Timestamp ' num2str(IndexTime)]);
+
+
 %% Graph View
 
 %Plot Graph
@@ -296,13 +264,13 @@ p.NodeLabel={};
 %Plot Currents (log10)
 p.MarkerSize=1.5;
 p.LineWidth=1.5;
-currs=log10((abs(Sim.Data.Currents{IndexTime})));
+currs=(abs(Sim.Data.Currents{IndexTime}));
 [j,i,~]=find(tril(Adj));
 cc=zeros(1,length(j));
 for k=1:length(j)
     cc(k)=currs(i(k),j(k));
 end
-clim=[log10(Sim.SimInfo.MinI) log10(Sim.SimInfo.MaxI)];
+clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
 p.EdgeCData=cc;
 colormap(currAx,gcurrmap);%gcurrmap
 colorbar(currAx);
@@ -318,6 +286,7 @@ highlightElec={new_electrodes.PosIndex};
 highlightElec=cell2num(highlightElec);
 highlight(p,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
 labelnode(p,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
+title(['Current Graph View Timestamp ' num2str(IndexTime)]);
 
 
 %Plot Graph
@@ -349,6 +318,8 @@ caxis(currAx,clim);
 highlight(p1,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
 labelnode(p1,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
 
+title(['Resistance Graph View Timestamp ' num2str(IndexTime)]);
+
 %Voltage at each Node: %17/05/19
 f5=figure;
 currAx=gca;
@@ -360,17 +331,20 @@ p2.EdgeColor='white';
 p2.NodeLabel={};
 
 %Plot Voltage (log10)
-vlist=log10(Sim.Data.Voltages{IndexTime});
+vlist=Sim.Data.Voltages{IndexTime};
 p2.NodeCData=full(vlist);
 p2.MarkerSize=3;
 colormap(currAx,hot);
 colorbar(currAx);
-caxis([log10(Sim.SimInfo.MinV) log10(Sim.SimInfo.MaxV)]);
+caxis([Sim.SimInfo.MinV Sim.SimInfo.MaxV]);
 
 labelnode(p2,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
+title(['Voltage Graph View Timestamp ' num2str(IndexTime)]);
 
 %% Overlay Graph Theory:
 [Graph, threshold_network]=graph_analysis(network,network_load,Sim,IndexTime);
+
+%% Participant Coefficients
 
 f6=figure;
 currAx=gca;
@@ -421,7 +395,7 @@ else
 end
 title(['Participant Coefficient Analysis Timestamp ' num2str(IndexTime)]);
 
-%Modular z-Score:
+%% Modular z-Score:
 f7=figure;
 currAx=gca;
 p4=plot(currAx,G);
@@ -447,7 +421,6 @@ colorbar(currAx);
 caxis(currAx,clim);
 hold on
 
-%Plot Currents:
 if threshold_network=='y'
     p4.NodeCData=Graph.Ci(threshold);
     mod_ranks=Graph.MZ(threshold);
@@ -462,8 +435,6 @@ p4.MarkerSize=bins3;
 %Label Source
 labelnode(p4,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
 
-%Need to figure out how to change colormap for Nodes seperately.
-
 if threshold_network=='y'
     text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ(threshold))) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
 else
@@ -471,8 +442,50 @@ else
 end
 title(['Within Module Degree z-Score Analysis Timestamp ' num2str(IndexTime)]);
 
+%% Connectivity
+f8=figure;
+currAx=gca;
+p5=plot(currAx,G);
+set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
+set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
+p5.NodeColor='red';
+p5.EdgeColor='white';
+p5.NodeLabel={};
+
+%Plot Currents
+p5.MarkerSize=1.5;
+p5.LineWidth=1.5;
+currs=(abs(Sim.Data.Currents{IndexTime}));
+[j,i,~]=find(tril(Adj));
+cc=zeros(1,length(j));
+for k=1:length(j)
+    cc(k)=currs(i(k),j(k));
+end
+clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
+p5.EdgeCData=cc;
+colormap(currAx,gcurrmap);%gcurrmap
+colorbar(currAx);
+caxis(currAx,clim);
+hold on
+
+if threshold_network=='y'
+    Graph.DEG_threshold=Graph.DEG(threshold);
+    edges = linspace(min(Graph.DEG_threshold),max(Graph.DEG_threshold),7);
+    bins = discretize(Graph.DEG_threshold,edges);
+else
+    edges = linspace(min(Graph.DEG),max(Graph.DEG),7);
+    bins = discretize(Graph.DEG,edges);
+end
+
+p5.MarkerSize = bins;
+p5.NodeColor='r';
+title(['Degree Size Timestamp ' num2str(IndexTime)]);
+highlight(p5,highlightElec,'NodeColor','green'); %change simulation number
+labelnode(p5,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
+text(-5,-6.2,'Min Degrees - 1 (small dot) | Max Degrees - 44 (large dot)');
+
 %Shortest Path (Distance)
-d = distances(G); %calculate all the shortest path distance across all node pairs in the network. 
+d = distances(G); %calculate all the shortest path distance across all node pairs in the network.
 
 %% Save
 %Save Variables
@@ -493,20 +506,42 @@ Explore.GraphView.Distances=d;
 save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Figures\Explore Analysis\';
 network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
 
-saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'eps');
-saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'eps');
-saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Currents_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Currents_Timestamp' num2str(IndexTime)],'eps');
-saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Resistance_Timestamp' num2str(IndexTime)],'eps');
-saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Voltage_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Voltage_Timestamp' num2str(IndexTime)],'eps');
-saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Participant-Coefficient_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Participant-Coefficient_Timestamp' num2str(IndexTime)],'eps');
-saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Module-zScore_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Module-zScore_Timestamp' num2str(IndexTime)],'eps');
+if threshold_network~='y'
+    saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'jpg');
+    saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'eps');
+    saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
+    saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'eps');
+    saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Currents_Timestamp' num2str(IndexTime)],'jpg');
+    saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Currents_Timestamp' num2str(IndexTime)],'eps');
+    saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
+    saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Resistance_Timestamp' num2str(IndexTime)],'eps');
+    saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Voltage_Timestamp' num2str(IndexTime)],'jpg');
+    saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Voltage_Timestamp' num2str(IndexTime)],'eps');
+    saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Participant-Coefficient_Timestamp' num2str(IndexTime)],'jpg');
+    saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Participant-Coefficient_Timestamp' num2str(IndexTime)],'eps');
+    saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Module-zScore_Timestamp' num2str(IndexTime)],'jpg');
+    saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Module-zScore_Timestamp' num2str(IndexTime)],'eps');
+    saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Connectivity_Timestamp' num2str(IndexTime)],'jpg');
+    saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Connectivity_Timestamp' num2str(IndexTime)],'eps');
+elseif threshold_network=='y'
+    saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'jpg');
+    saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'eps');
+    saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
+    saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'eps');
+    saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Currents_Timestamp' num2str(IndexTime)],'jpg');
+    saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Currents_Timestamp' num2str(IndexTime)],'eps');
+    saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
+    saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Resistance_Timestamp' num2str(IndexTime)],'eps');
+    saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Voltage_Timestamp' num2str(IndexTime)],'jpg');
+    saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Voltage_Timestamp' num2str(IndexTime)],'eps');
+    saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Participant-Coefficient_Timestamp' num2str(IndexTime)],'jpg');
+    saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Participant-Coefficient_Timestamp' num2str(IndexTime)],'eps');
+    saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Module-zScore_Timestamp' num2str(IndexTime)],'jpg');
+    saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Module-zScore_Timestamp' num2str(IndexTime)],'eps');
+    saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Connectivity_Timestamp' num2str(IndexTime)],'jpg');
+    saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Connectivity_Timestamp' num2str(IndexTime)],'eps');
+    
+end
 end
 
 function save_explore(Explore,network,network_load)
@@ -517,6 +552,103 @@ elseif strcmp(network_load,'a') %adrian code
     network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
     save([save_directory 'Adrian_' num2str(network.Name) 'Exploration_Analysis' num2str(Explore.IndexTime) '_Timestamp_' date],'Explore');
 end
+end
+
+function LDA_Analysis=lda_analysis(currentSim,network,network_load,simNum)
+%% LDA Analysis
+%THIS IS WHERE YOU CHANGE THE VARIABLES FOR LDA
+drain1=[full(currentSim.Data.IDrain1)]; %full(simulations(2).Data.IDrain1)];
+drain2=[full(currentSim.Data.IDrain2)]; %full(simulations(2).Data.IDrain2)];
+%Current source
+source1=[full(currentSim.Data.ISource1)]; %full(simulations(2).Data.ISource1)];
+source2=[full(currentSim.Data.ISource2)]; %full(simulations(2).Data.ISource2)];
+%Voltage source
+source1Voltage=full(currentSim.Data.VSource1);
+source2Voltage=full(currentSim.Data.VSource2);
+Input = [source1 source2];
+Output = [drain1 drain2]; %OUTPUT is column (variable) x row (observations)
+Target = source1Voltage(:,1)>0.001;% uncomment for current: [source1(:,1)> 1.0e-04 *0.001 & source2<0];%TARGET is the classifier we expect
+
+%visualise drain1 and drain2
+figure
+plot(drain1); hold on
+plot(drain2);
+
+% Calculate linear discriminant coefficients - finding a line that
+% differentiate Output & Target
+LDA_Analysis(simNum).W = LDA(Output,Target);
+
+% % Calulcate linear scores for training data - what are the loadings for
+% that line - how would you get to 'x' from that line
+LDA_Analysis(simNum).L = [ones(size(Output,1),1) Output] * LDA_Analysis(simNum).W';
+%
+% % Calculate class probabilities
+LDA_Analysis(simNum).P = exp(LDA_Analysis(simNum).L) ./ repmat(sum(exp(LDA_Analysis(simNum).L),2),[1 2]);
+
+%Save all variables into struct
+LDA_Analysis(simNum).drain1=drain1;
+LDA_Analysis(simNum).drain2=drain2;
+LDA_Analysis(simNum).source1=source1;
+LDA_Analysis(simNum).source2=source2;
+LDA_Analysis(simNum).Output=Output;
+LDA_Analysis(simNum).Input=Input;
+LDA_Analysis(simNum).Target=Target;
+
+LDA_Analysis(simNum).normalisedOutput=LDA_normalise(Output);
+LDA_Analysis(simNum).normalisedInput=LDA_normalise(Input);
+LDA_Analysis(simNum).normalisedW=LDA(LDA_Analysis(simNum).normalisedOutput,Target);
+LDA_Analysis(simNum).normalisedL=[ones(size(LDA_Analysis(simNum).normalisedOutput,1),1) LDA_Analysis(simNum).normalisedOutput] * LDA_Analysis(simNum).normalisedW';
+LDA_Analysis(simNum).normalisedP=exp(LDA_Analysis(simNum).normalisedL) ./ repmat(sum(exp(LDA_Analysis(simNum).normalisedL),2),[1 2]);
+
+LDA_Analysis(simNum).TypeOfData='Training';
+clear drain1 drain2 source1 source2 Input Target Output
+i=i+1;%get out of while loop this loop finishes
+%% Saving LDA
+save_state=lower(input('Would you like to save the LDA Analysis? y or n \n','s'));
+if save_state=='y'
+    save_LDA(LDA_Analysis(simNum),network(networkNum),network_load,sim_loaded);
+    i=i+1; %get out of while loop this loop finishes
+end
+end
+
+function [LDA_Analysis, simulationChoice]=lda_apply_func(numNetworks,network,LDA_Analysis,simNum)
+if numNetworks>1 %if we have two networks, offer to test second network
+    networkNum2=input(['Which Network # do you want to select your Simulation from ? 1 - ' num2str(length(network)) '\n']);
+else
+    networkNum2=1;
+end
+if numNetworks>1 %if we have more than 1 simulation, they can input 1 as an option
+    simulationChoice=input(['Which Simulation # do you want to apply LDA to? 1 - '  num2str(length(network(networkNum2).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
+else % otherwise, can only input 2 or higher
+    while 1
+        simulationChoice=input(['Which Simulation # do you want to apply LDA to? 2 - '  num2str(length(network(networkNum2).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
+        if simulationChoice >1 && simulationChoice <=length(network(networkNum2).Simulations)
+            break;
+        elseif simulationChoice ==1
+            fprintf('Cannot Train and Test the same Simulation, please choose again \n');
+        else
+            fprintf(['Please Choose a number between 2 and ' num2str(length(network(networkNum2).Simulations))]);
+        end
+    end
+    LDA_Analysis(simulationChoice).Output=[full(simulations{simulationChoice}.Data.IDrain1) full(simulations{simulationChoice}.Data.IDrain2)];
+    LDA_Analysis(simulationChoice).Input=[full(simulations{simulationChoice}.Data.ISource1) full(simulations{simulationChoice}.Data.ISource2)];
+    LDA_Analysis(simulationChoice).Target=[full(simulations{simulationChoice}.Data.VSource1 >0.001)];
+    LDA_Analysis(simulationChoice).TypeOfData='Testing';
+    [LDA_Analysis(simulationChoice).appliedP, LDA_Analysis(simulationChoice).appliedL, LDA_Analysis(simulationChoice).normalisedOutput, LDA_Analysis(simulationChoice).normalisedInput]=LDA_Apply(LDA_Analysis(simNum).normalisedW,LDA_Analysis(simulationChoice).Output, LDA_Analysis(simulationChoice).Input);
+    plot_state2=lower(input('Would you like to plot the applied LDA results? y or n \n','s'));
+    if plot_state2=='y'
+        plot_LDA_Applied(LDA_Analysis(simulationChoice),simNum,simulationChoice,network(networkNum2).Name);
+    end
+end
+end
+
+function [LDA_Analysis] = load_LDA_data()
+cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Data\LDA Analysis (Mac)');
+waitfor(msgbox('Select the LDA Analysis saved data'));
+[FileName,PathName] = uigetfile('*.mat','Select the LDA Analysis saved data');
+f=fullfile(PathName,FileName);
+load(f);
+cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
 end
 
 function plot_LDA(LDA_Analysis, simNum, networkName)
@@ -635,15 +767,6 @@ networkName(regexp(networkName,'[/:]'))=[]; %remove '/' character because it giv
 
 saveas(appliedF,[save_directory num2str(networkName) '_6MaySim_LDA_Classification_TrainingSim_' num2str(simNum) '_TestingSim' num2str(simulationChoice)],'jpg');
 saveas(appliedF,[save_directory num2str(networkName) '_6MaySim_LDA_Classification_TrainingSim_' num2str(simNum) '_TestingSim' num2str(simulationChoice)],'eps');
-end
-
-function [LDA_Analysis] = load_LDA_data()
-cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Data\LDA Analysis (Mac)');
-waitfor(msgbox('Select the LDA Analysis saved data'));
-[FileName,PathName] = uigetfile('*.mat','Select the LDA Analysis saved data');
-f=fullfile(PathName,FileName);
-load(f);
-cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
 end
 
 function [Graph, threshold_network]=graph_analysis(network,network_load,currentSim,IndexTime)
@@ -893,43 +1016,6 @@ saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_G
 saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Communicability_Analysis_Timestamp' num2str(IndexTime)],'jpg');
 saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Communicability_Analysis_Timestamp' num2str(IndexTime)],'eps');
 
-end
-
-function [network, network_load, simulations, sim_loaded, numNetworks, explore_network] = load_data()
-
-%% Load Data
-%Ask to load Zdenka or Adrian:
-network_load=lower(input('Which Network do you want to analyse? Z - Zdenka, A - Adrian \n','s'));
-
-if strcmp(network_load,'a')
-    %Get current network - Adrian
-    [network,sim_loaded, explore_network, numNetworks]=Load_Adrian_Code();
-    %unpack simulation data into simulation variable
-    if sim_loaded==1
-        if explore_network=='t' %if we have training and testing simulations
-            tempSim=network.Simulations{2};
-            tempSim=num2cell(tempSim);
-            network.Simulations(2) = [];
-            network.Simulations=[network.Simulations tempSim];
-            fprintf(['Your Training Simulation is Simulation 1 \n']);
-            fprintf(['Your Testing Simulations are Simulations 2 - ' num2str(length(network.Simulations)) '\n']);
-            
-            fprintf('\n -------------------------- \nStart Analysis: \n');
-            
-        end
-        for i = 1:length(network.Simulations)
-            simulations(i)=network.Simulations(i);
-        end
-    else
-        simulations=network.Simulations;
-    end
-    cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
-elseif strcmp(network_load,'z')
-    %Get network - Zdenka:
-    % D:\alon_\Research\POSTGRAD\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
-    network=Load_Zdenka_Code();
-    cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
-end
 end
 
 function save_graph(Graph,network,network_load)
