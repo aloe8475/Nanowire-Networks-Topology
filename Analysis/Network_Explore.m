@@ -119,6 +119,7 @@ end
 
 %% FUNCTIONS
 
+%Loading Functions
 function [network, network_load, simulations, sim_loaded, numNetworks, explore_network] = load_data()
 
 %% Load Data
@@ -155,7 +156,16 @@ elseif strcmp(network_load,'z')
     cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
 end
 end
+function [LDA_Analysis] = load_LDA_data()
+cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Data\LDA Analysis (Mac)');
+waitfor(msgbox('Select the LDA Analysis saved data'));
+[FileName,PathName] = uigetfile('*.mat','Select the LDA Analysis saved data');
+f=fullfile(PathName,FileName);
+load(f);
+cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
+end
 
+%Exploring Functions:
 function Explore = explore_simulation(Sim,network,network_load,simNum)
 [NodeList.String,NodeList.UserData]=GetNodeList(Sim);
 NodeList.Value=1;
@@ -544,7 +554,6 @@ elseif threshold_network=='y'
     
 end
 end
-
 function save_explore(Explore,network,network_load)
 save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Network Exploration Analysis\';
 if strcmp(network_load,'z')%Zdenka Code:
@@ -555,6 +564,7 @@ elseif strcmp(network_load,'a') %adrian code
 end
 end
 
+%LDA Functions
 function LDA_Analysis=lda_analysis(currentSim,network,network_load,simNum)
 %% LDA Analysis
 %THIS IS WHERE YOU CHANGE THE VARIABLES FOR LDA
@@ -609,7 +619,6 @@ if save_state=='y'
     save_LDA(LDA_Analysis(simNum),network(networkNum),network_load,sim_loaded);
 end
 end
-
 function [LDA_Analysis, simulationChoice]=lda_apply_func(numNetworks,network,LDA_Analysis,simNum)
 if numNetworks>1 %if we have two networks, offer to test second network
     networkNum2=input(['Which Network # do you want to select your Simulation from ? 1 - ' num2str(length(network)) '\n']);
@@ -640,16 +649,6 @@ else % otherwise, can only input 2 or higher
     end
 end
 end
-
-function [LDA_Analysis] = load_LDA_data()
-cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Data\LDA Analysis (Mac)');
-waitfor(msgbox('Select the LDA Analysis saved data'));
-[FileName,PathName] = uigetfile('*.mat','Select the LDA Analysis saved data');
-f=fullfile(PathName,FileName);
-load(f);
-cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
-end
-
 function plot_LDA(LDA_Analysis, simNum, networkName)
 save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Figures\LDA\LDA Training\';
 %plot LDA
@@ -736,7 +735,6 @@ saveas(LDAnormf,[save_directory num2str(networkName) 'Simulation' num2str(simNum
 saveas(LDAnormf,[save_directory num2str(networkName) 'Simulation' num2str(simNum) '_normalised_Classification_Training_Simulation' num2str(simNum)],'eps');
 
 end
-
 function plot_LDA_Applied(LDA_Analysis,simNum,simulationChoice,networkName)
 save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Figures\LDA\LDA Testing\';
 appliedF=figure;
@@ -767,7 +765,17 @@ networkName(regexp(networkName,'[/:]'))=[]; %remove '/' character because it giv
 saveas(appliedF,[save_directory num2str(networkName) '_6MaySim_LDA_Classification_TrainingSim_' num2str(simNum) '_TestingSim' num2str(simulationChoice)],'jpg');
 saveas(appliedF,[save_directory num2str(networkName) '_6MaySim_LDA_Classification_TrainingSim_' num2str(simNum) '_TestingSim' num2str(simulationChoice)],'eps');
 end
+function save_LDA(LDA_Analysis,network,network_load,sim_loaded)
+save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\LDA Analysis (Mac)\';
+if strcmp(network_load,'z')%Zdenka Code:
+    save([save_directory 'Zdenka_' num2str(network.number_of_wires) 'nw_LDA_Analysis_' date],'LDA_Analysis');
+elseif strcmp(network_load,'a') %adrian code
+    network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
+    save([save_directory 'Adrian_' num2str(network.Name) 'LDA_Analysis_' date],'LDA_Analysis','sim_loaded');
+end
+end
 
+%Graph Functions
 function [Graph, threshold_network]=graph_analysis(network,network_load,currentSim,IndexTime)
 %% Mac's Analysis: (Graph)
 if strcmp(network_load,'z')%Zdenka Code:
@@ -829,7 +837,6 @@ Graph.MZ = module_degree_zscore(net_mat,Graph.Ci);
 Graph.network=net_mat;
 Graph.IndexTime=IndexTime;
 end
-
 function Graph=plot_graph(Graph, network,network_load, currentSim,sim_loaded)
 save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Figures\Graph Analysis\';
 
@@ -1016,7 +1023,6 @@ saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_G
 saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Communicability_Analysis_Timestamp' num2str(IndexTime)],'eps');
 
 end
-
 function save_graph(Graph,network,network_load)
 save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Graph Analysis (Mac)\';
 if strcmp(network_load,'z')%Zdenka Code:
@@ -1027,12 +1033,3 @@ elseif strcmp(network_load,'a') %adrian code
 end
 end
 
-function save_LDA(LDA_Analysis,network,network_load,sim_loaded)
-save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\LDA Analysis (Mac)\';
-if strcmp(network_load,'z')%Zdenka Code:
-    save([save_directory 'Zdenka_' num2str(network.number_of_wires) 'nw_LDA_Analysis_' date],'LDA_Analysis');
-elseif strcmp(network_load,'a') %adrian code
-    network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
-    save([save_directory 'Adrian_' num2str(network.Name) 'LDA_Analysis_' date],'LDA_Analysis','sim_loaded');
-end
-end
