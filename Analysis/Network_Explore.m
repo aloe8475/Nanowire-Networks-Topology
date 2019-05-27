@@ -9,20 +9,22 @@
 % --------------------------
 dbstop if error
 %% Load Data
+
+currentPath=cd('C:\Users\aloe8475\Documents\GitHub\CODE\Analysis');
 load_data_question=lower(input('Load network data, Analysis Data Only or None? N - None, D - Network Data, A - Analysis Data\n','s'));
 
 if load_data_question=='d'
-    clearvars -except load_data_question
+    clearvars -except load_data_question currentPath
     close all
     %load network data
-    [network, network_load, simulations,sim_loaded,numNetworks, explore_network]= load_data();
+    [network, network_load, simulations,sim_loaded,numNetworks, explore_network]= load_data(currentPath);
 elseif load_data_question=='a'
     clear LDA_Analysis
     close all
     %Load previous LDA analysis data
     networkNum=input(['Which Network # do you want to load? 1 - ' num2str(length(network)) '\n']);
     simNum=input(['Which Simulation # do you want to load? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
-    [LDA_Analysis(simNum)] = load_LDA_data();
+    [LDA_Analysis(simNum)] = load_LDA_data(currentPath);
 end
 
 %% Choose Simulations
@@ -56,17 +58,17 @@ while i == 1
         analysis_type=lower(input('Which analysis would you like to perform? G - graph, E - Explore Network, N - none \n','s'));
     end
     if analysis_type=='g'
-    %% Graph Analysis
+        %% Graph Analysis
         [Graph, threshold_network]=graph_analysis(network(networkNum),network_load,currentSim,[]);
         %% Save Graph analysis data
         i=i+1;
     elseif analysis_type=='e'
         %% Exploratary analysis of simulation
-        Explore=explore_simulation(currentSim,network,network_load,simNum);
+        Explore=explore_simulation(currentSim,network,network_load,simNum,currentPath);
         %% Saving Explore
         save_state=lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
         if save_state=='y'
-            save_explore(Explore,network(networkNum),network_load);
+            save_explore(Explore,network(networkNum),network_load,currentPath);
             i=i+1; %get out of while loop this loop finishes
         end
         i=i+1;
@@ -79,7 +81,7 @@ while i == 1
         %% Plotting LDA
         plot_state=lower(input('Would you like to plot LDA Analysis? y or n \n','s'));
         if plot_state=='y'
-            plot_LDA(LDA_Analysis(simNum),simNum,network(networkNum).Name);
+            plot_LDA(LDA_Analysis(simNum),simNum,network(networkNum).Name,currentPath);
             i=i+1;
         end
         
@@ -98,13 +100,13 @@ while i == 1
             %% Plotting Graph
             plot_state=lower(input('Would you like to plot Graph Analysis? y or n \n','s'));
             if plot_state=='y'
-                Graph=plot_graph(Graph,network(networkNum),network_load,currentSim,sim_loaded);
+                Graph=plot_graph(Graph,network(networkNum),network_load,currentSim,sim_loaded,currentPath);
             end
             i=i+1;
             %% Saving Graph
             save_state=lower(input('Would you like to save the Graph Analysis? y or n \n','s'));
             if save_state=='y'
-                save_graph(Graph,network(networkNum),network_load);
+                save_graph(Graph,network(networkNum),network_load,currentPath);
             end
             i=i+1;
         end
@@ -120,7 +122,7 @@ end
 %% FUNCTIONS
 
 %Loading Functions
-function [network, network_load, simulations, sim_loaded, numNetworks, explore_network] = load_data()
+function [network, network_load, simulations, sim_loaded, numNetworks, explore_network] = load_data(currentPath)
 
 %% Load Data
 %Ask to load Zdenka or Adrian:
@@ -148,25 +150,26 @@ if strcmp(network_load,'a')
     else
         simulations=network.Simulations;
     end
-    cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
+    cd(currentPath);
 elseif strcmp(network_load,'z')
     %Get network - Zdenka:
     % D:\alon_\Research\POSTGRAD\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
     network=Load_Zdenka_Code();
-    cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
+    cd(currentPath);
 end
 end
-function [LDA_Analysis] = load_LDA_data()
-cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Data\LDA Analysis (Mac)');
+function [LDA_Analysis] = load_LDA_data(currentPath)
+cd(currentPath);
+cd('..\Data\LDA Analysis (Mac)');
 waitfor(msgbox('Select the LDA Analysis saved data'));
 [FileName,PathName] = uigetfile('*.mat','Select the LDA Analysis saved data');
 f=fullfile(PathName,FileName);
 load(f);
-cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
+cd('..\..\CODE\Analysis');
 end
 
 %Exploring Functions:
-function Explore = explore_simulation(Sim,network,network_load,simNum)
+function Explore = explore_simulation(Sim,network,network_load,simNum,currentPath)
 [NodeList.String,NodeList.UserData]=GetNodeList(Sim);
 NodeList.Value=1;
 
@@ -245,7 +248,7 @@ Cx=Layout.CX(Adj~=0);
 Cy=Layout.CY(Adj~=0);
 Rlist=Rmat(Adj~=0);
 R=linspace(min([Sim.Settings.Roff Sim.Settings.Ron]),max([Sim.Settings.Roff Sim.Settings.Ron]),10*length(Rlist));
-cmap=flipud(gray(10*length(Rlist)));
+cmap=flipud(copper(10*length(Rlist)));
 c=interp1(R,cmap,full(Rlist));
 PlotNetworkAux(currAx,X,Y,Cx,Cy,'curr',c);
 clim=[min([Sim.Settings.Roff Sim.Settings.Ron]) max([Sim.Settings.Roff Sim.Settings.Ron])];
@@ -266,7 +269,7 @@ Adj=(Layout.AdjMat);
 f3=figure;
 currAx=gca;
 p=plot(currAx,G);
-set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
+% set(currAx,'Color',[0.35 0.35 0.35]); %change background
 set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
 p.NodeColor='red';
 p.EdgeColor='white';
@@ -304,7 +307,7 @@ title(['Current Graph View Timestamp ' num2str(IndexTime)]);
 f4=figure;
 currAx=gca;
 p1=plot(currAx,G);
-set(currAx,'Color',[0.35 0.35 0.35]);
+% set(currAx,'Color',[0.35 0.35 0.35]); %change background
 set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
 p1.NodeColor='red';
 p1.EdgeColor='white';
@@ -335,7 +338,7 @@ title(['Resistance Graph View Timestamp ' num2str(IndexTime)]);
 f5=figure;
 currAx=gca;
 p2=plot(currAx,G);
-set(currAx,'Color',[0.35 0.35 0.35]);
+% set(currAx,'Color',[0.35 0.35 0.35]); %change background
 set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
 p2.NodeColor='red';
 p2.EdgeColor='white';
@@ -360,7 +363,7 @@ title(['Voltage Graph View Timestamp ' num2str(IndexTime)]);
 f6=figure;
 currAx=gca;
 p3=plot(currAx,G);
-set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
+% set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
 set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
 p3.NodeColor='red';
 p3.EdgeColor='white';
@@ -410,7 +413,7 @@ title(['Participant Coefficient Analysis Timestamp ' num2str(IndexTime)]);
 f7=figure;
 currAx=gca;
 p4=plot(currAx,G);
-set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
+% set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
 set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
 p4.NodeColor='red';
 p4.EdgeColor='white';
@@ -457,7 +460,7 @@ title(['Within Module Degree z-Score Analysis Timestamp ' num2str(IndexTime)]);
 f8=figure;
 currAx=gca;
 p5=plot(currAx,G);
-set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
+% set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
 set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
 p5.NodeColor='red';
 p5.EdgeColor='white';
@@ -495,8 +498,42 @@ highlight(p5,highlightElec,'NodeColor','green'); %change simulation number
 labelnode(p5,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
 text(-5,-6.2,'Min Degrees - 1 (small dot) | Max Degrees - 44 (large dot)');
 
-%Shortest Path (Distance)
+%% Shortest Path (Distance)
 d = distances(G); %calculate all the shortest path distance across all node pairs in the network.
+avgD=mean(d);
+medianD=median(d);
+stdD=std(d);
+
+%Distribution of shortest paths:
+f9=figure;
+subplot(3,1,1)
+h1=histogram(d);
+title('Distribution of Path Distances across all Node Pairs');
+xlabel('Distance');
+ylabel('Frequency');
+subplot(3,1,2)
+
+h2=histogram(avgD);
+title('Distribution of Mean Path Distances across all Node Pairs');
+xlabel('Average Distance');
+ylabel('Frequency');
+subplot(3,1,3)
+h3=histogram(medianD);
+title('Distribution of Median Path Distances across all Node Pairs');
+xlabel('Median Distance');
+ylabel('Frequency');
+
+%Plot all paths from current Electrode
+f10=figure;
+currAx=gca;
+p6=plot(currAx,G);
+p6.NodeLabel=d(highlightElec(1),:); %label the shortest path from the source;
+p6.NodeCData=d(highlightElec(1),:);
+highlight(p6,highlightElec(1),'MarkerSize',5);
+colormap(currAx,jet);%gcurrmap
+colorbar(currAx);
+title('Path Distances from Source Electrode');
+
 
 %% Save
 %Save Variables
@@ -511,51 +548,67 @@ Explore.GraphView.resistance=Sim.Data.Rmat{IndexTime};
 Explore.GraphView.Nodes=G.Nodes;
 Explore.GraphView.Edges=G.Edges;
 Explore.GraphView.ElectrodePosition=Sim.Electrodes.PosIndex;
-Explore.GraphView.Distances=d;
+Explore.GraphView.Distances.Values=d;
+Explore.GraphView.Distances.Avg=avgD;
+Explore.GraphView.Distances.Std=stdD;
+Explore.GraphView.Distances.Median=medianD;
+Explore.GraphView.Distances.DistancesFromSource=d(highlightElec(1),:);
+
 
 %% Save Plots
-save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Figures\Explore Analysis\';
+
+save_explore_plots=lower(input('Would you like to save the plots? y or n \n','s'));
+cd(currentPath)
+save_directory='..\Data\Figures\Explore Analysis\';
 network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
 
-if threshold_network~='y'
-    saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'jpg');
-    saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'eps');
-    saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
-    saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'eps');
-    saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Currents_Timestamp' num2str(IndexTime)],'jpg');
-    saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Currents_Timestamp' num2str(IndexTime)],'eps');
-    saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
-    saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Resistance_Timestamp' num2str(IndexTime)],'eps');
-    saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Voltage_Timestamp' num2str(IndexTime)],'jpg');
-    saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Voltage_Timestamp' num2str(IndexTime)],'eps');
-    saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Participant-Coefficient_Timestamp' num2str(IndexTime)],'jpg');
-    saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Participant-Coefficient_Timestamp' num2str(IndexTime)],'eps');
-    saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Module-zScore_Timestamp' num2str(IndexTime)],'jpg');
-    saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Module-zScore_Timestamp' num2str(IndexTime)],'eps');
-    saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Connectivity_Timestamp' num2str(IndexTime)],'jpg');
-    saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Connectivity_Timestamp' num2str(IndexTime)],'eps');
-elseif threshold_network=='y'
-    saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'jpg');
-    saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'eps');
-    saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
-    saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'eps');
-    saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Currents_Timestamp' num2str(IndexTime)],'jpg');
-    saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Currents_Timestamp' num2str(IndexTime)],'eps');
-    saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
-    saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Resistance_Timestamp' num2str(IndexTime)],'eps');
-    saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Voltage_Timestamp' num2str(IndexTime)],'jpg');
-    saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Voltage_Timestamp' num2str(IndexTime)],'eps');
-    saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Participant-Coefficient_Timestamp' num2str(IndexTime)],'jpg');
-    saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Participant-Coefficient_Timestamp' num2str(IndexTime)],'eps');
-    saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Module-zScore_Timestamp' num2str(IndexTime)],'jpg');
-    saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Module-zScore_Timestamp' num2str(IndexTime)],'eps');
-    saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Connectivity_Timestamp' num2str(IndexTime)],'jpg');
-    saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Connectivity_Timestamp' num2str(IndexTime)],'eps');
-    
+if save_explore_plots=='y'
+    if threshold_network~='y'
+        saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Currents_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Currents_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Resistance_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Voltage_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Voltage_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Participant-Coefficient_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Participant-Coefficient_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Module-zScore_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Module-zScore_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Connectivity_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Connectivity_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Distances_Histograms_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Distances_Histograms_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f10,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Distances_From_Source_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f10,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Distances_From_Source_Timestamp' num2str(IndexTime)],'eps');
+        
+    elseif threshold_network=='y'
+        saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Currents_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Currents_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Resistance_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Voltage_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Voltage_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Participant-Coefficient_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Participant-Coefficient_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Module-zScore_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Module-zScore_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Connectivity_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Connectivity_Timestamp' num2str(IndexTime)],'eps');
+        
+    end
 end
 end
-function save_explore(Explore,network,network_load)
-save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Network Exploration Analysis\';
+function save_explore(Explore,network,network_load,currentPath)
+cd(currentPath);
+save_directory='..\Data\Network Exploration Analysis\';
 if strcmp(network_load,'z')%Zdenka Code:
     save([save_directory 'Zdenka_' num2str(network.number_of_wires) 'nw_Exploration_Analysis_' date],'Explore');
 elseif strcmp(network_load,'a') %adrian code
@@ -616,7 +669,7 @@ clear drain1 drain2 source1 source2 Input Target Output
 %% Saving LDA
 save_state=lower(input('Would you like to save the LDA Analysis? y or n \n','s'));
 if save_state=='y'
-    save_LDA(LDA_Analysis(simNum),network(networkNum),network_load,sim_loaded);
+    save_LDA(LDA_Analysis(simNum),network(networkNum),network_load,sim_loaded,currentPath);
 end
 end
 function [LDA_Analysis, simulationChoice]=lda_apply_func(numNetworks,network,LDA_Analysis,simNum)
@@ -649,8 +702,9 @@ else % otherwise, can only input 2 or higher
     end
 end
 end
-function plot_LDA(LDA_Analysis, simNum, networkName)
-save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Figures\LDA\LDA Training\';
+function plot_LDA(LDA_Analysis, simNum, networkName,currentPath)
+cd(currentPath);
+save_directory='..\Data\Figures\LDA\LDA Training\';
 %plot LDA
 LDAf=figure;
 sgtitle('LDA Classification Training');
@@ -724,6 +778,10 @@ ylabel('Voltage > 0');
 
 networkName(regexp(networkName,'[/:]'))=[]; %remove '/' character because it gives us saving problems
 
+%Plot LDA Scatter + Seperator:
+
+
+
 %Save
 %Note; change the date of the simulation in the name if using a different
 %set of simulations
@@ -736,7 +794,8 @@ saveas(LDAnormf,[save_directory num2str(networkName) 'Simulation' num2str(simNum
 
 end
 function plot_LDA_Applied(LDA_Analysis,simNum,simulationChoice,networkName)
-save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Figures\LDA\LDA Testing\';
+cd(currentPath)
+save_directory='..\Data\Figures\LDA\LDA Testing\';
 appliedF=figure;
 sgtitle('Electrode LDA Classification Testing');
 subplot(4,1,1)
@@ -765,8 +824,9 @@ networkName(regexp(networkName,'[/:]'))=[]; %remove '/' character because it giv
 saveas(appliedF,[save_directory num2str(networkName) '_6MaySim_LDA_Classification_TrainingSim_' num2str(simNum) '_TestingSim' num2str(simulationChoice)],'jpg');
 saveas(appliedF,[save_directory num2str(networkName) '_6MaySim_LDA_Classification_TrainingSim_' num2str(simNum) '_TestingSim' num2str(simulationChoice)],'eps');
 end
-function save_LDA(LDA_Analysis,network,network_load,sim_loaded)
-save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\LDA Analysis (Mac)\';
+function save_LDA(LDA_Analysis,network,network_load,sim_loaded,currentPath)
+cd(currentPath)
+save_directory='..\Data\LDA Analysis (Mac)\';
 if strcmp(network_load,'z')%Zdenka Code:
     save([save_directory 'Zdenka_' num2str(network.number_of_wires) 'nw_LDA_Analysis_' date],'LDA_Analysis');
 elseif strcmp(network_load,'a') %adrian code
@@ -837,8 +897,9 @@ Graph.MZ = module_degree_zscore(net_mat,Graph.Ci);
 Graph.network=net_mat;
 Graph.IndexTime=IndexTime;
 end
-function Graph=plot_graph(Graph, network,network_load, currentSim,sim_loaded)
-save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Figures\Graph Analysis\';
+function Graph=plot_graph(Graph, network,network_load, currentSim,sim_loaded,currentPath)
+cd(currentPath)
+save_directory='..\Data\Figures\Graph Analysis\';
 
 IndexTime=Graph.IndexTime;
 %visualise graph network:
@@ -1023,8 +1084,9 @@ saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_G
 saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Communicability_Analysis_Timestamp' num2str(IndexTime)],'eps');
 
 end
-function save_graph(Graph,network,network_load)
-save_directory='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Graph Analysis (Mac)\';
+function save_graph(Graph,network,network_load,currentPath)
+cd(currentPath);
+save_directory='..\Data\Graph Analysis (Mac)\';
 if strcmp(network_load,'z')%Zdenka Code:
     save([save_directory 'Zdenka_' num2str(network.number_of_wires) 'nw_Graph_Analysis_' date],'Graph');
 elseif strcmp(network_load,'a') %adrian code
