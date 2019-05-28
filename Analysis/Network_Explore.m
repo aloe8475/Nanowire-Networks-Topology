@@ -537,7 +537,7 @@ colormap(currAx,jet);%gcurrmap
 colorbar(currAx);
 title('Path Distances from Source Electrode');
 
-%Show shortest path from source to drain:
+%Show shortest path from source to drain: %27/05/19
 f11=figure;
 currAx=gca;
 p7=plot(currAx,G);
