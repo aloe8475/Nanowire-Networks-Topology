@@ -275,7 +275,7 @@ p.NodeColor='red';
 p.EdgeColor='white';
 p.NodeLabel={};
 
-%Plot Currents (log10)
+%% Plot Currents
 p.MarkerSize=1.5;
 p.LineWidth=1.5;
 currs=(abs(Sim.Data.Currents{IndexTime}));
@@ -313,7 +313,7 @@ p1.NodeColor='red';
 p1.EdgeColor='white';
 p1.NodeLabel={};
 
-%Plot Resistance
+%% Plot Resistance
 p1.MarkerSize=0.5;
 p1.LineWidth=1.5;
 res=(Sim.Data.Rmat{IndexTime});
@@ -341,10 +341,10 @@ p2=plot(currAx,G);
 % set(currAx,'Color',[0.35 0.35 0.35]); %change background
 set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
 p2.NodeColor='red';
-p2.EdgeColor='white';
+p2.EdgeColor='black';
 p2.NodeLabel={};
 
-%Plot Voltage (log10)
+%%Plot Voltage (log10)
 vlist=Sim.Data.Voltages{IndexTime};
 p2.NodeCData=full(vlist);
 p2.MarkerSize=3;
@@ -500,8 +500,15 @@ text(-5,-6.2,'Min Degrees - 1 (small dot) | Max Degrees - 44 (large dot)');
 
 %% Shortest Path (Distance)
 d = distances(G); %calculate all the shortest path distance across all node pairs in the network.
-sourceElec=highlightElec(1);
-drainElec=highlightElec(2);
+for i = 1:length(new_electrodes)
+electrodes_cell(i)=new_electrodes(i).Name;
+end
+
+sourceIndex = find(contains(electrodes_cell,'Source')); %find index of electrodes that are source electrodes
+drainIndex = find(contains(electrodes_cell,'Drain')); %find index of electrodes that are drain electrodes
+
+sourceElec=highlightElec(sourceIndex); %change to show path from different electrodes
+drainElec=highlightElec(drainIndex);
 avgD=mean(d);
 medianD=median(d);
 stdD=std(d);
@@ -520,8 +527,7 @@ title('Distribution of Mean Path Distances across all Node Pairs');
 xlabel('Average Distance');
 ylabel('Frequency');
 subplot(3,1,3)
-h3=histogram(median7
-D);
+h3=histogram(medianD);
 title('Distribution of Median Path Distances across all Node Pairs');
 xlabel('Median Distance');
 ylabel('Frequency');
@@ -537,7 +543,7 @@ colormap(currAx,jet);%gcurrmap
 colorbar(currAx);
 title('Path Distances from Source Electrode');
 
-%Show shortest path from source to drain: %27/05/19
+%% Show shortest path from source to drain: %27/05/19
 f11=figure;
 currAx=gca;
 p7=plot(currAx,G);
@@ -545,6 +551,7 @@ highlight(p7,highlightElec,'NodeColor','green'); %change simulation number
 [dist,path,pred]=graphshortestpath(Adj,sourceElec,drainElec,'Directed','false');
 highlight(p7,path,'EdgeColor','red','LineWidth',6);
 title('Shortest Topological Path from Source to Drain');
+
 %Biograph view
 % h = view(biograph(Adj,[],'ShowArrows','off'));
 % set(h.Nodes(path),'Color',[1 0.4 0.4])
@@ -572,7 +579,11 @@ Explore.GraphView.Distances.Values=d;
 Explore.GraphView.Distances.Avg=avgD;
 Explore.GraphView.Distances.Std=stdD;
 Explore.GraphView.Distances.Median=medianD;
-Explore.GraphView.Distances.DistancesFromSource=d(highlightElec(1),:);
+Explore.GraphView.Distances.DistancesFromSource=d(sourceElec,:);
+Explore.GraphView.Distances.ShortestPath=path;
+Explore.Electrodes.Source=sourceElec;
+Explore.Electrodes.Drain=drainElec;
+
 
 
 %% Save Plots
