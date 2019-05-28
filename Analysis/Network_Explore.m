@@ -723,7 +723,6 @@ if save_explore_plots=='y'
         saveas(f10,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Distances_From_Source_Timestamp' num2str(IndexTime)],'eps');
         saveas(f11,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_ShortestPath_Overlay_Current_Timestamp' num2str(IndexTime)],'jpg');
         saveas(f11,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_ShortestPath_Overlay_Current_Timestamp' num2str(IndexTime)],'eps');
-        
     end
 end
 end
@@ -967,13 +966,15 @@ elseif strcmp(network_load,'a') %adrian code
     end
     %this gives a resistance matrix for the network used for a chosen simulation at a specific timestamp
     binarise_network=input('Do you want to binarise the network using Resistance? \n','s');
-    if binarise_network=='y'
-        a= full(currentSim.Data.Rmat{IndexTime}); %Using Resistance
-        a(a==5000)=1;
-        a(a==5000000)=0;  %binarising the resistance
+    if binarise_network=='y' %Binarise so we can use Resistance for graph theory analysis
+        a= full(currentSim.Data.Rmat{IndexTime}); 
+        a(a==5000)=1; %if resistance is low, we make it 1 (on)
+        a(a==5000000)=0;  %if it is high we make it 0 (off)
         net_mat=a;
+        Graph.binarised='Yes - Using Resistance';
     else
         net_mat=currentSim.SelLayout.AdjMat; %use standard adjacency matrix
+        Graph.binarised='No';
     end
     %    net_mat=full(simulations(simNum).Data.AdjMat{IndexTime}); %this gives an adj matrix for the network used for a chosen simulation at a specific timestamp
 end
