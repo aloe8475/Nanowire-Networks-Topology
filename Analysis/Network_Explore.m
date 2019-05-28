@@ -172,6 +172,23 @@ function Explore = explore_simulation(Sim,network,network_load,simNum,currentPat
 [NodeList.String,NodeList.UserData]=GetNodeList(Sim);
 NodeList.Value=1;
 
+%% Timeseries View
+%Plot Current
+f=figure;
+source=full(Sim.Data.ISource1);
+drain=full(Sim.Data.IDrain1);
+subplot(1,2,1)
+plot(source)
+title('Source')
+xlabel('Timestamp (0.01sec)')
+ylabel('Current (A)');
+subplot(1,2,2)
+plot(drain)
+title('Drain');
+xlabel('Timestamp (0.01sec)')
+ylabel('Current (A)');
+
+
 %% Network View:
 Layout=Sim.SelLayout;
 
@@ -187,7 +204,6 @@ Gr=Layout.SelGraph; % graph
 [~,~,Cy]=find(Layout.CY); % CY = Junctions 'y' value
 Adj=triu(Layout.AdjMat); % Adjacency matrix
 NumEl=height(Sim.Electrodes); %Number of electrodes
-
 
 %Plot Network:
 f1=figure;
@@ -587,7 +603,7 @@ colorbar(currAx);
 title('Path Distances from Source Electrode');
 
 %% Show shortest path from source to drain: %27/05/19
-f11=figure('Position',[0 0 900 600]);
+f11=figure;
 currAx=gca;
 p8=plot(currAx,G);
 
@@ -633,7 +649,7 @@ if length(sourceElec)>1
     highlight(p7,path2,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
 end
 highlight(p7,path,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
-title('Shortest Topological Path from Sources to Drains, Overlayed on Current');
+title('Shortest Path from Sources to Drains, Overlayed on Current');
 
 %Biograph view
 % h = view(biograph(Adj,[],'ShowArrows','off'));
