@@ -4,7 +4,8 @@
 function [network, sim_loaded, explore_network, numNetworks] = Load_Adrian_Code()
 %% Load Network Data:
 %choose network to load
-cd('..\Adrian''s Code\NETWORK_sims_2\Saved Networks')
+dataPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
+cd(dataPath)
 waitfor(msgbox('Select the Network saved data'));
 [FileName,PathName] = uigetfile('*.mat','Select the Network saved data');
 f=fullfile(PathName,FileName);
@@ -59,7 +60,7 @@ if sims_load=='y'
     %Select which Simulation to Load
     sim_loaded=1;
     if explore_network=='t'
-        cd('..\NETWORK_sims_2\Saved Networks\Simulations Only\Training');
+        cd('Simulations Only\Training');
         waitfor(msgbox('Select the Training Simulation saved data'))
         [FileName,PathName] = uigetfile('*.mat','Select the Training saved data');
         f=fullfile(PathName,FileName);
@@ -72,7 +73,7 @@ if sims_load=='y'
         temp1=SelSims;
         
         clear SelSims
-        cd('..\NETWORK_sims_2\Saved Networks\Simulations Only\Testing');
+        cd('..\Testing');
         waitfor(msgbox('Select the Testing Simulation saved data'))
         [FileNameTest,PathNameTest] = uigetfile('*.mat','Select the Testing saved data');
         f_test=fullfile(PathNameTest,FileNameTest);

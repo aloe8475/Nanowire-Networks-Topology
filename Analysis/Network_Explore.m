@@ -59,7 +59,7 @@ while i == 1
     end
     if analysis_type=='g'
         %% Graph Analysis
-        [Graph, threshold_network]=graph_analysis(network(networkNum),network_load,currentSim,[]);
+        [Graph]=graph_analysis(network(networkNum),network_load,currentSim,[]);
         %% Save Graph analysis data
         i=i+1;
     elseif analysis_type=='e'
@@ -89,31 +89,30 @@ while i == 1
         if analysis_type~='n'
             apply_LDA=lower(input('Would you like to apply the loaded LDA analysis to another simulation? y or n \n','s'));
             if apply_LDA=='y'
-                [LDA_Analysis, simulationChoice]=lda_apply_func(numNetworks,network,LDA_Analysis,simNum);
+                [LDA_Analysis, simulationChoice]=lda_apply_func(numNetworks,network,LDA_Analysis,simNum,simulations);
             end
             i=i+1; %get out of while loop when this loop finishes
         elseif analysis_type~='l' &&  analysis_type~='g' && analysis_type~='n' && analysis_type~='e'
             fprintf('Please type either G, L or N only \n');
         end
-        
-        if analysis_type=='g' || analysis_type=='n'
-            %% Plotting Graph
-            plot_state=lower(input('Would you like to plot Graph Analysis? y or n \n','s'));
-            if plot_state=='y'
-                Graph=plot_graph(Graph,network(networkNum),network_load,currentSim,sim_loaded,currentPath);
-            end
-            i=i+1;
-            %% Saving Graph
-            save_state=lower(input('Would you like to save the Graph Analysis? y or n \n','s'));
-            if save_state=='y'
-                save_graph(Graph,network(networkNum),network_load,currentPath);
-            end
-            i=i+1;
-        end
-        %% Insert Further Analysis Below
-        % -------------------------------
-        % -------------------------------
     end
+    if analysis_type=='g' || analysis_type=='n'
+        %% Plotting Graph
+        plot_state=lower(input('Would you like to plot Graph Analysis? y or n \n','s'));
+        if plot_state=='y'
+            Graph=plot_graph(Graph,network(networkNum),network_load,currentSim,sim_loaded,currentPath);
+        end
+        i=i+1;
+        %% Saving Graph
+        save_state=lower(input('Would you like to save the Graph Analysis? y or n \n','s'));
+        if save_state=='y'
+            save_graph(Graph,network(networkNum),network_load,currentPath);
+        end
+        i=i+1;
+    end
+    %% Insert Further Analysis Below
+    % -------------------------------
+    % -------------------------------
 end
 
 %--------------------------------------------------------------------------
@@ -356,7 +355,20 @@ labelnode(p2,highlightElec,[new_electrodes(:).Name]); %need to make this automat
 title(['Voltage Graph View Timestamp ' num2str(IndexTime)]);
 
 %% Overlay Graph Theory:
-[Graph, threshold_network]=graph_analysis(network,network_load,Sim,IndexTime);
+% -----------------------------
+%Threshold
+[Graph]=graph_analysis(network,network_load,Sim,IndexTime);
+%Threshold graph degree:
+threshold_network=lower(input('Do you want to plot the entire Graph or the Thresholded Graph? g - entire, t - threshold \n','s'));
+if threshold_network=='t'
+    threshold=Graph.DEG>1; %greater than 1 degree threshold
+    Graph.networkThreshold=Graph.network(threshold,threshold); %applying degree threshold
+    G=graph(Graph.networkThreshold);
+    node_indices=find(threshold==1); %find nodes with threshold == 1
+    Adj=Adj(threshold,threshold);
+else
+    G=graph(Graph.network);
+end
 
 %% Participant Coefficients
 
@@ -372,7 +384,13 @@ p3.NodeLabel={};
 %Plot Currents
 p3.MarkerSize=1.5;
 p3.LineWidth=1.5;
-currs=(abs(Sim.Data.Currents{IndexTime}));
+if threshold_network=='t'
+    temp=Sim.Data.Currents{IndexTime}(threshold,threshold);
+    currs=(abs(temp));
+        clear temp
+else
+    currs=abs(Sim.Data.Currents{IndexTime});
+end
 [j,i,~]=find(tril(Adj));
 cc=zeros(1,length(j));
 for k=1:length(j)
@@ -386,7 +404,7 @@ caxis(currAx,clim);
 hold on
 
 % Plot Participant Coefficients
-if threshold_network=='y'
+if threshold_network=='t'
     p3.NodeCData=Graph.Ci(threshold);
     p_ranks=Graph.P(threshold);
 else
@@ -402,7 +420,7 @@ labelnode(p3,highlightElec,[new_electrodes(:).Name]); %need to make this automat
 
 %Need to figure out how to change colormap for Nodes seperately.
 
-if threshold_network=='y'
+if threshold_network=='t'
     text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P(threshold))) ' (large dot)']);
 else
     text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P)) ' (large dot)']);
@@ -422,7 +440,13 @@ p4.NodeLabel={};
 %Plot Currents
 p4.MarkerSize=1.5;
 p4.LineWidth=1.5;
-currs=(abs(Sim.Data.Currents{IndexTime}));
+if threshold_network=='t'
+    temp=Sim.Data.Currents{IndexTime}(threshold,threshold);
+    currs=(abs(temp));
+        clear temp
+else
+    currs=abs(Sim.Data.Currents{IndexTime});
+end
 [j,i,~]=find(tril(Adj));
 cc=zeros(1,length(j));
 for k=1:length(j)
@@ -435,7 +459,7 @@ colorbar(currAx);
 caxis(currAx,clim);
 hold on
 
-if threshold_network=='y'
+if threshold_network=='t'
     p4.NodeCData=Graph.Ci(threshold);
     mod_ranks=Graph.MZ(threshold);
 else
@@ -449,7 +473,7 @@ p4.MarkerSize=bins3;
 %Label Source
 labelnode(p4,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
 
-if threshold_network=='y'
+if threshold_network=='t'
     text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ(threshold))) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
 else
     text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ)) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
@@ -469,7 +493,13 @@ p5.NodeLabel={};
 %Plot Currents
 p5.MarkerSize=1.5;
 p5.LineWidth=1.5;
-currs=(abs(Sim.Data.Currents{IndexTime}));
+if threshold_network=='t'
+    temp=Sim.Data.Currents{IndexTime}(threshold,threshold);
+    currs=(abs(temp));
+        clear temp
+else
+    currs=abs(Sim.Data.Currents{IndexTime});
+end
 [j,i,~]=find(tril(Adj));
 cc=zeros(1,length(j));
 for k=1:length(j)
@@ -482,7 +512,7 @@ colorbar(currAx);
 caxis(currAx,clim);
 hold on
 
-if threshold_network=='y'
+if threshold_network=='t'
     Graph.DEG_threshold=Graph.DEG(threshold);
     edges = linspace(min(Graph.DEG_threshold),max(Graph.DEG_threshold),7);
     bins = discretize(Graph.DEG_threshold,edges);
@@ -501,7 +531,7 @@ text(-5,-6.2,'Min Degrees - 1 (small dot) | Max Degrees - 44 (large dot)');
 %% Shortest Path (Distance)
 d = distances(G); %calculate all the shortest path distance across all node pairs in the network.
 for i = 1:length(new_electrodes)
-electrodes_cell(i)=new_electrodes(i).Name;
+    electrodes_cell(i)=new_electrodes(i).Name;
 end
 
 sourceIndex = find(contains(electrodes_cell,'Source')); %find index of electrodes that are source electrodes
@@ -532,25 +562,78 @@ title('Distribution of Median Path Distances across all Node Pairs');
 xlabel('Median Distance');
 ylabel('Frequency');
 
+if length(sourceElec)>1
+    source1=sourceElec(1); %choose first electrode if there are more than 1
+    source2=sourceElec(2);
+else
+    source1=sourceElec;
+end
+if length(drainElec)>1
+    drain1=drainElec(1);%choose first electrode if there are more than 1
+    drain2=drainElec(2);
+else
+    drain1=drainElec;
+end
+
 %Plot all paths from current Electrode
 f10=figure;
 currAx=gca;
 p6=plot(currAx,G);
-p6.NodeLabel=d(sourceElec,:); %label the shortest path from the source;
-p6.NodeCData=d(sourceElec,:);
-highlight(p6,sourceElec,'MarkerSize',5);
+p6.NodeLabel=d(source1,:); %label the shortest path from the source;
+p6.NodeCData=d(source1,:);
+highlight(p6,source1,'MarkerSize',8);
 colormap(currAx,jet);%gcurrmap
 colorbar(currAx);
 title('Path Distances from Source Electrode');
 
 %% Show shortest path from source to drain: %27/05/19
-f11=figure;
+f11=figure('Position',[0 0 900 600]);
 currAx=gca;
+p8=plot(currAx,G);
+
+set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
+p8.NodeColor='red';
+p8.EdgeColor='white';
+p8.NodeLabel={};
+
+%Plot Currents
+p8.MarkerSize=1.5;
+p8.LineWidth=1.5;
+if threshold_network=='t'
+     temp=Sim.Data.Currents{IndexTime}(threshold,threshold);
+    currs=(abs(temp));
+    clear temp
+else
+    currs=abs(Sim.Data.Currents{IndexTime});
+end
+[j,i,~]=find(tril(Adj));
+cc=zeros(1,length(j));
+for k=1:length(j)
+    cc(k)=currs(i(k),j(k));
+end
+clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
+p8.EdgeCData=cc;
+colormap(currAx,gcurrmap);%gcurrmap
+colorbar(currAx);
+caxis(currAx,clim);
+
+%plot shortest paths:
+hold on
 p7=plot(currAx,G);
-highlight(p7,highlightElec,'NodeColor','green'); %change simulation number
-[dist,path,pred]=graphshortestpath(Adj,sourceElec,drainElec,'Directed','false');
-highlight(p7,path,'EdgeColor','red','LineWidth',6);
-title('Shortest Topological Path from Source to Drain');
+set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
+p7.NodeColor='green';
+p7.Marker='none';
+p7.EdgeColor='green';
+p7.LineStyle='none';
+p7.NodeLabel={};
+highlight(p7,highlightElec,'NodeColor','green','Marker','o'); %change simulation number
+[dist,path,pred]=graphshortestpath(Adj,source1,drain1,'Directed','false');
+if length(sourceElec)>1
+    [dist2,path2,pred2]=graphshortestpath(Adj,source2,drain2,'Directed','false');
+    highlight(p7,path2,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
+end
+highlight(p7,path,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
+title('Shortest Topological Path from Sources to Drains, Overlayed on Current');
 
 %Biograph view
 % h = view(biograph(Adj,[],'ShowArrows','off'));
@@ -585,7 +668,6 @@ Explore.Electrodes.Source=sourceElec;
 Explore.Electrodes.Drain=drainElec;
 
 
-
 %% Save Plots
 
 save_explore_plots=lower(input('Would you like to save the plots? y or n \n','s'));
@@ -594,7 +676,7 @@ save_directory='..\Data\Figures\Explore Analysis\';
 network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
 
 if save_explore_plots=='y'
-    if threshold_network~='y'
+    if threshold_network~='t'
         saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'jpg');
         saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'eps');
         saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
@@ -615,8 +697,10 @@ if save_explore_plots=='y'
         saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Distances_Histograms_Timestamp' num2str(IndexTime)],'eps');
         saveas(f10,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Distances_From_Source_Timestamp' num2str(IndexTime)],'jpg');
         saveas(f10,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Distances_From_Source_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f11,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_ShortestPath_Overlay_Current_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f11,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_ShortestPath_Overlay_Current_Timestamp' num2str(IndexTime)],'eps');
         
-    elseif threshold_network=='y'
+    elseif threshold_network=='t'
         saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'jpg');
         saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'eps');
         saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
@@ -633,6 +717,12 @@ if save_explore_plots=='y'
         saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Module-zScore_Timestamp' num2str(IndexTime)],'eps');
         saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Connectivity_Timestamp' num2str(IndexTime)],'jpg');
         saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Connectivity_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Distances_Histograms_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Distances_Histograms_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f10,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Distances_From_Source_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f10,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Distances_From_Source_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f11,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_ShortestPath_Overlay_Current_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f11,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_ShortestPath_Overlay_Current_Timestamp' num2str(IndexTime)],'eps');
         
     end
 end
@@ -673,6 +763,7 @@ plot(drain2);
 % differentiate Output & Target
 LDA_Analysis(simNum).W = LDA(Output,Target);
 
+
 % % Calulcate linear scores for training data - what are the loadings for
 % that line - how would you get to 'x' from that line
 LDA_Analysis(simNum).L = [ones(size(Output,1),1) Output] * LDA_Analysis(simNum).W';
@@ -703,7 +794,7 @@ if save_state=='y'
     save_LDA(LDA_Analysis(simNum),network(networkNum),network_load,sim_loaded,currentPath);
 end
 end
-function [LDA_Analysis, simulationChoice]=lda_apply_func(numNetworks,network,LDA_Analysis,simNum)
+function [LDA_Analysis, simulationChoice]=lda_apply_func(numNetworks,network,LDA_Analysis,simNum,simulations)
 if numNetworks>1 %if we have two networks, offer to test second network
     networkNum2=input(['Which Network # do you want to select your Simulation from ? 1 - ' num2str(length(network)) '\n']);
 else
@@ -726,7 +817,6 @@ else % otherwise, can only input 2 or higher
     LDA_Analysis(simulationChoice).Input=[full(simulations{simulationChoice}.Data.ISource1) full(simulations{simulationChoice}.Data.ISource2)];
     LDA_Analysis(simulationChoice).Target=[full(simulations{simulationChoice}.Data.VSource1 >0.001)];
     LDA_Analysis(simulationChoice).TypeOfData='Testing';
-    [LDA_Analysis(simulationChoice).appliedP, LDA_Analysis(simulationChoice).appliedL, LDA_Analysis(simulationChoice).normalisedOutput, LDA_Analysis(simulationChoice).normalisedInput]=LDA_Apply(LDA_Analysis(simNum).normalisedW,LDA_Analysis(simulationChoice).Output, LDA_Analysis(simulationChoice).Input);
     plot_state2=lower(input('Would you like to plot the applied LDA results? y or n \n','s'));
     if plot_state2=='y'
         plot_LDA_Applied(LDA_Analysis(simulationChoice),simNum,simulationChoice,network(networkNum2).Name);
@@ -867,7 +957,7 @@ end
 end
 
 %Graph Functions
-function [Graph, threshold_network]=graph_analysis(network,network_load,currentSim,IndexTime)
+function [Graph]=graph_analysis(network,network_load,currentSim,IndexTime)
 %% Mac's Analysis: (Graph)
 if strcmp(network_load,'z')%Zdenka Code:
     net_mat=network.adj_matrix; %symmetrical matrix
@@ -876,8 +966,8 @@ elseif strcmp(network_load,'a') %adrian code
         IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(size(currentSim.Data,1)) '\n']); %CHOOSE TIMESTAMP
     end
     %this gives a resistance matrix for the network used for a chosen simulation at a specific timestamp
-    threshold_network=input('Do you want to threshold the network using Resistance? \n','s');
-    if threshold_network=='y'
+    binarise_network=input('Do you want to binarise the network using Resistance? \n','s');
+    if binarise_network=='y'
         a= full(currentSim.Data.Rmat{IndexTime}); %Using Resistance
         a(a==5000)=1;
         a(a==5000000)=0;  %binarising the resistance
@@ -934,28 +1024,40 @@ save_directory='..\Data\Figures\Graph Analysis\';
 
 IndexTime=Graph.IndexTime;
 %visualise graph network:
-threshold=Graph.DEG>1; %greater than 1 degree threshold
-Graph.networkThreshold=Graph.network(threshold,threshold); %applying degree threshold
-g=graph(Graph.networkThreshold);
 
+%Threshold graph degree:
+threshold_choice=lower(input('Do you want to plot the entire Graph or the Thresholded Graph? g - entire, t - threshold \n','s'));
+if threshold_choice=='t'
+    threshold=Graph.DEG>1; %greater than 1 degree threshold
+    Graph.networkThreshold=Graph.network(threshold,threshold); %applying degree threshold
+    g=graph(Graph.networkThreshold);
+else
+    g=graph(Graph.network);
+end
 f1=figure;
 p1=plot(g);
 
 %find electrodes:
-node_indices=find(threshold==1); %find nodes with threshold == 1
-for i=1:size(currentSim.Electrodes.PosIndex,1)
-    if ~isempty(find(node_indices==currentSim.Electrodes.PosIndex(i)))
-        new_electrodes(i).PosIndex=find(node_indices==currentSim.Electrodes.PosIndex(i));
+if threshold_choice=='t'
+    node_indices=find(threshold==1); %find nodes with threshold == 1
+    for i=1:size(currentSim.Electrodes.PosIndex,1)
+        if ~isempty(find(node_indices==currentSim.Electrodes.PosIndex(i)))
+            new_electrodes(i).PosIndex=find(node_indices==currentSim.Electrodes.PosIndex(i));
+            new_electrodes(i).Name=currentSim.Electrodes.Name(i);
+        end
+    end
+else
+    for i=1:size(currentSim.Electrodes.PosIndex,1)
+        new_electrodes(i).PosIndex=currentSim.Electrodes.PosIndex(i);
         new_electrodes(i).Name=currentSim.Electrodes.Name(i);
     end
 end
-
 highlightElec={new_electrodes.PosIndex};
 highlightElec=cell2num(highlightElec);
 %highlight electrodes on graph
 if sim_loaded==1
     highlight(p1,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
-    labelnode(p1,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
+    labelnode(p1,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
 end
 
 f2=figure;
@@ -968,23 +1070,33 @@ colorbar
 title(['Closeness Centrality Scores Timestamp ' num2str(IndexTime)])
 if sim_loaded==1
     highlight(p2,highlightElec,'MarkerSize',7); %change simulation number
-    labelnode(p2,[1:size(node_indices,2)],cellstr(num2str(node_indices'))); %label each node with original node number
-    labelnode(p2,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
+    if threshold_choice=='t'
+        labelnode(p2,[1:size(node_indices,2)],cellstr(num2str(node_indices'))); %label each node with original node number
+    end
+    labelnode(p2,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
 end
 
 %Node size graph:
 f3=figure;
 p3=plot(g);
-Graph.DEG_threshold=Graph.DEG(threshold);
-edges = linspace(min(Graph.DEG_threshold),max(Graph.DEG_threshold),7);
-bins = discretize(Graph.DEG_threshold,edges);
+if threshold_choice=='t'
+    Graph.DEG_threshold=Graph.DEG(threshold);
+    edges = linspace(min(Graph.DEG_threshold),max(Graph.DEG_threshold),7);
+    bins = discretize(Graph.DEG_threshold,edges);
+else
+    edges = linspace(min(Graph.DEG),max(Graph.DEG),7);
+    bins = discretize(Graph.DEG,edges);
+end
 p3.MarkerSize = bins;
 p3.NodeColor='r';
 title(['Degree Size Timestamp ' num2str(IndexTime)]);
 if sim_loaded==1
     highlight(p3,highlightElec,'NodeColor','green'); %change simulation number
-    labelnode(p3,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
-    labelnode(p3,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
+    if threshold_choice=='t'
+        
+        labelnode(p3,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
+    end
+    labelnode(p3,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
 end
 text(-5,-6.2,'Min Degrees - 1 (small dot) | Max Degrees - 44 (large dot)');
 
@@ -995,20 +1107,28 @@ p4.MarkerSize = bins;
 p4.NodeCData=ucc;
 colormap jet
 colorbar
-labelnode(p4,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
-
-labelnode(p4,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
+if threshold_choice=='t'
+    labelnode(p4,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
+end
+labelnode(p4,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
 title(['Centrality Score and Degree Size Timestamp ' num2str(IndexTime)]);
 text(-5.5,-6.2,'Min Degrees = 1 (small dot) | Max Degrees = 44 (large dot)');
 
 %Histogram of degree distribution:
 f5=figure;
-h1=histogram(Graph.DEG_threshold);
+if threshold_choice=='t'
+    h1=histogram(Graph.DEG_threshold);
+    Graph.avgDEG=mean(Graph.DEG(threshold));
+    Graph.stdDEG=std(Graph.DEG(threshold));
+else
+    h1=histogram(Graph.DEG);
+    Graph.avgDEG=mean(Graph.DEG);
+    Graph.stdDEG=std(Graph.DEG);
+end
 title(['Distribution of Connectivity of Nodes Timestamp ' num2str(IndexTime)]);
 xlabel('Number of Connections (Degrees)');
 ylabel('Frequency');
-Graph.avgDEG=mean(Graph.DEG(threshold));
-Graph.stdDEG=std(Graph.DEG(threshold));
+
 ylim([0 30]);
 text(4,16,['Mean: ' num2str(Graph.avgDEG) ' | SD: ' num2str(Graph.stdDEG)]);
 
@@ -1016,61 +1136,88 @@ text(4,16,['Mean: ' num2str(Graph.avgDEG) ' | SD: ' num2str(Graph.stdDEG)]);
 f6=figure;
 p6=plot(g);
 p6.MarkerSize = 4;
-p6.NodeCData=Graph.Ci(threshold);
-labelnode(p6,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
-
-labelnode(p6,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
+if threshold_choice=='t'
+    p6.NodeCData=Graph.Ci(threshold);
+    labelnode(p6,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
+else
+    p6.NodeCData=Graph.Ci;
+end
+labelnode(p6,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
 colormap hsv(6) %change number of colors here if there are more/less than 6 clusters
 title(['Cluster Analysis ' num2str(IndexTime)]);
 
 %Participant Coefficient Analysis:
 f7=figure;
 p7=plot(g);
-p7.NodeCData=Graph.Ci(threshold);
-p_ranks=Graph.P(threshold);
+if threshold_choice=='t'
+    p7.NodeCData=Graph.Ci(threshold);
+    p_ranks=Graph.P(threshold);
+else
+    p7.NodeCData=Graph.Ci;
+    p_ranks=Graph.P;
+end
 edges2 = linspace(min(p_ranks),max(p_ranks),7);
 bins2 = discretize(p_ranks,edges2);
 p7.MarkerSize=bins2;
 colormap hsv(6)
-labelnode(p7,[1:size(node_indices,2)],cellstr(num2str(node_indices'))); %label each node with original node number
-
-labelnode(p7,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
+if threshold_choice=='t'
+    labelnode(p7,[1:size(node_indices,2)],cellstr(num2str(node_indices'))); %label each node with original node number
+end
+labelnode(p7,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
 text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P(threshold))) ' (large dot)']);
 title(['Participant Coefficient Analysis Timestamp ' num2str(IndexTime)]);
 
 %Module Degree Z-Score:
 f8=figure;
 p8=plot(g);
-p8.NodeCData=Graph.Ci(threshold);
-mod_ranks=Graph.MZ(threshold);
+if threshold_choice=='t'
+    
+    p8.NodeCData=Graph.Ci(threshold);
+    mod_ranks=Graph.MZ(threshold);
+else
+    
+    p8.NodeCData=Graph.Ci;
+    mod_ranks=Graph.MZ;
+end
 edges3 = linspace(min(mod_ranks),max(mod_ranks),7);
 bins3 = discretize(mod_ranks,edges3);
 p8.MarkerSize=bins3;
 colormap hsv(6)
-labelnode(p8,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
-
-labelnode(p8,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
+if threshold_choice=='t'
+    labelnode(p8,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
+end
+labelnode(p8,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
 text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ(threshold))) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
 title(['Module Degree z-Score Analysis Timestamp ' num2str(IndexTime)]);
 
 
 % Communicability at different times:
 Adj=(currentSim.Data.AdjMat{IndexTime});%convert 498x498 matrix to EdgeCData ~(1x6065)
-Adj=Adj(threshold,threshold);
+if threshold_choice=='t'
+    Adj=Adj(threshold,threshold);
+    Graph.COMM=Graph.COMM(threshold,threshold);
+end
 [j,i,~]=find(tril(Adj));
 wd=zeros(1,length(j));
-Graph.COMM=Graph.COMM(threshold,threshold);
+
 for k=1:length(j)
     wd(k)=Graph.COMM(i(k),j(k));
 end
 
 Adj2=(currentSim.Data.AdjMat{IndexTime});%convert 498x498 matrix to EdgeCData ~(1x6065)
-Adj2=Adj2(threshold,threshold);
+if threshold_choice=='t'
+    
+    Adj2=Adj2(threshold,threshold);
+end
 [j,i,~]=find(tril(Adj2));
 wd2=zeros(1,length(j));
 
 for k=1:length(j)
-    wd2(k)=Graph.networkThreshold(i(k),j(k));
+    if threshold_choice=='t'
+        wd2(k)=Graph.networkThreshold(i(k),j(k));
+    else
+        wd2(k)=Graph.network(i(k),j(k));
+    end
 end
 
 wd3=wd(logical(wd2));
@@ -1080,8 +1227,10 @@ p9.EdgeCData=wd3;%log10(wd);
 p9.MarkerSize=2;
 colormap jet
 colorbar
-labelnode(p9,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
-labelnode(p9,highlightElec,{new_electrodes(3).Name{1},new_electrodes(4).Name{1}}); %need to make this better - change 3:4 to a variable
+if threshold_choice=='t'
+    labelnode(p9,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
+end
+labelnode(p9,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
 
 title(['Communicability Analysis Timestamp ' num2str(IndexTime) ' (log10)']);
 
@@ -1090,7 +1239,7 @@ title(['Communicability Analysis Timestamp ' num2str(IndexTime) ' (log10)']);
 % based on analyze_network.py
 %circuit rank = num edges - num nodes + num connected components
 Graph.CircuitRank = numedges(g) - numnodes(g) + sum(conncomp(g));
-
+Graph.Indices=node_indices;
 
 %Save
 network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
