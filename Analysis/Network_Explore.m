@@ -81,7 +81,7 @@ while i == 1
         %% Plotting LDA
         plot_state=lower(input('Would you like to plot LDA Analysis? y or n \n','s'));
         if plot_state=='y'
-            plot_LDA(LDA_Analysis(simNum),simNum,network(networkNum).Name,currentPath);
+            plot_LDA(LDA_Analysis(simNum),simNum,network(networkNum).Name,currentPath,simulations);
             i=i+1;
         end
         
@@ -188,187 +188,12 @@ title('Drain');
 xlabel('Timestamp (0.01sec)')
 ylabel('Current (A)');
 
-
-%% Network View:
-Layout=Sim.SelLayout;
-
-% These are all aspects of the network that are used to graph it.
-x1=diag(Layout.X1);
-x2=diag(Layout.X2);
-y1=diag(Layout.Y1);
-y2=diag(Layout.Y2);
-X=full([x1' ; x2']); % X = Wires 'x' value
-Y=full([y1' ; y2']); % Y = Wires 'y' value
-Gr=Layout.SelGraph; % graph
-[~,~,Cx]=find(Layout.CX); %CX = Junctions 'x' value
-[~,~,Cy]=find(Layout.CY); % CY = Junctions 'y' value
-Adj=triu(Layout.AdjMat); % Adjacency matrix
-NumEl=height(Sim.Electrodes); %Number of electrodes
-
-%Plot Network:
-f1=figure;
-currAx=gca; %current axis
-plot(currAx,X,Y,'b'); % plot wires
-hold on
-scatter(currAx,Cx,Cy,2,'r'); %scatterplot junctions
-hold(currAx,'on');
-
-%PlotElectrodes
-IdxEl=Sim.Electrodes.PosIndex(NodeList.Value(NodeList.Value<=NumEl)); %Find Electrode Junction Position
-Xe=X(:,IdxEl);Ye=Y(:,IdxEl); %Find X and Y (wires) for electrode
-Cxe=(x2(IdxEl)+x1(IdxEl))./2;Cye=(y1(IdxEl)+y2(IdxEl))./2; %Find X and Y (junctions) for electrode
-text(currAx,Cxe-1.7,Cye+0.7,'Electrode'); %Write 'Electrode' where it is placed
-
 %Choose a time to Explore Simulation:
 IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(size(Sim.Data,1)) '\n']); %CHOOSE TIMESTAMP
 
-%Plot Currents:
-currs=triu(Sim.Data.Currents{IndexTime}); % Find values of currents
-Imat=full(abs(currs)); %full current matrix (instead of sparse double) + absolute value
-Cx=Layout.CX(Adj~=0); %'x' coordinates for junctions that are 1 in the Adj matrix
-Cy=Layout.CY(Adj~=0);%'y' coordinates for junctions that are 1 in the Adj matrix
-Ilist=Imat(Adj~=0); % current list for junctions that are 1 in the Adj matrix
-I=linspace(0,Sim.SimInfo.MaxI,10*length(Ilist)); %generates 10*length(Ilist)) points between 0 and max current
-cmap=jet(10*length(Ilist)); %creates jet colormap with 10*length(Ilist) colorvalues
-c=interp1(I,cmap,full(Ilist)); % %creates interpolation table with colormap - not sure what this is
-PlotNetworkAux(currAx,X,Y,Cx,Cy,'curr',c);
-labels=strsplit(num2str(1:length(Ilist))); %all junctions
-% text(Cx,Cy,labels,'HorizontalAlignment','left');%label each junction with its number
-clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI]; %minimum and maximum currents
-
-%colorbar
-colormap(currAx,cmap);
-colorbar(currAx);
-caxis(currAx,clim);
-title(['Current Flow Network View Timestamp ' num2str(IndexTime)]);
-
-%Plot Network for Figure 2
-f2=figure;
-currAx=gca; %current axis
-plot(currAx,X,Y,'b'); % plot wires
-hold on
-scatter(currAx,Cx,Cy,2,'r'); %scatterplot junctions
-hold(currAx,'on');
-
-%PlotElectrodes
-IdxEl=Sim.Electrodes.PosIndex(NodeList.Value(NodeList.Value<=NumEl)); %Find Electrode Junction Position
-Xe=X(:,IdxEl);Ye=Y(:,IdxEl); %Find X and Y (wires) for electrode
-Cxe=(x2(IdxEl)+x1(IdxEl))./2;Cye=(y1(IdxEl)+y2(IdxEl))./2; %Find X and Y (junctions) for electrode
-text(currAx,Cxe-1.7,Cye+0.7,'Electrode'); %Write 'Electrode' where it is placed
-
-
-%Plot Resistance
-Rmat=triu(Sim.Data.Rmat{IndexTime});
-Cx=Layout.CX(Adj~=0);
-Cy=Layout.CY(Adj~=0);
-Rlist=Rmat(Adj~=0);
-R=linspace(min([Sim.Settings.Roff Sim.Settings.Ron]),max([Sim.Settings.Roff Sim.Settings.Ron]),10*length(Rlist));
-cmap=flipud(copper(10*length(Rlist)));
-c=interp1(R,cmap,full(Rlist));
-PlotNetworkAux(currAx,X,Y,Cx,Cy,'curr',c);
-clim=[min([Sim.Settings.Roff Sim.Settings.Ron]) max([Sim.Settings.Roff Sim.Settings.Ron])];
-%colorbar
-colormap(currAx,cmap);
-colorbar(currAx);
-caxis(currAx,clim);
-
-title(['Resistance Network View Timestamp ' num2str(IndexTime)]);
-
-
-%% Graph View
-
-%Plot Graph
-Layout=Sim.SelLayout;
-G=Layout.SelGraph;
-Adj=(Layout.AdjMat);
-f3=figure;
-currAx=gca;
-p=plot(currAx,G);
-% set(currAx,'Color',[0.35 0.35 0.35]); %change background
-set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
-p.NodeColor='red';
-p.EdgeColor='white';
-p.NodeLabel={};
-
-%% Plot Currents
-p.MarkerSize=1.5;
-p.LineWidth=1.5;
-currs=(abs(Sim.Data.Currents{IndexTime}));
-[j,i,~]=find(tril(Adj));
-cc=zeros(1,length(j));
-for k=1:length(j)
-    cc(k)=currs(i(k),j(k));
-end
-clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
-p.EdgeCData=cc;
-colormap(currAx,gcurrmap);%gcurrmap
-colorbar(currAx);
-caxis(currAx,clim);
-
-%Highlight Electrodes:
-for i=1:size(Sim.Electrodes.PosIndex,1)
-    new_electrodes(i).PosIndex=Sim.Electrodes.PosIndex(i);
-    new_electrodes(i).Name=Sim.Electrodes.Name(i);
-end
-
-highlightElec={new_electrodes.PosIndex};
-highlightElec=cell2num(highlightElec);
-highlight(p,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
-labelnode(p,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
-title(['Current Graph View Timestamp ' num2str(IndexTime)]);
-
-
-%Plot Graph
-f4=figure;
-currAx=gca;
-p1=plot(currAx,G);
-% set(currAx,'Color',[0.35 0.35 0.35]); %change background
-set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
-p1.NodeColor='red';
-p1.EdgeColor='white';
-p1.NodeLabel={};
-
-%% Plot Resistance
-p1.MarkerSize=0.5;
-p1.LineWidth=1.5;
-res=(Sim.Data.Rmat{IndexTime});
-[j,i,~]=find(tril(Adj));
-wd=zeros(1,length(j));
-for k=1:length(j)
-    wd(k)=res(i(k),j(k));
-end
-clim=[min([Sim.Settings.Roff Sim.Settings.Ron]) max([Sim.Settings.Roff Sim.Settings.Ron])];
-p1.EdgeCData=wd;
-colormap(currAx,flipud(gcurrmap));%flipud(gray);
-colorbar(currAx);
-caxis(currAx,clim);
-
-%Highlight Electrodes:
-highlight(p1,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
-labelnode(p1,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
-
-title(['Resistance Graph View Timestamp ' num2str(IndexTime)]);
-
-%Voltage at each Node: %17/05/19
-f5=figure;
-currAx=gca;
-p2=plot(currAx,G);
-% set(currAx,'Color',[0.35 0.35 0.35]); %change background
-set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
-p2.NodeColor='red';
-p2.EdgeColor='black';
-p2.NodeLabel={};
-
-%%Plot Voltage (log10)
-vlist=Sim.Data.Voltages{IndexTime};
-p2.NodeCData=full(vlist);
-p2.MarkerSize=3;
-colormap(currAx,hot);
-colorbar(currAx);
-caxis([Sim.SimInfo.MinV Sim.SimInfo.MaxV]);
-
-labelnode(p2,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
-title(['Voltage Graph View Timestamp ' num2str(IndexTime)]);
+%% Network View
+% Function that plots network view of current and resistance
+[f1, f2, Adj, NumEl, Explore] = network_view(Sim,IndexTime, NodeList);
 
 %% Overlay Graph Theory:
 % -----------------------------
@@ -381,276 +206,24 @@ if threshold_network=='t'
     Graph.networkThreshold=Graph.network(threshold,threshold); %applying degree threshold
     G=graph(Graph.networkThreshold);
     node_indices=find(threshold==1); %find nodes with threshold == 1
-    Adj=Adj(threshold,threshold);
 else
     G=graph(Graph.network);
 end
 
-%% Participant Coefficients
-
-f6=figure;
-currAx=gca;
-p3=plot(currAx,G);
-% set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
-set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
-p3.NodeColor='red';
-p3.EdgeColor='white';
-p3.NodeLabel={};
-
-%Plot Currents
-p3.MarkerSize=1.5;
-p3.LineWidth=1.5;
+%% Graph View
+% Function that plots graphical view of current, voltage and resistance
 if threshold_network=='t'
-    temp=Sim.Data.Currents{IndexTime}(threshold,threshold);
-    currs=(abs(temp));
-        clear temp
+    [f3, f4, f5, G, Adj, Adj2, Explore, highlightElec, new_electrodes] = graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold);
 else
-    currs=abs(Sim.Data.Currents{IndexTime});
+    [f3, f4, f5, G, Adj, Explore, highlightElec, new_electrodes] = graph_view(Sim,IndexTime,Explore,G,Adj, threshold_network);
 end
-[j,i,~]=find(tril(Adj));
-cc=zeros(1,length(j));
-for k=1:length(j)
-    cc(k)=currs(i(k),j(k));
-end
-clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
-p3.EdgeCData=cc;
-colormap(currAx,gcurrmap);%gcurrmap
-colorbar(currAx);
-caxis(currAx,clim);
-hold on
-
-% Plot Participant Coefficients
+%% Graph Theory View
+% Function that plots graph theory overlayed on graph view of currents
 if threshold_network=='t'
-    p3.NodeCData=Graph.Ci(threshold);
-    p_ranks=Graph.P(threshold);
+    [f6, f7, f8, f9, f10, f11, Explore]= graph_theory_explore_threshold(Sim,G,Adj,Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes);
 else
-    p3.NodeCData=Graph.Ci;
-    p_ranks=Graph.P;
+    [f6, f7, f8, f9, f10, f11, Explore]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore, Graph, highlightElec, new_electrodes);
 end
-edges2 = linspace(min(p_ranks),max(p_ranks),7);
-bins2 = discretize(p_ranks,edges2);
-p3.MarkerSize=bins2;
-
-%Label Source
-labelnode(p3,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
-
-%Need to figure out how to change colormap for Nodes seperately.
-
-if threshold_network=='t'
-    text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P(threshold))) ' (large dot)']);
-else
-    text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P)) ' (large dot)']);
-end
-title(['Participant Coefficient Analysis Timestamp ' num2str(IndexTime)]);
-
-%% Modular z-Score:
-f7=figure;
-currAx=gca;
-p4=plot(currAx,G);
-% set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
-set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
-p4.NodeColor='red';
-p4.EdgeColor='white';
-p4.NodeLabel={};
-
-%Plot Currents
-p4.MarkerSize=1.5;
-p4.LineWidth=1.5;
-if threshold_network=='t'
-    temp=Sim.Data.Currents{IndexTime}(threshold,threshold);
-    currs=(abs(temp));
-        clear temp
-else
-    currs=abs(Sim.Data.Currents{IndexTime});
-end
-[j,i,~]=find(tril(Adj));
-cc=zeros(1,length(j));
-for k=1:length(j)
-    cc(k)=currs(i(k),j(k));
-end
-clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
-p4.EdgeCData=cc;
-colormap(currAx,gcurrmap);%gcurrmap
-colorbar(currAx);
-caxis(currAx,clim);
-hold on
-
-if threshold_network=='t'
-    p4.NodeCData=Graph.Ci(threshold);
-    mod_ranks=Graph.MZ(threshold);
-else
-    p4.NodeCData=Graph.Ci;
-    mod_ranks=Graph.MZ;
-end
-edges3 = linspace(min(mod_ranks),max(mod_ranks),7);
-bins3 = discretize(mod_ranks,edges3);
-p4.MarkerSize=bins3;
-
-%Label Source
-labelnode(p4,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
-
-if threshold_network=='t'
-    text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ(threshold))) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
-else
-    text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ)) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
-end
-title(['Within Module Degree z-Score Analysis Timestamp ' num2str(IndexTime)]);
-
-%% Connectivity
-f8=figure;
-currAx=gca;
-p5=plot(currAx,G);
-% set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
-set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
-p5.NodeColor='red';
-p5.EdgeColor='white';
-p5.NodeLabel={};
-
-%Plot Currents
-p5.MarkerSize=1.5;
-p5.LineWidth=1.5;
-if threshold_network=='t'
-    temp=Sim.Data.Currents{IndexTime}(threshold,threshold);
-    currs=(abs(temp));
-        clear temp
-else
-    currs=abs(Sim.Data.Currents{IndexTime});
-end
-[j,i,~]=find(tril(Adj));
-cc=zeros(1,length(j));
-for k=1:length(j)
-    cc(k)=currs(i(k),j(k));
-end
-clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
-p5.EdgeCData=cc;
-colormap(currAx,gcurrmap);%gcurrmap
-colorbar(currAx);
-caxis(currAx,clim);
-hold on
-
-if threshold_network=='t'
-    Graph.DEG_threshold=Graph.DEG(threshold);
-    edges = linspace(min(Graph.DEG_threshold),max(Graph.DEG_threshold),7);
-    bins = discretize(Graph.DEG_threshold,edges);
-else
-    edges = linspace(min(Graph.DEG),max(Graph.DEG),7);
-    bins = discretize(Graph.DEG,edges);
-end
-
-p5.MarkerSize = bins;
-p5.NodeColor='r';
-title(['Degree Size Timestamp ' num2str(IndexTime)]);
-highlight(p5,highlightElec,'NodeColor','green'); %change simulation number
-labelnode(p5,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
-text(-5,-6.2,'Min Degrees - 1 (small dot) | Max Degrees - 44 (large dot)');
-
-%% Shortest Path (Distance)
-d = distances(G); %calculate all the shortest path distance across all node pairs in the network.
-for i = 1:length(new_electrodes)
-    electrodes_cell(i)=new_electrodes(i).Name;
-end
-
-sourceIndex = find(contains(electrodes_cell,'Source')); %find index of electrodes that are source electrodes
-drainIndex = find(contains(electrodes_cell,'Drain')); %find index of electrodes that are drain electrodes
-
-sourceElec=highlightElec(sourceIndex); %change to show path from different electrodes
-drainElec=highlightElec(drainIndex);
-avgD=mean(d);
-medianD=median(d);
-stdD=std(d);
-
-%Distribution of shortest paths:
-f9=figure;
-subplot(3,1,1)
-h1=histogram(d);
-title('Distribution of Path Distances across all Node Pairs');
-xlabel('Distance');
-ylabel('Frequency');
-subplot(3,1,2)
-
-h2=histogram(avgD);
-title('Distribution of Mean Path Distances across all Node Pairs');
-xlabel('Average Distance');
-ylabel('Frequency');
-subplot(3,1,3)
-h3=histogram(medianD);
-title('Distribution of Median Path Distances across all Node Pairs');
-xlabel('Median Distance');
-ylabel('Frequency');
-
-%This needs to be fixed (automated) - what if there are more than 4 electrodes?
-if length(sourceElec)>1
-    source1=sourceElec(1); %choose first electrode if there are more than 1
-    source2=sourceElec(2);
-else
-    source1=sourceElec;
-end
-if length(drainElec)>1
-    drain1=drainElec(1);%choose first electrode if there are more than 1
-    drain2=drainElec(2);
-else
-    drain1=drainElec;
-end
-
-%Plot all paths from current Electrode
-f10=figure;
-currAx=gca;
-p6=plot(currAx,G);
-p6.NodeLabel=d(source1,:); %label the shortest path from the source;
-p6.NodeCData=d(source1,:);
-highlight(p6,source1,'MarkerSize',8);
-colormap(currAx,jet);%gcurrmap
-colorbar(currAx);
-title('Path Distances from Source Electrode');
-
-%% Show shortest path from source to drain: %27/05/19
-f11=figure;
-currAx=gca;
-p8=plot(currAx,G);
-
-set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
-p8.NodeColor='red';
-p8.EdgeColor='white';
-p8.NodeLabel={};
-
-%Plot Currents
-p8.MarkerSize=1.5;
-p8.LineWidth=1.5;
-if threshold_network=='t'
-     temp=Sim.Data.Currents{IndexTime}(threshold,threshold);
-    currs=(abs(temp));
-    clear temp
-else
-    currs=abs(Sim.Data.Currents{IndexTime});
-end
-[j,i,~]=find(tril(Adj));
-cc=zeros(1,length(j));
-for k=1:length(j)
-    cc(k)=currs(i(k),j(k));
-end
-clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
-p8.EdgeCData=cc;
-colormap(currAx,gcurrmap);%gcurrmap
-colorbar(currAx);
-caxis(currAx,clim);
-
-%plot shortest paths:
-hold on
-p7=plot(currAx,G);
-set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
-p7.NodeColor='green';
-p7.Marker='none';
-p7.EdgeColor='green';
-p7.LineStyle='none';
-p7.NodeLabel={};
-highlight(p7,highlightElec,'NodeColor','green','Marker','o'); %change simulation number
-[dist,path,pred]=graphshortestpath(Adj,source1,drain1,'Directed','false');
-if length(sourceElec)>1
-    [dist2,path2,pred2]=graphshortestpath(Adj,source2,drain2,'Directed','false');
-    highlight(p7,path2,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
-end
-highlight(p7,path,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
-title('Shortest Path from Sources to Drains, Overlayed on Current');
 
 %Biograph view
 % h = view(biograph(Adj,[],'ShowArrows','off'));
@@ -666,25 +239,11 @@ title('Shortest Path from Sources to Drains, Overlayed on Current');
 %Save Variables
 Explore.IndexTime=IndexTime;
 Explore.Name=Sim.Name;
-Explore.NetworkView.currents=Ilist; %save currents at each junction at the IndexTime
-Explore.NetworkView.resistance=Rlist; %save currents at each junction at the IndexTime
-Explore.NetworkView.junctions=labels;
-Explore.NetworkView.ElectrodePosition=IdxEl;
-Explore.GraphView.currents=Sim.Data.Currents{IndexTime};
-Explore.GraphView.resistance=Sim.Data.Rmat{IndexTime};
-Explore.GraphView.Nodes=G.Nodes;
-Explore.GraphView.Edges=G.Edges;
-Explore.GraphView.ElectrodePosition=Sim.Electrodes.PosIndex;
-Explore.GraphView.Distances.Values=d;
-Explore.GraphView.Distances.Avg=avgD;
-Explore.GraphView.Distances.Std=stdD;
-Explore.GraphView.Distances.Median=medianD;
-Explore.GraphView.Distances.DistancesFromSource=d(sourceElec,:);
-Explore.GraphView.Distances.ShortestPath=path;
-Explore.Electrodes.Source=sourceElec;
-Explore.Electrodes.Drain=drainElec;
-
-
+if threshold_network=='t'
+    Explore.Thresholded='Yes';
+else
+    Explore.Thresholded='No';
+end
 %% Save Plots
 
 save_explore_plots=lower(input('Would you like to save the plots? y or n \n','s'));
@@ -807,7 +366,7 @@ LDA_Analysis(simNum).TypeOfData='Training';
 
 % %% Support Vector Machine Analysis:
 % rng default
-% 
+%
 % SVMModel = fitcsvm(Output,Target,'OptimizeHyperparameters','auto',...
 %     'HyperparameterOptimizationOptions',struct('AcquisitionFunctionName',...
 %     'expected-improvement-plus'));
@@ -818,10 +377,10 @@ LDA_Analysis(simNum).TypeOfData='Training';
 % plot(sv(:,1),sv(:,2),'ko','MarkerSize',10)
 % legend('Source 1','Source 2','Support Vector','Location','West')
 % hold off
-% 
+%
 % %Cross Validate:
 % CVSVMModel = crossval(SVMModel);
-% classLoss = kfoldLoss(CVSVMModel); %Generalization Rate 
+% classLoss = kfoldLoss(CVSVMModel); %Generalization Rate
 
 
 
@@ -858,12 +417,14 @@ else % otherwise, can only input 2 or higher
     [LDA_Analysis(simulationChoice).appliedP, LDA_Analysis(simulationChoice).appliedL, LDA_Analysis(simulationChoice).normalisedOutput, LDA_Analysis(simulationChoice).normalisedInput]=LDA_Apply(LDA_Analysis(simNum).normalisedW,LDA_Analysis(simulationChoice).Output, LDA_Analysis(simulationChoice).Input);
     plot_state2=lower(input('Would you like to plot the applied LDA results? y or n \n','s'));
     if plot_state2=='y'
-        plot_LDA_Applied(LDA_Analysis(simulationChoice),simNum,simulationChoice,network(networkNum2).Name,currentPath);
+        SelSims=simulations{simNum};
+        plot_LDA_Applied(LDA_Analysis(simulationChoice),simNum,simulationChoice,network(networkNum2).Name,currentPath,SelSims);
     end
 end
 end
-function plot_LDA(LDA_Analysis, simNum, networkName,currentPath)
+function plot_LDA(LDA_Analysis, simNum, networkName,currentPath,simulations)
 cd(currentPath);
+SelSims=simulations{simNum};
 save_directory='..\Data\Figures\LDA\LDA Training\';
 %plot LDA
 LDAf=figure;
@@ -945,15 +506,18 @@ networkName(regexp(networkName,'[/:]'))=[]; %remove '/' character because it giv
 %Save
 %Note; change the date of the simulation in the name if using a different
 %set of simulations
-saveas(LDAf,[save_directory num2str(networkName) 'Simulation' num2str(simNum) '_LDA_Classification_Training_Simulation' num2str(simNum)],'jpg'); % CHANGE DATE OF SIMULATION
-saveas(LDAf,[save_directory num2str(networkName) 'Simulation' num2str(simNum) '_LDA_Classification_Training_Simulation' num2str(simNum)],'eps');
-saveas(LDAff,[save_directory num2str(networkName) 'Simulation' num2str(simNum) '_logLDA_Classification_Training_Simulation' num2str(simNum)],'jpg');
-saveas(LDAff,[save_directory num2str(networkName) 'Simulation' num2str(simNum) '_logLDA_Classification_Training_Simulation' num2str(simNum)],'eps');
-saveas(LDAnormf,[save_directory num2str(networkName) 'Simulation' num2str(simNum) '_normalised_LDA_Classification_Training_Simulation' num2str(simNum)],'jpg');
-saveas(LDAnormf,[save_directory num2str(networkName) 'Simulation' num2str(simNum) '_normalised_Classification_Training_Simulation' num2str(simNum)],'eps');
 
+save_status=lower(input('Would you like to save the LDA Plots? y or n \n','s'));
+if save_status=='y'
+    saveas(LDAf,[save_directory num2str(networkName) 'Simulation_' SelSims.Settings.Model '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_LDA_Classification_Training'],'jpg'); % CHANGE DATE OF SIMULATION
+    saveas(LDAf,[save_directory num2str(networkName) 'Simulation_' SelSims.Settings.Model '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_LDA_Classification_Training'],'eps');
+    saveas(LDAff,[save_directory num2str(networkName) 'Simulation_' SelSims.Settings.Model '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_logLDA_Classification_Training'],'jpg');
+    saveas(LDAff,[save_directory num2str(networkName) 'Simulation_' SelSims.Settings.Model '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec__logLDA_Classification_Training'],'eps');
+    saveas(LDAnormf,[save_directory num2str(networkName) 'Simulation_' SelSims.Settings.Model '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_normalised_LDA_Classification_Training'],'jpg');
+    saveas(LDAnormf,[save_directory num2str(networkName) 'Simulation_' SelSims.Settings.Model '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_normalised_Classification_Training'],'eps');
 end
-function plot_LDA_Applied(LDA_Analysis,simNum,simulationChoice,networkName,currentPath)
+end
+function plot_LDA_Applied(LDA_Analysis,simNum,simulationChoice,networkName,currentPath,SelSims)
 cd(currentPath)
 save_directory='..\Data\Figures\LDA\LDA Testing\';
 appliedF=figure;
@@ -980,9 +544,11 @@ ylabel('Voltage > 0')
 xlabel('Timestamp (0.01sec)')
 
 networkName(regexp(networkName,'[/:]'))=[]; %remove '/' character because it gives us saving problems
-
-saveas(appliedF,[save_directory num2str(networkName) '_6MaySim_LDA_Classification_TrainingSim_' num2str(simNum) '_TestingSim' num2str(simulationChoice)],'jpg');
-saveas(appliedF,[save_directory num2str(networkName) '_6MaySim_LDA_Classification_TrainingSim_' num2str(simNum) '_TestingSim' num2str(simulationChoice)],'eps');
+save_status=lower(input('Would you like to save the Applied LDA Plots? y or n \n','s'));
+if save_status=='y'
+    saveas(appliedF,[save_directory num2str(networkName) 'Simulation_' SelSims.Settings.Model '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_LDA_Classification_TrainingSim_' num2str(simNum) '_TestingSim' num2str(simulationChoice) '_' date],'jpg');
+    saveas(appliedF,[save_directory num2str(networkName) 'Simulation_' SelSims.Settings.Model '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_LDA_Classification_TrainingSim_' num2str(simNum) '_TestingSim' num2str(simulationChoice) '_' date],'eps');
+end
 end
 function save_LDA(LDA_Analysis,network,network_load,sim_loaded,currentPath)
 cd(currentPath)
@@ -1005,9 +571,9 @@ elseif strcmp(network_load,'a') %adrian code
         IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(size(currentSim.Data,1)) '\n']); %CHOOSE TIMESTAMP
     end
     %this gives a resistance matrix for the network used for a chosen simulation at a specific timestamp
-    binarise_network=input('Do you want to binarise the network using Resistance? \n','s');
+    binarise_network=input('Do you want to view the network thresholded ONLY with low Resistance? \n','s');
     if binarise_network=='y' %Binarise so we can use Resistance for graph theory analysis
-        a= full(currentSim.Data.Rmat{IndexTime}); 
+        a= full(currentSim.Data.Rmat{IndexTime});
         a(a==5000)=1; %if resistance is low, we make it 1 (on)
         a(a==5000000)=0;  %if it is high we make it 0 (off)
         net_mat=a;
@@ -1238,6 +804,7 @@ if threshold_choice=='t'
     Adj=Adj(threshold,threshold);
     Graph.COMM=Graph.COMM(threshold,threshold);
 end
+% extract lower triangular part of Adjacency matrix of Graph.COMM
 [j,i,~]=find(tril(Adj));
 wd=zeros(1,length(j));
 
@@ -1245,6 +812,7 @@ for k=1:length(j)
     wd(k)=Graph.COMM(i(k),j(k));
 end
 
+% extract lower triangular part of Adjacency matrix of network
 Adj2=(currentSim.Data.AdjMat{IndexTime});%convert 498x498 matrix to EdgeCData ~(1x6065)
 if threshold_choice=='t'
     
@@ -1261,7 +829,9 @@ for k=1:length(j)
     end
 end
 
+%Find Graph.COMM in network
 wd3=wd(logical(wd2));
+
 f9=figure;
 p9=plot(g);
 p9.EdgeCData=wd3;%log10(wd);
