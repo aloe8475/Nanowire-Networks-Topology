@@ -89,7 +89,7 @@ while i == 1
         if analysis_type~='n'
             apply_LDA=lower(input('Would you like to apply the loaded LDA analysis to another simulation? y or n \n','s'));
             if apply_LDA=='y'
-                [LDA_Analysis, simulationChoice]=lda_apply_func(numNetworks,network,LDA_Analysis,simNum,simulations);
+                [LDA_Analysis, simulationChoice]=lda_apply_func(numNetworks,network,LDA_Analysis,simNum,simulations,currentPath);
             end
             i=i+1; %get out of while loop when this loop finishes
         elseif analysis_type~='l' &&  analysis_type~='g' && analysis_type~='n' && analysis_type~='e'
@@ -578,6 +578,7 @@ title('Distribution of Median Path Distances across all Node Pairs');
 xlabel('Median Distance');
 ylabel('Frequency');
 
+%This needs to be fixed (automated) - what if there are more than 4 electrodes?
 if length(sourceElec)>1
     source1=sourceElec(1); %choose first electrode if there are more than 1
     source2=sourceElec(2);
@@ -802,6 +803,28 @@ LDA_Analysis(simNum).normalisedL=[ones(size(LDA_Analysis(simNum).normalisedOutpu
 LDA_Analysis(simNum).normalisedP=exp(LDA_Analysis(simNum).normalisedL) ./ repmat(sum(exp(LDA_Analysis(simNum).normalisedL),2),[1 2]);
 
 LDA_Analysis(simNum).TypeOfData='Training';
+
+
+% %% Support Vector Machine Analysis:
+% rng default
+% 
+% SVMModel = fitcsvm(Output,Target,'OptimizeHyperparameters','auto',...
+%     'HyperparameterOptimizationOptions',struct('AcquisitionFunctionName',...
+%     'expected-improvement-plus'));
+% sv = SVMModel.SupportVectors;
+% figure
+% gscatter(Output(:,1),Output(:,2),Target)
+% hold on
+% plot(sv(:,1),sv(:,2),'ko','MarkerSize',10)
+% legend('Source 1','Source 2','Support Vector','Location','West')
+% hold off
+% 
+% %Cross Validate:
+% CVSVMModel = crossval(SVMModel);
+% classLoss = kfoldLoss(CVSVMModel); %Generalization Rate 
+
+
+
 clear drain1 drain2 source1 source2 Input Target Output
 %% Saving LDA
 save_state=lower(input('Would you like to save the LDA Analysis? y or n \n','s'));
@@ -809,7 +832,7 @@ if save_state=='y'
     save_LDA(LDA_Analysis(simNum),network(networkNum),network_load,sim_loaded,currentPath);
 end
 end
-function [LDA_Analysis, simulationChoice]=lda_apply_func(numNetworks,network,LDA_Analysis,simNum,simulations)
+function [LDA_Analysis, simulationChoice]=lda_apply_func(numNetworks,network,LDA_Analysis,simNum,simulations,currentPath)
 if numNetworks>1 %if we have two networks, offer to test second network
     networkNum2=input(['Which Network # do you want to select your Simulation from ? 1 - ' num2str(length(network)) '\n']);
 else
@@ -832,9 +855,10 @@ else % otherwise, can only input 2 or higher
     LDA_Analysis(simulationChoice).Input=[full(simulations{simulationChoice}.Data.ISource1) full(simulations{simulationChoice}.Data.ISource2)];
     LDA_Analysis(simulationChoice).Target=[full(simulations{simulationChoice}.Data.VSource1 >0.001)];
     LDA_Analysis(simulationChoice).TypeOfData='Testing';
+    [LDA_Analysis(simulationChoice).appliedP, LDA_Analysis(simulationChoice).appliedL, LDA_Analysis(simulationChoice).normalisedOutput, LDA_Analysis(simulationChoice).normalisedInput]=LDA_Apply(LDA_Analysis(simNum).normalisedW,LDA_Analysis(simulationChoice).Output, LDA_Analysis(simulationChoice).Input);
     plot_state2=lower(input('Would you like to plot the applied LDA results? y or n \n','s'));
     if plot_state2=='y'
-        plot_LDA_Applied(LDA_Analysis(simulationChoice),simNum,simulationChoice,network(networkNum2).Name);
+        plot_LDA_Applied(LDA_Analysis(simulationChoice),simNum,simulationChoice,network(networkNum2).Name,currentPath);
     end
 end
 end
@@ -929,7 +953,7 @@ saveas(LDAnormf,[save_directory num2str(networkName) 'Simulation' num2str(simNum
 saveas(LDAnormf,[save_directory num2str(networkName) 'Simulation' num2str(simNum) '_normalised_Classification_Training_Simulation' num2str(simNum)],'eps');
 
 end
-function plot_LDA_Applied(LDA_Analysis,simNum,simulationChoice,networkName)
+function plot_LDA_Applied(LDA_Analysis,simNum,simulationChoice,networkName,currentPath)
 cd(currentPath)
 save_directory='..\Data\Figures\LDA\LDA Testing\';
 appliedF=figure;
