@@ -241,7 +241,7 @@ end
 
 IndexNet=handles.NetList.Value;
 IndexSim=handles.SimList.Value;
-
+    
 SelSim=handles.Networks{IndexNet}.Simulations{IndexSim};
 
 t=SelSim.Data.time;
