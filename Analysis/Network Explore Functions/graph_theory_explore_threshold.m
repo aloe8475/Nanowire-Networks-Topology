@@ -1,13 +1,13 @@
-%% Graph Theory Explore 
+%% Graph Theory Explore
 % This function plots graph theory parameters overlayed on graph view of
 % currents for the chosen Sim at the given timestamp (IndexTime)
 
-function [f6, f7, f8, f9, f10, f11, Explore]= graph_theory_explore_threshold(Sim,G,Adj, Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices)
+function [f6, f7, f8, f9, f10, f11, f12,f13, Explore]= graph_theory_explore_threshold(Sim,G,Adj, Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices)
 %% Participant Coefficients
 if threshold_network~='t'
     return
     fprintf('Error in graph_view_threshold - you should not be seeing this');
-end 
+end
 
 f6=figure;
 currAx=gca;
@@ -36,10 +36,10 @@ end
 cc2=zeros(1,length(j));
 
 for k=1:length(j)
-        cc2(k)=Graph.networkThreshold(i(k),j(k));
+    cc2(k)=Graph.networkThreshold(i(k),j(k));
 end
 
-%Find Graph.COMM in network
+%Find CURRENTS in network
 cc3=cc(logical(cc2));
 clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
 p3.EdgeCData=cc3;
@@ -49,8 +49,8 @@ caxis(currAx,clim);
 hold on
 
 % Plot Participant Coefficients
-    p3.NodeCData=Graph.Ci(threshold);
-    p_ranks=Graph.P(threshold);
+p3.NodeCData=Graph.Ci(threshold);
+p_ranks=Graph.P(threshold);
 edges2 = linspace(min(p_ranks),max(p_ranks),7);
 bins2 = discretize(p_ranks,edges2);
 p3.MarkerSize=bins2;
@@ -59,8 +59,8 @@ p3.MarkerSize=bins2;
 labelnode(p3,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
 
 %Need to figure out how to change colormap for Nodes seperately.
-    text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P(threshold))) ' (large dot)']);
-title(['Participant Coefficient Analysis Timestamp ' num2str(IndexTime)]);
+text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P(threshold))) ' (large dot)']);
+title(['Participant Coefficient Analysis, Thresholded | T= ' num2str(IndexTime)]);
 
 %% Modular z-Score:
 f7=figure;
@@ -90,7 +90,7 @@ end
 cc2=zeros(1,length(j));
 
 for k=1:length(j)
-        cc2(k)=Graph.networkThreshold(i(k),j(k));
+    cc2(k)=Graph.networkThreshold(i(k),j(k));
 end
 
 %Find Graph.COMM in network
@@ -103,8 +103,8 @@ caxis(currAx,clim);
 
 hold on
 
-    p4.NodeCData=Graph.Ci(threshold);
-    mod_ranks=Graph.MZ(threshold);
+p4.NodeCData=Graph.Ci(threshold);
+mod_ranks=Graph.MZ(threshold);
 edges3 = linspace(min(mod_ranks),max(mod_ranks),7);
 bins3 = discretize(mod_ranks,edges3);
 p4.MarkerSize=bins3;
@@ -113,8 +113,8 @@ p4.MarkerSize=bins3;
 labelnode(p4,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
 
 
-    text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ(threshold))) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
-title(['Within Module Degree z-Score Analysis Timestamp ' num2str(IndexTime)]);
+text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ(threshold))) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
+title(['Within Module Degree z-Score Analysis, Thresholded | T= ' num2str(IndexTime)]);
 
 %% Connectivity
 f8=figure;
@@ -144,7 +144,7 @@ end
 cc2=zeros(1,length(j));
 
 for k=1:length(j)
-        cc2(k)=Graph.networkThreshold(i(k),j(k));
+    cc2(k)=Graph.networkThreshold(i(k),j(k));
 end
 
 %Find Graph.COMM in network
@@ -158,12 +158,12 @@ caxis(currAx,clim);
 hold on
 
 
-    Graph.DEG_threshold=Graph.DEG(threshold);
-    edges = linspace(min(Graph.DEG_threshold),max(Graph.DEG_threshold),7);
-    bins = discretize(Graph.DEG_threshold,edges);
+Graph.DEG_threshold=Graph.DEG(threshold);
+edges = linspace(min(Graph.DEG_threshold),max(Graph.DEG_threshold),7);
+bins = discretize(Graph.DEG_threshold,edges);
 p5.MarkerSize = bins;
 p5.NodeColor='r';
-title(['Degree Size Timestamp ' num2str(IndexTime)]);
+title(['Degree Size, Thresholded | T= ' num2str(IndexTime)]);
 highlight(p5,highlightElec,'NodeColor','green'); %change simulation number
 labelnode(p5,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
 text(-5,-6.2,'Min Degrees - 1 (small dot) | Max Degrees - 44 (large dot)');
@@ -203,29 +203,23 @@ xlabel('Median Distance');
 ylabel('Frequency');
 
 %This needs to be fixed (automated) - what if there are more than 4 electrodes?
-if length(sourceElec)>1
-    source1=sourceElec(1); %choose first electrode if there are more than 1
-    source2=sourceElec(2);
-else
-    source1=sourceElec;
+for i =1:length(sourceElec)
+    source(i)=sourceElec(i); %choose first electrode if there are more than 1
 end
-if length(drainElec)>1
-    drain1=drainElec(1);%choose first electrode if there are more than 1
-    drain2=drainElec(2);
-else
-    drain1=drainElec;
+for i =1:length(drainElec)
+    drain(i)=drainElec(i);%choose first electrode if there are more than 1
 end
 
 %Plot all paths from current Electrode
 f10=figure;
 currAx=gca;
 p6=plot(currAx,G);
-p6.NodeLabel=d(source1,:); %label the shortest path from the source;
-p6.NodeCData=d(source1,:);
-highlight(p6,source1,'MarkerSize',8);
+p6.NodeLabel=d(source(1),:); %label the shortest path from the source;
+p6.NodeCData=d(source(1),:);
+highlight(p6,source(1),'MarkerSize',8);
 colormap(currAx,jet);%gcurrmap
 colorbar(currAx);
-title('Path Distances from Source Electrode');
+title(['Path Distances from Source Electrode, Thresholded | T=' num2str(IndexTime)]');
 
 %% Show shortest path from source to drain: %27/05/19
 f11=figure;
@@ -254,11 +248,12 @@ end
 [j,i,~]=find(tril(Adj2));
 cc2=zeros(1,length(j));
 
+%Find current in thresholded network:
 for k=1:length(j)
-        cc2(k)=Graph.networkThreshold(i(k),j(k));
+    cc2(k)=Graph.networkThreshold(i(k),j(k));
 end
 
-%Find Graph.COMM in network
+
 cc3=cc(logical(cc2));
 clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
 p8.EdgeCData=cc3;
@@ -276,13 +271,105 @@ p7.EdgeColor='green';
 p7.LineStyle='none';
 p7.NodeLabel={};
 highlight(p7,highlightElec,'NodeColor','green','Marker','o'); %change simulation number
-[dist,path,pred]=graphshortestpath(Adj,source1,drain1,'Directed','false');
+[dist,path,pred]=graphshortestpath(Adj2,source(1),drain(1),'Directed','false');
 if length(sourceElec)>1
-    [dist2,path2,pred2]=graphshortestpath(Adj,source2,drain2,'Directed','false');
+    [dist2,path2,pred2]=graphshortestpath(Adj2,source2,drain2,'Directed','false');
     highlight(p7,path2,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
 end
 highlight(p7,path,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
-title('Shortest Path from Sources to Drains, Overlayed on Current');
+title(['Shortest Path, Thresholded + Overlayed on Current | T=' num2str(IndexTime)]');
+
+%% Communicability
+
+f12=figure;
+currAx=gca;
+p9=plot(currAx,G);
+
+Adj=Adj(threshold,threshold);
+Graph.COMM=Graph.COMM(threshold,threshold);
+% extract lower triangular part of Adjacency matrix of Graph.COMM
+[j,i,~]=find(tril(Adj));
+com=zeros(1,length(j));
+
+for k=1:length(j)
+    com(k)=Graph.COMM(i(k),j(k));
+end
+
+% extract lower triangular part of Adjacency matrix of network
+Adj2=(Sim.Data.AdjMat{IndexTime});%convert 498x498 matrix to EdgeCData ~(1x6065)
+Adj2=Adj2(threshold,threshold);
+[j,i,~]=find(tril(Adj2));
+com2=zeros(1,length(j));
+
+for k=1:length(j)
+    com2(k)=Graph.networkThreshold(i(k),j(k));
+end
+
+%Find Graph.COMM in network
+com3=com(logical(com2));
+
+p9.EdgeCData=com3;%log10(com3);
+p9.MarkerSize=2;
+colormap jet
+colorbar
+labelnode(p9,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
+highlight(p9,highlightElec,'NodeColor','green','Marker','o'); %change simulation number
+
+%Overlay Shortest Path
+hold on
+p10=plot(currAx,G);
+set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
+p10.NodeColor='green';
+p10.Marker='none';
+p10.EdgeColor='green';
+p10.LineStyle='none';
+p10.NodeLabel={};
+highlight(p10,highlightElec,'NodeColor','green','Marker','o'); %change simulation number
+[dist,path,pred]=graphshortestpath(Adj,source(1),drain(1),'Directed','false');
+if length(sourceElec)>1
+    [dist2,path2,pred2]=graphshortestpath(Adj,source(2),drain(2),'Directed','false');
+    highlight(p10,path2,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
+end
+highlight(p10,path,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
+title(['Communicability, Thresholded + Overlayed w Shortest Path | T=' num2str(IndexTime)]');
+
+%% Clustering Coefficient
+
+%Cluster Analysis:
+f13=figure;
+currAx=gca;
+p11=plot(currAx,G);
+p11.MarkerSize = 4;
+% set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
+p11.NodeCData=Graph.Ci(threshold);
+% Ci_ranks=Graph.Ci(threshold);
+% edges3 = linspace(min(Ci_ranks),max(Ci_ranks),7);
+% bins3 = discretize(Ci_ranks,edges3);
+% p11.MarkerSize=bins3;
+
+colormap hsv(6)
+colorbar
+
+labelnode(p11,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
+labelnode(p11,highlightElec,[new_electrodes(:).Name]);
+
+%Overlay Shortest Path
+hold on
+p12=plot(currAx,G);
+set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
+p12.NodeColor='green';
+p12.Marker='none';
+p12.EdgeColor='green';
+p12.LineStyle='none';
+p12.NodeLabel={};
+% highlight(p12,highlightElec,'NodeColor','green','Marker','o'); %change simulation number
+[dist,path,pred]=graphshortestpath(Adj,source(1),drain(1),'Directed','false');
+if length(sourceElec)>1
+    [dist2,path2,pred2]=graphshortestpath(Adj,source(2),drain(2),'Directed','false');
+    highlight(p12,path2,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
+end
+highlight(p12,path,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
+title(['Cluster Analysis, Thresholded + Overlayed with Shortest Path | T=' num2str(IndexTime)]);
 
 
 Explore.GraphView.Distances.Values=d;
@@ -294,4 +381,4 @@ Explore.GraphView.Distances.ShortestPath=path;
 Explore.Electrodes.Source=sourceElec;
 Explore.Electrodes.Drain=drainElec;
 
-end 
+end
