@@ -415,14 +415,15 @@ guidata(hObject,handles);
 % --- Executes on button press in OpenButton
 function OpenButton_Callback(hObject, eventdata, handles)
 % Open a previous simulation/list of networks saved as a mat file
-cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\');
+currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
+cd(currentPath);
 [FileName,PathName] = uigetfile('*.mat','Select the Network saved data');
 f=fullfile(PathName,FileName);
 s=load(f);
 if ~isfield(s,'SelNet')
     return;
 end
-cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\FIGS');
+cd('..\FIGS');
 
 ParNet=s.SelNet;
 [handles.Networks,handles.NetList.String,handles.NetList.Value]=AddDeleteDataList('add',...
@@ -444,7 +445,8 @@ guidata(hObject,handles);
 function handles = OpenButton_SimsCallback(hObject, eventdata, handles)
 % Open a previous network saved as a mat file, the network contains
 % all the previous simulations (that have not been deleted)
-cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only');
+currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
+cd(currentPath);
 [FileName,PathName] = uigetfile('*.mat','Select the Simulation saved data');
 f=fullfile(PathName,FileName);
 s=load(f);
@@ -455,7 +457,7 @@ if isempty(handles.Networks) %if there is no current network saved, make an aler
     uialert(handles.figure1,'Please Load the Correct Network and Try Again','Error');
     return;
 end
-cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\FIGS');
+cd('..\..\FIGS');
 IndNet=handles.NetList.Value; %need for the index
 if isfield(s,'SelSims')
 ParSims=s.SelSims;
@@ -489,16 +491,18 @@ guidata(hObject,handles);
 function SaveButton_SimsCallback(hObject, eventdata, handles)
 % Save selected simulations in a mat file
 % in the folder that you choose
+currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
+
 IndNet=handles.NetList.Value; %need for the index
 SelNet=handles.Networks{IndNet}; %need for the name
 SelSims=SelNet.Simulations;
 
 %Alon Code 08/04/19
-NameSims=[SelNet.Name SelSims{1}.Settings.Model '_' SelSims{1}.Settings.SigType '_' num2str(length(SelSims)) 'SimsOnly_' num2str(SelSims{1}.Settings.Time) '_Sec_Vmax_' num2str(SelSims{1}.Settings.Vmax) '_' date];
+NameSims=[SelNet.Name SelSims{1}.Settings.Model '_' SelSims{1}.Settings.SigType '_' num2str(length(SelSims)) 'SimsOnly_' num2str(SelSims{1}.Settings.Time) '_Sec' num2str(height(SelSims{1}.Electrodes)) 'Electrodes_Vmax_' num2str(SelSims{1}.Settings.Vmax) '_' date];
 NameSims=strrep(NameSims,':','_');
 NameSims=strrep(NameSims,'/','_');
 NameSims=strcat(NameSims,'.mat');
-cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only');
+cd(currentPath);
 SelDir=uigetdir();
 if ~isequal(SelDir,0)
     nameSims=fullfile(SelDir,NameSims); %Alon - Save simulations only
@@ -506,7 +510,7 @@ if ~isequal(SelDir,0)
 else
     return;
 end
-cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\FIGS');
+cd('..\..\FIGS');
 
 % --- Executes on button press in SaveButton.
 
@@ -525,8 +529,9 @@ Name=strrep(Name,':','_');
 Name=strrep(Name,'/','_');
 Name=strcat(Name,'.mat');
 
+currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
 
-cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\');
+cd(currentPath);
 SelDir=uigetdir();
 if ~isequal(SelDir,0)
     name=fullfile(SelDir,Name);
@@ -534,7 +539,7 @@ if ~isequal(SelDir,0)
 else
     return;
 end
-cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\FIGS');
+cd('..\FIGS');
 
 %uisave('SelNet',Name);
 
