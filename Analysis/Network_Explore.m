@@ -10,7 +10,12 @@
 dbstop if error
 %% Load Data
 
-currentPath=cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
+computer=getenv('computername');
+switch computer
+    case 'W4PT80T2'
+        currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Analysis';
+end
+cd(currentPath);
 load_data_question=lower(input('Load network data, Analysis Data Only or None? N - None, D - Network Data, A - Analysis Data\n','s'));
 
 if load_data_question=='d'
@@ -36,7 +41,7 @@ if load_data_question~='a'
         simNum=input(['Which Simulation # do you want to select for Training? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
     else
         networkNum=input(['Which Network # do you want to explore? 1 - ' num2str(length(network)) '\n']);
-        simNum=input(['Which Simulation # do you want to explore? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.        
+        simNum=input(['Which Simulation # do you want to explore? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
     end
 end
 
@@ -47,10 +52,11 @@ else
 end
 
 fprintf(['Simulation: ' network(networkNum).Name currentSim.Name ' selected \n\n']);
-        extract_data(network,simNum);
-fprintf(['Extracting Data for Python Use...\n\n\n']);
-fprintf(['Data Extracted \n\n\n']);
-
+if load_data_question=='d'
+    extract_data(network,simNum);
+    fprintf(['Extracting Data for Python Use...\n\n\n']);
+    fprintf(['Data Extracted \n\n\n']);
+end
 
 %% Analysis:
 i = 1;
@@ -129,37 +135,37 @@ function [network, network_load, simulations, sim_loaded, numNetworks, explore_n
 
 %% Load Data
 %Ask to load Zdenka or Adrian:
-network_load=lower(input('Which Network do you want to analyse? Z - Zdenka, A - Adrian \n','s'));
+network_load='a';%lower(input('Which Network do you want to analyse? Z - Zdenka, A - Adrian \n','s'));
 
-if strcmp(network_load,'a')
-    %Get current network - Adrian
-    [network,sim_loaded, explore_network, numNetworks]=Load_Adrian_Code();
-    %unpack simulation data into simulation variable
-    if sim_loaded==1
-        if explore_network=='t' %if we have training and testing simulations
-            tempSim=network.Simulations{2};
-            tempSim=num2cell(tempSim);
-            network.Simulations(2) = [];
-            network.Simulations=[network.Simulations tempSim];
-            fprintf(['Your Training Simulation is Simulation 1 \n']);
-            fprintf(['Your Testing Simulations are Simulations 2 - ' num2str(length(network.Simulations)) '\n']);
-            
-            fprintf('\n -------------------------- \nStart Analysis: \n');
-            
-        end
-        for i = 1:length(network.Simulations)
-            simulations(i)=network.Simulations(i);
-        end
-    else
-        simulations=network.Simulations;
+% if strcmp(network_load,'a')
+%Get current network - Adrian
+[network,sim_loaded, explore_network, numNetworks]=Load_Adrian_Code();
+%unpack simulation data into simulation variable
+if sim_loaded==1
+    if explore_network=='t' %if we have training and testing simulations
+        tempSim=network.Simulations{2};
+        tempSim=num2cell(tempSim);
+        network.Simulations(2) = [];
+        network.Simulations=[network.Simulations tempSim];
+        fprintf(['Your Training Simulation is Simulation 1 \n']);
+        fprintf(['Your Testing Simulations are Simulations 2 - ' num2str(length(network.Simulations)) '\n']);
+        
+        fprintf('\n -------------------------- \nStart Analysis: \n');
+        
     end
-    cd(currentPath);
-elseif strcmp(network_load,'z')
-    %Get network - Zdenka:
-    % D:\alon_\Research\POSTGRAD\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
-    network=Load_Zdenka_Code();
-    cd(currentPath);
+    for i = 1:length(network.Simulations)
+        simulations(i)=network.Simulations(i);
+    end
+else
+    simulations=network.Simulations;
 end
+cd(currentPath);
+% elseif strcmp(network_load,'z')
+%Get network - Zdenka:
+% D:\alon_\Research\POSTGRAD\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
+%     network=Load_Zdenka_Code();
+%     cd(currentPath);
+% end
 end
 function [LDA_Analysis] = load_LDA_data(currentPath)
 cd(currentPath);
@@ -228,9 +234,9 @@ end
 %% Graph Theory View
 % Function that plots graph theory overlayed on graph view of currents
 if threshold_network=='t'
-    [f6, f7, f8, f9, f10, f11, Explore]= graph_theory_explore_threshold(Sim,G,Adj,Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices);
+    [f6, f7, f8, f9, f10, f11,f12,f13, Explore]= graph_theory_explore_threshold(Sim,G,Adj,Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices);
 else
-    [f6, f7, f8, f9, f10, f11, Explore]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore, Graph, highlightElec, new_electrodes);
+    [f6, f7, f8, f9, f10, f11,f12,f13, Explore]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore, Graph, highlightElec, new_electrodes);
 end
 
 %Biograph view
@@ -283,6 +289,10 @@ if save_explore_plots=='y'
         saveas(f10,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_Distances_From_Source_Timestamp' num2str(IndexTime)],'eps');
         saveas(f11,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_ShortestPath_Overlay_Current_Timestamp' num2str(IndexTime)],'jpg');
         saveas(f11,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_ShortestPath_Overlay_Current_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f12,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_ShortestPath_Overlay_Communicability_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f12,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_ShortestPath_Overlay_Communicability_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f13,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_ShortestPath_Overlay_Cluster_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f13,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_ShortestPath_Overlay_Cluster_Timestamp' num2str(IndexTime)],'eps');
         
     elseif threshold_network=='t'
         saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'jpg');
@@ -307,6 +317,10 @@ if save_explore_plots=='y'
         saveas(f10,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_Distances_From_Source_Timestamp' num2str(IndexTime)],'eps');
         saveas(f11,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_ShortestPath_Overlay_Current_Timestamp' num2str(IndexTime)],'jpg');
         saveas(f11,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_ShortestPath_Overlay_Current_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f12,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_ShortestPath_Overlay_Communicability_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f12,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_ShortestPath_Overlay_Communicability_Timestamp' num2str(IndexTime)],'eps');
+        saveas(f13,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_ShortestPath_Overlay_Cluster_Timestamp' num2str(IndexTime)],'jpg');
+        saveas(f13,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_ShortestPath_Overlay_Cluster_Timestamp' num2str(IndexTime)],'eps');
     end
 end
 end

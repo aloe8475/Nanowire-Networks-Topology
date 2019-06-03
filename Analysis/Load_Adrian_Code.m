@@ -4,7 +4,11 @@
 function [network, sim_loaded, explore_network, numNetworks] = Load_Adrian_Code()
 %% Load Network Data:
 %choose network to load
-dataPath='D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
+computer=getenv('computername');
+switch computer
+    case 'W4PT80T2'
+        dataPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
+end
 cd(dataPath)
 waitfor(msgbox('Select the Network saved data'));
 [FileName,PathName] = uigetfile('*.mat','Select the Network saved data');
@@ -109,6 +113,9 @@ if sims_load=='y'
         f_explore=fullfile(PathName,FileName);
         load(f_explore);
         network.Simulations=SelSims;
+        for i=1:length(network.Simulations)
+        network.Simulations{i}.Type='Explore Simulation';
+        end 
         %Need to change to only allow explore of 1 network
         clear SelSims;
     end
