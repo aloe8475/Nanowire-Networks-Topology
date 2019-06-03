@@ -10,7 +10,7 @@
 dbstop if error
 %% Load Data
 
-currentPath=cd('C:\Users\aloe8475\Documents\GitHub\CODE\Analysis');
+currentPath=cd('D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis');
 load_data_question=lower(input('Load network data, Analysis Data Only or None? N - None, D - Network Data, A - Analysis Data\n','s'));
 
 if load_data_question=='d'
@@ -36,7 +36,7 @@ if load_data_question~='a'
         simNum=input(['Which Simulation # do you want to select for Training? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
     else
         networkNum=input(['Which Network # do you want to explore? 1 - ' num2str(length(network)) '\n']);
-        simNum=input(['Which Simulation # do you want to explore? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
+        simNum=input(['Which Simulation # do you want to explore? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.        
     end
 end
 
@@ -47,6 +47,10 @@ else
 end
 
 fprintf(['Simulation: ' network(networkNum).Name currentSim.Name ' selected \n\n']);
+        extract_data(network,simNum);
+fprintf(['Extracting Data for Python Use...\n\n\n']);
+fprintf(['Data Extracted \n\n\n']);
+
 
 %% Analysis:
 i = 1;

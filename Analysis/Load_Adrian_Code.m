@@ -4,7 +4,7 @@
 function [network, sim_loaded, explore_network, numNetworks] = Load_Adrian_Code()
 %% Load Network Data:
 %choose network to load
-dataPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
+dataPath='D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
 cd(dataPath)
 waitfor(msgbox('Select the Network saved data'));
 [FileName,PathName] = uigetfile('*.mat','Select the Network saved data');
