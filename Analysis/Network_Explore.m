@@ -59,7 +59,7 @@ while i == 1
     end
     if analysis_type=='g'
         %% Graph Analysis
-        [Graph]=graph_analysis(network(networkNum),network_load,currentSim,[]);
+        [Graph,binarise_network]=graph_analysis(network(networkNum),network_load,currentSim,[]);
         %% Save Graph analysis data
         i=i+1;
     elseif analysis_type=='e'
@@ -100,7 +100,7 @@ while i == 1
         %% Plotting Graph
         plot_state=lower(input('Would you like to plot Graph Analysis? y or n \n','s'));
         if plot_state=='y'
-            Graph=plot_graph(Graph,network(networkNum),network_load,currentSim,sim_loaded,currentPath);
+            Graph=plot_graph(Graph,network(networkNum),network_load,currentSim,sim_loaded,currentPath,binarise_network);
         end
         i=i+1;
         %% Saving Graph
@@ -198,9 +198,13 @@ IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(size(Sim.Da
 %% Overlay Graph Theory:
 % -----------------------------
 %Threshold
-[Graph]=graph_analysis(network,network_load,Sim,IndexTime);
+[Graph, binarise_network]=graph_analysis(network,network_load,Sim,IndexTime);
 %Threshold graph degree:
-threshold_network=lower(input('Do you want to plot the entire Graph or the Thresholded Graph? g - entire, t - threshold \n','s'));
+if binarise_network=='y'
+    threshold_network='t';
+else
+    threshold_network=lower(input('Do you want to plot the entire Graph or the Thresholded Graph? g - entire, t - threshold \n','s'));
+end
 if threshold_network=='t'
     threshold=Graph.DEG>1; %greater than 1 degree threshold
     Graph.networkThreshold=Graph.network(threshold,threshold); %applying degree threshold
@@ -215,12 +219,12 @@ end
 if threshold_network=='t'
     [f3, f4, f5, G, Adj, Adj2, Explore, highlightElec, new_electrodes] = graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold);
 else
-    [f3, f4, f5, G, Adj, Explore, highlightElec, new_electrodes] = graph_view(Sim,IndexTime,Explore,G,Adj, threshold_network);
+    [f3, f4, f5, G, Adj, Explore, highlightElec, new_electrodes] = graph_view(Sim,IndexTime,Explore,G, threshold_network);
 end
 %% Graph Theory View
 % Function that plots graph theory overlayed on graph view of currents
 if threshold_network=='t'
-    [f6, f7, f8, f9, f10, f11, Explore]= graph_theory_explore_threshold(Sim,G,Adj,Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes);
+    [f6, f7, f8, f9, f10, f11, Explore]= graph_theory_explore_threshold(Sim,G,Adj,Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices);
 else
     [f6, f7, f8, f9, f10, f11, Explore]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore, Graph, highlightElec, new_electrodes);
 end
@@ -377,10 +381,10 @@ LDA_Analysis(simNum).TypeOfData='Training';
 % plot(sv(:,1),sv(:,2),'ko','MarkerSize',10)
 % legend('Source 1','Source 2','Support Vector','Location','West')
 % hold off
-%
-% %Cross Validate:
-% CVSVMModel = crossval(SVMModel);
-% classLoss = kfoldLoss(CVSVMModel); %Generalization Rate
+
+%Cross Validate:
+CVSVMModel = crossval(SVMModel);
+classLoss = kfoldLoss(CVSVMModel); %Generalization Rate
 
 
 
@@ -562,7 +566,7 @@ end
 end
 
 %Graph Functions
-function [Graph]=graph_analysis(network,network_load,currentSim,IndexTime)
+function [Graph, binarise_network]=graph_analysis(network,network_load,currentSim,IndexTime)
 %% Mac's Analysis: (Graph)
 if strcmp(network_load,'z')%Zdenka Code:
     net_mat=network.adj_matrix; %symmetrical matrix
@@ -625,7 +629,7 @@ Graph.MZ = module_degree_zscore(net_mat,Graph.Ci);
 Graph.network=net_mat;
 Graph.IndexTime=IndexTime;
 end
-function Graph=plot_graph(Graph, network,network_load, currentSim,sim_loaded,currentPath)
+function Graph=plot_graph(Graph, network,network_load, currentSim,sim_loaded,currentPath,binarise_network)
 cd(currentPath)
 save_directory='..\Data\Figures\Graph Analysis\';
 
@@ -633,7 +637,11 @@ IndexTime=Graph.IndexTime;
 %visualise graph network:
 
 %Threshold graph degree:
-threshold_choice=lower(input('Do you want to plot the entire Graph or the Thresholded Graph? g - entire, t - threshold \n','s'));
+if binarise_network=='y'
+    threshold_choice='t';
+else
+    lower(input('Do you want to plot the entire Graph or the Thresholded Graph? g - entire, t - threshold \n','s'));
+end
 if threshold_choice=='t'
     threshold=Graph.DEG>1; %greater than 1 degree threshold
     Graph.networkThreshold=Graph.network(threshold,threshold); %applying degree threshold
