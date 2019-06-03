@@ -12,8 +12,10 @@ dbstop if error
 
 computer=getenv('computername');
 switch computer
-    case 'W4PT80T2'
+    case 'W4PT80T2' %if on desktop Alon
         currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Analysis';
+    case '' %if on linux
+        currentPath='/suphys/aloe8475/Documents/CODE/Analysis';
 end
 cd(currentPath);
 load_data_question=lower(input('Load network data, Analysis Data Only or None? N - None, D - Network Data, A - Analysis Data\n','s'));

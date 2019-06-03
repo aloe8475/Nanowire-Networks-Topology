@@ -8,6 +8,8 @@ computer=getenv('computername');
 switch computer
     case 'W4PT80T2'
         dataPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
+    case ''
+        dataPath-'/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks';
 end
 cd(dataPath)
 waitfor(msgbox('Select the Network saved data'));
