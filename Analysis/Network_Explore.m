@@ -18,6 +18,8 @@ switch computer
         currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Analysis';
     case '' %if on linux
         currentPath='/suphys/aloe8475/Documents/CODE/Analysis';
+    case 'LAPTOP-S1BV3HR7'
+        currentPath='D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis';
 end
 cd(currentPath);
 load_data_question=lower(input('Load network data, Analysis Data Only or None? N - None, D - Network Data, A - Analysis Data\n','s'));
