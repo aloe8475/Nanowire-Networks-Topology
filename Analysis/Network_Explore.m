@@ -4,8 +4,10 @@
 %
 % Author: Alon Loeffler
 %
-% Changelog:
-% 13/05/19 - Added support for simulation files with only 1 simulation
+% IMPORTANT:
+% Threshold = Degree of greater than 1
+% Binarise Threshold = Only low resistence junctions + wires
+% Full Graph = all degrees, all resistences
 % --------------------------
 dbstop if error
 %% Load Data
@@ -181,6 +183,12 @@ end
 
 %Exploring Functions:
 function Explore = explore_simulation(Sim,network,network_load,simNum,currentPath)
+
+% IMPORTANT:
+% Threshold = Degree of greater than 1
+% Binarise Threshold = Only low resistence junctions + wires
+% Full Graph = all degrees, all resistences
+
 [NodeList.String,NodeList.UserData]=GetNodeList(Sim);
 NodeList.Value=1;
 
@@ -215,7 +223,7 @@ IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(size(Sim.Da
 if binarise_network=='y'
     threshold_network='t';
 else
-    threshold_network=lower(input('Do you want to plot the entire Graph or the Thresholded Graph? g - entire, t - threshold \n','s'));
+    threshold_network=lower(input('Do you want to plot the entire Graph or the Thresholded Graph (>1 Degree)? g - entire, t - threshold \n','s'));
 end
 if threshold_network=='t'
     threshold=Graph.DEG>1; %greater than 1 degree threshold
@@ -250,15 +258,28 @@ end
 % set(edges,'LineColor',[1 0 0])
 % set(edges,'LineWidth',1.5)
 
+
 %% Searching Algorithms
 % v = bfsearch(G,sourceElec);
 if threshold_network=='t'
-figure;
 T1 = bfsearch(G,sourceElec,'allevents'); %Breadth-First Search
 T2 = dfsearch(G, sourceElec, 'allevents', 'Restart', true); %Depth-First Search 
-visualize_search(G,T1) %Visual search step by step
+%figure;
+%visualize_search(G,T1) %Visual search step by step
 % visualize_search(G,T2) %Visual search step by step
 
+%plot searching algorithms
+%bfsearch
+fs1=figure;p = plot(G,'Layout','layered');
+events = {'edgetonew','edgetofinished','startnode'};
+T = bfsearch(G,sourceElec,events,'Restart',true);
+highlight(p, 'Edges', T.EdgeIndex(T.Event == 'edgetofinished'), 'EdgeColor', 'k')
+highlight(p, 'Edges', T.EdgeIndex(T.Event == 'edgetonew'), 'EdgeColor', 'r')
+highlight(p,T.Node(~isnan(T.Node)),'NodeColor','g')
+%Overlay shortest path:
+[dist,path,pred]=graphshortestpath(Adj2,sourceElec,drainElec,'Directed','false')
+highlight(p,path,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
+title('Layered Graph Breadth-First Search overlayed w Shortest Path');
 %Outputs:
 
 %'discovernode' (default)-A new node has been discovered.
@@ -614,8 +635,13 @@ elseif strcmp(network_load,'a') %adrian code
         IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(size(currentSim.Data,1)) '\n']); %CHOOSE TIMESTAMP
     end
     %this gives a resistance matrix for the network used for a chosen simulation at a specific timestamp
-    binarise_network=input('Do you want to view the network thresholded ONLY with low Resistance? \n','s');
+    binarise_network=input('Do you want to view the network thresholded/binarised ONLY with low Resistance? \n','s');
     if binarise_network=='y' %Binarise so we can use Resistance for graph theory analysis
+        
+        %what we are doing here is creating a matrix of 0 and 1 (high and
+        %low resistence), so that we can plot ONLY those nodes/edges that
+        %have low resistence and are relevant. 
+        
         a= full(currentSim.Data.Rmat{IndexTime});
         a(a==5000)=1; %if resistance is low, we make it 1 (on)
         a(a==5000000)=0;  %if it is high we make it 0 (off)
@@ -679,10 +705,10 @@ IndexTime=Graph.IndexTime;
 if binarise_network=='y'
     threshold_choice='t';
 else
-    lower(input('Do you want to plot the entire Graph or the Thresholded Graph? g - entire, t - threshold \n','s'));
+    lower(input('Do you want to plot the entire Graph or the Thresholded Graph (>1 degree)? g - entire, t - threshold \n','s'));
 end
 if threshold_choice=='t'
-    threshold=Graph.DEG>1; %greater than 1 degree threshold
+    threshold=Graph.DEG>1; %greater than 1 degree threshold - 04/06/19 do I change this to >= 1?
     Graph.networkThreshold=Graph.network(threshold,threshold); %applying degree threshold
     g=graph(Graph.networkThreshold);
 else
@@ -716,7 +742,7 @@ end
 
 f2=figure;
 p2=plot(g);
-%Closeness graph: (Unweighted)
+%% Closeness graph: (Unweighted)
 ucc = centrality(g,'closeness');
 p2.NodeCData=ucc;
 colormap jet
@@ -730,7 +756,7 @@ if sim_loaded==1
     labelnode(p2,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
 end
 
-%Node size graph:
+%% Node size graph:
 f3=figure;
 p3=plot(g);
 if threshold_choice=='t'
@@ -754,7 +780,7 @@ if sim_loaded==1
 end
 text(-5,-6.2,'Min Degrees - 1 (small dot) | Max Degrees - 44 (large dot)');
 
-%Both combined:
+%% Both combined:
 f4=figure;
 p4=plot(g);
 p4.MarkerSize = bins;
@@ -768,7 +794,7 @@ labelnode(p4,highlightElec,[new_electrodes(:).Name]); %need to make this better 
 title(['Centrality Score and Degree Size Timestamp ' num2str(IndexTime)]);
 text(-5.5,-6.2,'Min Degrees = 1 (small dot) | Max Degrees = 44 (large dot)');
 
-%Histogram of degree distribution:
+%% Histogram of degree distribution:
 f5=figure;
 if threshold_choice=='t'
     h1=histogram(Graph.DEG_threshold);
@@ -786,7 +812,7 @@ ylabel('Frequency');
 ylim([0 30]);
 text(4,16,['Mean: ' num2str(Graph.avgDEG) ' | SD: ' num2str(Graph.stdDEG)]);
 
-%Cluster Analysis:
+%% Cluster Analysis:
 f6=figure;
 p6=plot(g);
 p6.MarkerSize = 4;
@@ -800,7 +826,7 @@ labelnode(p6,highlightElec,[new_electrodes(:).Name]); %need to make this better 
 colormap hsv(6) %change number of colors here if there are more/less than 6 clusters
 title(['Cluster Analysis ' num2str(IndexTime)]);
 
-%Participant Coefficient Analysis:
+%% Participant Coefficient Analysis:
 f7=figure;
 p7=plot(g);
 if threshold_choice=='t'
@@ -821,7 +847,7 @@ labelnode(p7,highlightElec,[new_electrodes(:).Name]); %need to make this better 
 text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P(threshold))) ' (large dot)']);
 title(['Participant Coefficient Analysis Timestamp ' num2str(IndexTime)]);
 
-%Module Degree Z-Score:
+%% Module Degree Z-Score:
 f8=figure;
 p8=plot(g);
 if threshold_choice=='t'
@@ -845,7 +871,7 @@ text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ(threshold))) ' (small dot) 
 title(['Module Degree z-Score Analysis Timestamp ' num2str(IndexTime)]);
 
 
-% Communicability at different times:
+%% Communicability at different times:
 Adj=(currentSim.Data.AdjMat{IndexTime});%convert 498x498 matrix to EdgeCData ~(1x6065)
 if threshold_choice=='t'
     Adj=Adj(threshold,threshold);
@@ -893,13 +919,13 @@ labelnode(p9,highlightElec,[new_electrodes(:).Name]); %need to make this better 
 title(['Communicability Analysis Timestamp ' num2str(IndexTime) ' (log10)']);
 
 
-% CIRCUIT RANK -- measure of recurrent loops (feedback loops)
+%% CIRCUIT RANK -- measure of recurrent loops (feedback loops)
 % based on analyze_network.py
 %circuit rank = num edges - num nodes + num connected components
 Graph.CircuitRank = numedges(g) - numnodes(g) + sum(conncomp(g));
 Graph.Indices=node_indices;
 
-%Save
+%% Save
 network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
 
 saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Network_Timestamp' num2str(IndexTime)],'jpg');

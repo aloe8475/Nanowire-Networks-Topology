@@ -353,7 +353,7 @@ p11.NodeCData=Graph.Ci;
 labelnode(p11,highlightElec,[new_electrodes(:).Name]);
 
 colormap hsv
-colorbar
+% colorbar
 
 %Overlay Shortest Path
 hold on

@@ -350,7 +350,7 @@ p11.NodeCData=Graph.Ci(threshold);
 % p11.MarkerSize=bins3;
 
 colormap hsv(6)
-colorbar
+% colorbar
 
 labelnode(p11,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
 labelnode(p11,highlightElec,[new_electrodes(:).Name]);
