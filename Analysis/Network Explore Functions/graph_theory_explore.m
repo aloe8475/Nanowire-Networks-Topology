@@ -2,7 +2,26 @@
 % This function plots graph theory parameters overlayed on graph view of
 % currents for the chosen Sim at the given timestamp (IndexTime)
 
-function [f6, f7, f8, f9, f10, f11,f12,f13, Explore]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore,Graph, highlightElec, new_electrodes)
+function [f6, f7, f8, f9, f10, f11,f12,f13, Explore, sourceElec, drainElec]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore,Graph, highlightElec, new_electrodes)
+
+%% Find Source and Drain Electrodes:
+for i = 1:length(new_electrodes)
+    electrodes_cell(i)=new_electrodes(i).Name;
+end
+
+sourceIndex = find(contains(electrodes_cell,'Source')); %find index of electrodes that are source electrodes
+drainIndex = find(contains(electrodes_cell,'Drain')); %find index of electrodes that are drain electrodes
+
+sourceElec=highlightElec(sourceIndex); %change to show path from different electrodes
+drainElec=highlightElec(drainIndex);
+
+for i =1:length(sourceElec)
+    source(i)=sourceElec(i); %choose first electrode if there are more than 1
+end
+for i =1:length(drainElec)
+    drain(i)=drainElec(i);%choose first electrode if there are more than 1
+end
+
 %% Participant Coefficients
 if threshold_network=='t'
     return
@@ -54,6 +73,25 @@ text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph
 
 title(['Participant Coefficient Analysis | T= ' num2str(IndexTime)]);
 
+%% Overlay Shortest Path
+hold on
+p1a=plot(currAx,G);
+set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
+p1a.NodeColor='green';
+p1a.Marker='none';
+p1a.EdgeColor='green';
+p1a.LineStyle='none';
+p1a.NodeLabel={};
+% highlight(p12,highlightElec,'NodeColor','green','Marker','o'); %change simulation number
+[dist,path,pred]=graphshortestpath(Adj,source(1),drain(1),'Directed','false');
+if length(sourceElec)>1
+    [dist2,path2,pred2]=graphshortestpath(Adj,source(2),drain(2),'Directed','false');
+    highlight(p1a,path2,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
+end
+highlight(p1a,path,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
+title(['Participant Coefficient Analysis overlayed with Shortest Path | T=' num2str(IndexTime)]);
+
+
 %% Modular z-Score:
 f7=figure;
 currAx=gca;
@@ -97,6 +135,24 @@ text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ)) ' (small dot) | Max MZ Co
 
 title(['Within Module Degree z-Score Analysis | T= ' num2str(IndexTime)]);
 
+%Overlay Shortest Path
+hold on
+p2a=plot(currAx,G);
+set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
+p2a.NodeColor='green';
+p2a.Marker='none';
+p2a.EdgeColor='green';
+p2a.LineStyle='none';
+p2a.NodeLabel={};
+% highlight(p12,highlightElec,'NodeColor','green','Marker','o'); %change simulation number
+[dist,path,pred]=graphshortestpath(Adj,source(1),drain(1),'Directed','false');
+if length(sourceElec)>1
+    [dist2,path2,pred2]=graphshortestpath(Adj,source(2),drain(2),'Directed','false');
+    highlight(p2a,path2,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
+end
+highlight(p2a,path,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
+title(['Within Module Degree z-Score overlayed with Shortest Path | T=' num2str(IndexTime)]);
+
 %% Connectivity
 f8=figure;
 currAx=gca;
@@ -139,15 +195,7 @@ text(-5,-6.2,'Min Degrees - 1 (small dot) | Max Degrees - 44 (large dot)');
 
 %% Shortest Path (Distance)
 d = distances(G); %calculate all the shortest path distance across all node pairs in the network.
-for i = 1:length(new_electrodes)
-    electrodes_cell(i)=new_electrodes(i).Name;
-end
 
-sourceIndex = find(contains(electrodes_cell,'Source')); %find index of electrodes that are source electrodes
-drainIndex = find(contains(electrodes_cell,'Drain')); %find index of electrodes that are drain electrodes
-
-sourceElec=highlightElec(sourceIndex); %change to show path from different electrodes
-drainElec=highlightElec(drainIndex);
 avgD=mean(d);
 medianD=median(d);
 stdD=std(d);
@@ -171,15 +219,6 @@ title('Distribution of Median Path Distances across all Node Pairs');
 xlabel('Median Distance');
 ylabel('Frequency');
 
-%This needs to be fixed (automated) - what if there are more than 4 electrodes?
-
-for i =1:length(sourceElec)
-    source(i)=sourceElec(i); %choose first electrode if there are more than 1
-end
-for i =1:length(drainElec)
-    drain(i)=drainElec(i);%choose first electrode if there are more than 1
-end
-
 %Plot all paths from current Electrode
 f10=figure;
 currAx=gca;
@@ -189,7 +228,7 @@ p6.NodeCData=d(source(1),:);
 highlight(p6,source(1),'MarkerSize',8);
 colormap(currAx,jet);%gcurrmap
 colorbar(currAx);
-title(['Path Distances from Source Electrode | T=' num2str(IndexTime)]');
+title(['Path Distances from Source Electrode | T=' num2str(IndexTime)]);
 
 %% Show shortest path from source to drain: %27/05/19
 f11=figure;
@@ -234,7 +273,7 @@ if length(sourceElec)==2 &&length(drainElec)==2 %if there are 2 sources and 2 dr
     highlight(p7,path2,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
 end
 highlight(p7,path,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
-title(['Shortest Path + Overlayed on Current | T=' num2str(IndexTime)]');
+title(['Shortest Path + Overlayed on Current | T=' num2str(IndexTime)]);
 
 
 %% Communicability
@@ -290,7 +329,7 @@ if length(sourceElec)>1
     highlight(p10,path2,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
 end
 highlight(p10,path,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
-title(['Communicability, Overlayed w Shortest Path | T=' num2str(IndexTime)]');
+title(['Communicability, Overlayed w Shortest Path | T=' num2str(IndexTime)]);
 
 
 %% Clustering Coefficient
@@ -302,7 +341,7 @@ p11=plot(currAx,G);
 p11.MarkerSize = 4;
 % set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
 set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
-p10.NodeColor='red';
+p11.NodeColor='red';
 p11.NodeLabel={};
 p11.NodeCData=Graph.Ci;
 % Ci_ranks=Graph.Ci(threshold);
@@ -310,7 +349,7 @@ p11.NodeCData=Graph.Ci;
 % bins3 = discretize(Ci_ranks,edges3);
 % p11.MarkerSize=bins3;
 
-labelnode(p11,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
+% labelnode(p11,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
 labelnode(p11,highlightElec,[new_electrodes(:).Name]);
 
 colormap hsv
