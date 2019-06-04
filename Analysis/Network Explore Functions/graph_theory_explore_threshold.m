@@ -2,7 +2,25 @@
 % This function plots graph theory parameters overlayed on graph view of
 % currents for the chosen Sim at the given timestamp (IndexTime)
 
-function [f6, f7, f8, f9, f10, f11, f12,f13, Explore]= graph_theory_explore_threshold(Sim,G,Adj, Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices)
+function [f6, f7, f8, f9, f10, f11, f12,f13, Explore, sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj, Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices)
+%% Find Source and Drain Electrodes:
+for i = 1:length(new_electrodes)
+    electrodes_cell(i)=new_electrodes(i).Name;
+end
+
+sourceIndex = find(contains(electrodes_cell,'Source')); %find index of electrodes that are source electrodes
+drainIndex = find(contains(electrodes_cell,'Drain')); %find index of electrodes that are drain electrodes
+
+sourceElec=highlightElec(sourceIndex); %change to show path from different electrodes
+drainElec=highlightElec(drainIndex);
+
+for i =1:length(sourceElec)
+    source(i)=sourceElec(i); %choose first electrode if there are more than 1
+end
+for i =1:length(drainElec)
+    drain(i)=drainElec(i);%choose first electrode if there are more than 1
+end
+
 %% Participant Coefficients
 if threshold_network~='t'
     return
@@ -170,15 +188,7 @@ text(-5,-6.2,'Min Degrees - 1 (small dot) | Max Degrees - 44 (large dot)');
 
 %% Shortest Path (Distance)
 d = distances(G); %calculate all the shortest path distance across all node pairs in the network.
-for i = 1:length(new_electrodes)
-    electrodes_cell(i)=new_electrodes(i).Name;
-end
 
-sourceIndex = find(contains(electrodes_cell,'Source')); %find index of electrodes that are source electrodes
-drainIndex = find(contains(electrodes_cell,'Drain')); %find index of electrodes that are drain electrodes
-
-sourceElec=highlightElec(sourceIndex); %change to show path from different electrodes
-drainElec=highlightElec(drainIndex);
 avgD=mean(d);
 medianD=median(d);
 stdD=std(d);
@@ -202,14 +212,6 @@ title('Distribution of Median Path Distances across all Node Pairs');
 xlabel('Median Distance');
 ylabel('Frequency');
 
-%This needs to be fixed (automated) - what if there are more than 4 electrodes?
-for i =1:length(sourceElec)
-    source(i)=sourceElec(i); %choose first electrode if there are more than 1
-end
-for i =1:length(drainElec)
-    drain(i)=drainElec(i);%choose first electrode if there are more than 1
-end
-
 %Plot all paths from current Electrode
 f10=figure;
 currAx=gca;
@@ -219,7 +221,7 @@ p6.NodeCData=d(source(1),:);
 highlight(p6,source(1),'MarkerSize',8);
 colormap(currAx,jet);%gcurrmap
 colorbar(currAx);
-title(['Path Distances from Source Electrode, Thresholded | T=' num2str(IndexTime)]');
+title(['Path Distances from Source Electrode, Thresholded | T=' num2str(IndexTime)]);
 
 %% Show shortest path from source to drain: %27/05/19
 f11=figure;
@@ -277,7 +279,7 @@ if length(sourceElec)>1
     highlight(p7,path2,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
 end
 highlight(p7,path,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
-title(['Shortest Path, Thresholded + Overlayed on Current | T=' num2str(IndexTime)]');
+title(['Shortest Path, Thresholded + Overlayed on Current | T=' num2str(IndexTime)]);
 
 %% Communicability
 
@@ -331,7 +333,7 @@ if length(sourceElec)>1
     highlight(p10,path2,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
 end
 highlight(p10,path,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
-title(['Communicability, Thresholded + Overlayed w Shortest Path | T=' num2str(IndexTime)]');
+title(['Communicability, Thresholded + Overlayed w Shortest Path | T=' num2str(IndexTime)]);
 
 %% Clustering Coefficient
 

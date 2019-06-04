@@ -12,7 +12,7 @@ dbstop if error
 
 computer=getenv('computername');
 switch computer
-    case 'W4PT80T2' %if on desktop Alon
+    case 'W4PT80T2' %if on desktop at uni - Alon
         currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Analysis';
     case '' %if on linux
         currentPath='/suphys/aloe8475/Documents/CODE/Analysis';
@@ -238,9 +238,9 @@ end
 %% Graph Theory View
 % Function that plots graph theory overlayed on graph view of currents
 if threshold_network=='t'
-    [f6, f7, f8, f9, f10, f11,f12,f13, Explore]= graph_theory_explore_threshold(Sim,G,Adj,Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices);
+    [f6, f7, f8, f9, f10, f11,f12,f13, Explore,sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj,Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices);
 else
-    [f6, f7, f8, f9, f10, f11,f12,f13, Explore]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore, Graph, highlightElec, new_electrodes);
+    [f6, f7, f8, f9, f10, f11,f12,f13, Explore, sourceElec, drainElec]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore, Graph, highlightElec, new_electrodes);
 end
 
 %Biograph view
@@ -252,6 +252,25 @@ end
 % set(edges,'LineColor',[1 0 0])
 % set(edges,'LineWidth',1.5)
 
+%% Searching Algorithms
+% v = bfsearch(G,sourceElec);
+if threshold_network=='t'
+figure;
+T1 = bfsearch(G,sourceElec,'allevents'); %Breadth-First Search
+T2 = dfsearch(G, sourceElec, 'allevents', 'Restart', true); %Depth-First Search 
+visualize_search(G,T1) %Visual search step by step
+% visualize_search(G,T2) %Visual search step by step
+
+%Outputs:
+
+%'discovernode' (default)-A new node has been discovered.
+%'finishnode'- All outgoing edges from the node have been visited.
+%'startnode'- This flag indicates the starting node in the search. If 'Restart' is true, then 'startnode' flags the starting node each time the search restarts.
+%'edgetonew'-Edge connects to an undiscovered node.
+%'edgetodiscovered'	-Edge connects to a previously discovered node.
+%'edgetofinished'- Edge connects to a finished node.
+ 
+end 
 
 %% Save
 %Save Variables
