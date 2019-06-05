@@ -57,12 +57,8 @@ else
     currentSim=simulations(simNum);
 end
 
-fprintf(['Simulation: ' network(networkNum).Name currentSim.Name ' selected \n\n']);
-if load_data_question=='d'
-    extract_data(network,simNum);
-    fprintf(['Extracting Data for Python Use...\n\n\n']);
-    fprintf(['Data Extracted \n\n\n']);
-end
+fprintf(['Simulation: ' network(networkNum).Name currentSim.Name ' selected \n\n\n']);
+
 
 %% Analysis:
 i = 1;
@@ -90,6 +86,11 @@ while i == 1
         i=i+1;
     elseif analysis_type=='l'
         %% LDA Analysis
+        if load_data_question=='d' 
+            extract_data(network,simNum);
+            fprintf(['Extracting Data for Python Use...\n\n\n']);
+            fprintf(['Data Extracted \n\n\n']);
+        end
         LDA_Analysis=lda_analysis(currentSim,network,network_load,simNum);
         i=i+1;
     end
@@ -197,19 +198,37 @@ NodeList.Value=1;
 %% Timeseries View
 %Plot Current
 f=figure;
-source=full(Sim.Data.ISource1);
-drain=full(Sim.Data.IDrain1);
-subplot(1,2,1)
-plot(source)
-title('Source')
-xlabel('Timestamp (0.01sec)')
-ylabel('Current (A)');
-subplot(1,2,2)
-plot(drain)
-title('Drain');
-xlabel('Timestamp (0.01sec)')
-ylabel('Current (A)');
-
+drainIndex=find(contains(Sim.Electrodes.Name,'Drain'));
+if isempty(drainIndex)
+    drain_exist=0;
+end 
+sourceIndex=find(contains(Sim.Electrodes.Name,'Source'));
+for i = 1:length(sourceIndex)
+    source(:,i)=full(Sim.Data.(['ISource' num2str(i)]));
+end
+for i = 1:length(drainIndex)
+    if ismember(['IDrain' num2str(i)], fieldnames(Sim.Data))
+        drain(:,i)=full(Sim.Data.(['IDrain' num2str(i)]));
+        drain_exist=1;
+    end
+end
+if drain_exist
+    subplot(1,2,1)
+    plot(source)
+    title('Source')
+    xlabel('Timestamp (0.01sec)')
+    ylabel('Current (A)');
+    subplot(1,2,2)
+    plot(drain)
+    title('Drain');
+    xlabel('Timestamp (0.01sec)')
+    ylabel('Current (A)');
+else
+    plot(source)
+    title('Source')
+    xlabel('Timestamp (0.01sec)')
+    ylabel('Current (A)');
+end
 %Choose a time to Explore Simulation:
 IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(size(Sim.Data,1)) '\n']); %CHOOSE TIMESTAMP
 
@@ -239,16 +258,16 @@ end
 %% Graph View
 % Function that plots graphical view of current, voltage and resistance
 if threshold_network=='t'
-    [f3, f4, f5, G, Adj, Adj2, Explore, highlightElec, new_electrodes] = graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold);
+    [f3, f4, f5, G, Adj, Adj2, Explore, highlightElec, new_electrodes] = graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold, drain_exist);
 else
-    [f3, f4, f5, G, Adj, Explore, highlightElec, new_electrodes] = graph_view(Sim,IndexTime,Explore,G, threshold_network);
+    [f3, f4, f5, G, Adj, Explore, highlightElec, new_electrodes] = graph_view(Sim,IndexTime,Explore,G, threshold_network,drain_exist);
 end
 %% Graph Theory View
 % Function that plots graph theory overlayed on graph view of currents
 if threshold_network=='t'
-    [f6, f7, f8, f9, f10, f11,f12,f13, Explore,sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj,Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices);
+    [f6, f7, f8, f9, f10, f11,f12,f13, Explore,sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj,Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices,drain_exist);
 else
-    [f6, f7, f8, f9, f10, f11,f12,f13, Explore, sourceElec, drainElec]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore, Graph, highlightElec, new_electrodes);
+    [f6, f7, f8, f9, f10, f11,f12,f13, Explore, sourceElec, drainElec]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore, Graph, highlightElec, new_electrodes,drain_exist);
 end
 
 %Biograph view
@@ -262,36 +281,38 @@ end
 
 
 %% Searching Algorithms
-% v = bfsearch(G,sourceElec);
-if threshold_network=='t'
-T1 = bfsearch(G,sourceElec,'allevents'); %Breadth-First Search
-T2 = dfsearch(G, sourceElec, 'allevents', 'Restart', true); %Depth-First Search 
-%figure;
-%visualize_search(G,T1) %Visual search step by step
-% visualize_search(G,T2) %Visual search step by step
 
-%plot searching algorithms
-%bfsearch
-fs1=figure;p = plot(G,'Layout','layered');
-events = {'edgetonew','edgetofinished','startnode'};
-T = bfsearch(G,sourceElec,events,'Restart',true);
-highlight(p, 'Edges', T.EdgeIndex(T.Event == 'edgetofinished'), 'EdgeColor', 'k')
-highlight(p, 'Edges', T.EdgeIndex(T.Event == 'edgetonew'), 'EdgeColor', 'r')
-highlight(p,T.Node(~isnan(T.Node)),'NodeColor','g')
-%Overlay shortest path:
-[dist,path,pred]=graphshortestpath(Adj2,sourceElec,drainElec,'Directed','false')
-highlight(p,path,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
-title('Layered Graph Breadth-First Search overlayed w Shortest Path');
-%Outputs:
-
-%'discovernode' (default)-A new node has been discovered.
-%'finishnode'- All outgoing edges from the node have been visited.
-%'startnode'- This flag indicates the starting node in the search. If 'Restart' is true, then 'startnode' flags the starting node each time the search restarts.
-%'edgetonew'-Edge connects to an undiscovered node.
-%'edgetodiscovered'	-Edge connects to a previously discovered node.
-%'edgetofinished'- Edge connects to a finished node.
- 
-end 
+if threshold_network=='t' %only conduct search if we thresholded the network - otherwise too complex
+    T1 = bfsearch(G,sourceElec,'allevents'); %Breadth-First Search
+    T2 = dfsearch(G, sourceElec, 'allevents', 'Restart', true); %Depth-First Search
+    %figure;
+    %visualize_search(G,T1) %Visual search step by step
+    % visualize_search(G,T2) %Visual search step by step
+    
+    %plot searching algorithms
+    %bfsearch
+    fs1=figure;p = plot(G,'Layout','layered');
+    events = {'edgetonew','edgetofinished','startnode'};
+    T = bfsearch(G,sourceElec,events,'Restart',true);
+    highlight(p, 'Edges', T.EdgeIndex(T.Event == 'edgetofinished'), 'EdgeColor', 'k')
+    highlight(p, 'Edges', T.EdgeIndex(T.Event == 'edgetonew'), 'EdgeColor', 'r')
+    highlight(p,T.Node(~isnan(T.Node)),'NodeColor','g')
+    if drain_exist
+    %Overlay shortest path:
+    [dist,path,pred]=graphshortestpath(Adj2,sourceElec,drainElec,'Directed','false')
+    highlight(p,path,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
+    title('Layered Graph Breadth-First Search overlayed w Shortest Path');
+    end 
+    %Outputs:
+    
+    %'discovernode' (default)-A new node has been discovered.
+    %'finishnode'- All outgoing edges from the node have been visited.
+    %'startnode'- This flag indicates the starting node in the search. If 'Restart' is true, then 'startnode' flags the starting node each time the search restarts.
+    %'edgetonew'-Edge connects to an undiscovered node.
+    %'edgetodiscovered'	-Edge connects to a previously discovered node.
+    %'edgetofinished'- Edge connects to a finished node.
+    
+end
 
 %% Save
 %Save Variables
@@ -647,7 +668,7 @@ elseif strcmp(network_load,'a') %adrian code
         
         %what we are doing here is creating a matrix of 0 and 1 (high and
         %low resistence), so that we can plot ONLY those nodes/edges that
-        %have low resistence and are relevant. 
+        %have low resistence and are relevant.
         
         a= full(currentSim.Data.Rmat{IndexTime});
         a(a==5000)=1; %if resistance is low, we make it 1 (on)

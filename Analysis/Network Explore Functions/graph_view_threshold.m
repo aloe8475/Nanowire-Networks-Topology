@@ -1,11 +1,11 @@
 %% Graph View
 % This function plots graph parameters such as current, voltage and
 % resistance for the chosen Sim at the given timestamp (IndexTime)
-function [f3, f4, f5, G, Adj, Adj2, Explore,  highlightElec, new_electrodes]= graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold)
+function [f3, f4, f5, G, Adj, Adj2, Explore,  highlightElec, new_electrodes]= graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold, drain_exist)
 if threshold_network~='t'
     return
     fprintf('Error in graph_view_threshold - you should not be seeing this');
-end 
+end
 %Plot Graph
 f3=figure;
 currAx=gca;
@@ -21,7 +21,11 @@ p.MarkerSize=1.5;
 p.LineWidth=1.5;
 Adj=(Sim.Data.AdjMat{IndexTime});%we need to keep a copy of the original Adj matrix (unthresholded) to find all the currents
 Adj2=Adj(threshold,threshold);
-currs=(abs(Sim.Data.Currents{IndexTime}));
+if ~drain_exist %if no drains
+    currs=log10(abs(Sim.Data.Currents{IndexTime}));
+else
+    currs=abs(Sim.Data.Currents{IndexTime});
+end
 currs=currs(threshold,threshold);
 [j,i,~]=find(tril(Adj2));
 cc=zeros(1,length(j));
@@ -34,7 +38,7 @@ end
 cc2=zeros(1,length(j));
 
 for k=1:length(j)
-        cc2(k)=Graph.networkThreshold(i(k),j(k));
+    cc2(k)=Graph.networkThreshold(i(k),j(k));
 end
 
 %Find Graph.COMM in network
@@ -46,19 +50,19 @@ colorbar(currAx);
 caxis(currAx,clim);
 
 %Highlight Electrodes:
-    node_indices=find(threshold==1); %find nodes with threshold == 1
-    for i=1:size(Sim.Electrodes.PosIndex,1)
-        if ~isempty(find(node_indices==Sim.Electrodes.PosIndex(i)))
-            new_electrodes(i).PosIndex=find(node_indices==Sim.Electrodes.PosIndex(i));
-            new_electrodes(i).Name=Sim.Electrodes.Name(i);
-        end
+node_indices=find(threshold==1); %find nodes with threshold == 1
+for i=1:size(Sim.Electrodes.PosIndex,1)
+    if ~isempty(find(node_indices==Sim.Electrodes.PosIndex(i)))
+        new_electrodes(i).PosIndex=find(node_indices==Sim.Electrodes.PosIndex(i));
+        new_electrodes(i).Name=Sim.Electrodes.Name(i);
     end
+end
 
 highlightElec={new_electrodes.PosIndex};
 highlightElec=cell2num(highlightElec);
 highlight(p,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
 labelnode(p,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
-title(['Current Graph View Timestamp ' num2str(IndexTime)]);
+title(['Current Graph View | T= ' num2str(IndexTime)]);
 
 
 %Plot Graph
@@ -87,7 +91,7 @@ end
 wd2=zeros(1,length(j));
 
 for k=1:length(j)
-        wd2(k)=Graph.networkThreshold(i(k),j(k));
+    wd2(k)=Graph.networkThreshold(i(k),j(k));
 end
 wd3=wd(logical(wd2));
 
@@ -101,7 +105,7 @@ caxis(currAx,clim);
 highlight(p1,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
 labelnode(p1,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
 
-title(['Resistance Graph View Timestamp ' num2str(IndexTime)]);
+title(['Resistance Graph View | T= ' num2str(IndexTime)]);
 
 %Voltage at each Node: %17/05/19
 f5=figure;
@@ -114,20 +118,24 @@ p2.EdgeColor='black';
 p2.NodeLabel={};
 
 %%Plot Voltage (log10)
-vlist=Sim.Data.Voltages{IndexTime};
+if ~drain_exist %if no drains
+    vlist=log10(Sim.Data.Voltages{IndexTime});
+else
+    vlist=Sim.Data.Voltages{IndexTime};
+end
 p2.NodeCData=full(vlist(threshold));
 p2.MarkerSize=3;
 colormap(currAx,hot);
 colorbar(currAx);
 caxis([Sim.SimInfo.MinV Sim.SimInfo.MaxV]);
 
-labelnode(p2,highlightElec,[new_electrodes(:).Name]); 
-title(['Voltage Graph View Timestamp ' num2str(IndexTime)]);
+labelnode(p2,highlightElec,[new_electrodes(:).Name]);
+title(['Voltage Graph View |T= ' num2str(IndexTime)]);
 
 Explore.GraphView.currents=Sim.Data.Currents{IndexTime};
 Explore.GraphView.resistance=Sim.Data.Rmat{IndexTime};
 Explore.GraphView.Nodes=G.Nodes;
 Explore.GraphView.Edges=G.Edges;
 Explore.GraphView.ElectrodePosition=Sim.Electrodes.PosIndex;
-end 
+end
 

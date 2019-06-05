@@ -1,11 +1,11 @@
 %% Graph View
 % This function plots graph parameters such as current, voltage and
 % resistance for the chosen Sim at the given timestamp (IndexTime)
-function [f3, f4, f5, G, Adj, Explore,  highlightElec, new_electrodes]= graph_view(Sim,IndexTime,Explore,G, threshold_network)
+function [f3, f4, f5, G, Adj, Explore,  highlightElec, new_electrodes]= graph_view(Sim,IndexTime,Explore,G, threshold_network, drain_exist)
 if threshold_network=='t'
     return
     fprintf('Error in graph_view - you should not be seeing this');
-end 
+end
 %Plot Graph
 Adj=Sim.Data.AdjMat{IndexTime};
 f3=figure;
@@ -20,7 +20,11 @@ p.NodeLabel={};
 %% Plot Currents
 p.MarkerSize=1.5;
 p.LineWidth=1.5;
-currs=(abs(Sim.Data.Currents{IndexTime}));
+if ~drain_exist %if no drains
+    currs=log10(abs(Sim.Data.Currents{IndexTime}));
+else
+    currs=abs(Sim.Data.Currents{IndexTime});
+end
 [j,i,~]=find(tril(Adj));
 cc=zeros(1,length(j));
 for k=1:length(j)
@@ -42,7 +46,7 @@ highlightElec={new_electrodes.PosIndex};
 highlightElec=cell2num(highlightElec);
 highlight(p,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
 labelnode(p,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
-title(['Current Graph View Timestamp ' num2str(IndexTime)]);
+title(['Current Graph View | T= ' num2str(IndexTime)]);
 
 
 %Plot Graph
@@ -74,7 +78,7 @@ caxis(currAx,clim);
 highlight(p1,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
 labelnode(p1,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
 
-title(['Resistance Graph View Timestamp ' num2str(IndexTime)]);
+title(['Resistance Graph View | T= ' num2str(IndexTime)]);
 
 %Voltage at each Node: %17/05/19
 f5=figure;
@@ -87,7 +91,11 @@ p2.EdgeColor='black';
 p2.NodeLabel={};
 
 %%Plot Voltage (log10)
-vlist=Sim.Data.Voltages{IndexTime};
+if ~drain_exist %if no drains
+    vlist=log10(Sim.Data.Voltages{IndexTime});
+else
+    vlist=Sim.Data.Voltages{IndexTime};
+end
 p2.NodeCData=full(vlist);
 p2.MarkerSize=3;
 colormap(currAx,hot);
@@ -95,11 +103,11 @@ colorbar(currAx);
 caxis([Sim.SimInfo.MinV Sim.SimInfo.MaxV]);
 
 labelnode(p2,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
-title(['Voltage Graph View Timestamp ' num2str(IndexTime)]);
+title(['Voltage Graph View |T= ' num2str(IndexTime)]);
 
 Explore.GraphView.currents=Sim.Data.Currents{IndexTime};
 Explore.GraphView.resistance=Sim.Data.Rmat{IndexTime};
 Explore.GraphView.Nodes=G.Nodes;
 Explore.GraphView.Edges=G.Edges;
 Explore.GraphView.ElectrodePosition=Sim.Electrodes.PosIndex;
-end 
+end
