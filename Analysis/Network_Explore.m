@@ -691,25 +691,48 @@ Graph.GE = efficiency_bin(net_mat,0);
 %Local efficiency --> 1/characteristic path length, at each node
 Graph.LE = efficiency_bin(net_mat,1);
 
+
+%Betweeness Centrality
+Graph.BC=betweenness_bin(net_mat); 
+% Node betweenness centrality is the fraction of all shortest paths in the network that contain a given node. Nodes with high values of betweenness centrality participate in a large number of shortest paths.
+
+%Eigenvector Centrality
+Graph.EC=eigenvector_centrality_und(net_mat);
+% Eigenector centrality is a self-referential measure of centrality -- nodes have high eigenvector centrality if they connect to other nodes that have high eigenvector centrality.
+
+%Subgraph Centrality
+Graph.SC=subgraph_centrality(net_mat);
+%The subgraph centrality of a node is a weighted sum of closed walks of different lengths in the network starting and ending at the node.
+
 %communicability --> an estimate of the ease with which each pair of nodes can connect in the network
 Graph.COMM = expm(net_mat);
 
 %Clustering Coefficient
-[Graph.GlobalC1ust,Graph.AvgLocalClust, Graph.Clust] = clustCoeff(net_mat);
+% [Graph.GlobalC1ust,Graph.AvgLocalClust, Graph.Clust] = clustCoeff(net_mat);
+Graph.Clust=clustering_coef_bu(net_mat);
 % Graph.GlobalC1ust = number of triangle loops / number of connected triples
 % Graph.AvgLocalClust = the average local clustering, where Ci = (number of triangles connected to i) / (number of triples centered on i)
 % Graph.Clust = a 1xN vector of clustering coefficients per node (where mean(C) = C2)
 
+%Distance Matrix
+%The distance matrix contains lengths of shortest paths between all pairs of nodes
+Graph.Distance=distance_bin(net_mat);
+
 %Path Length
 Graph.Path = path_length(net_mat);
+Graph.CharPath=charpath(Graph.Distance);
 %Average Path Length
 Graph.AvgPath=mean(Graph.Path);
+
 
 %modularity --> an estimate of how segregated the network is
 [Graph.Ci,Graph.Q] = community_louvain(net_mat,1);
 %The Ci term is the module assignment for each node
 %The Q term is the 'quality' of the partition --> how modular the network is.
 % -- this should tell us how well we can classify
+
+%Modularity:
+Graph.Modularity=modularity_und(net_mat);
 
 %degree --> a count of how many edges are connected to each node
 Graph.DEG = degrees_und(net_mat);
