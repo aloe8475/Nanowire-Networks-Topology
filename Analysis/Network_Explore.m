@@ -299,7 +299,7 @@ if threshold_network=='t' %only conduct search if we thresholded the network - o
     highlight(p,T.Node(~isnan(T.Node)),'NodeColor','g')
     if drain_exist
     %Overlay shortest path:
-    [dist,path,pred]=graphshortestpath(Adj2,sourceElec,drainElec,'Directed','false')
+    [dist,path,pred]=graphshortestpath(Adj2,sourceElec,drainElec,'Directed','false');
     highlight(p,path,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
     title('Layered Graph Breadth-First Search overlayed w Shortest Path');
     end 
