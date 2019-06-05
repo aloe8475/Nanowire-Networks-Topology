@@ -84,7 +84,7 @@ labelnode(p3,highlightElec,[new_electrodes(:).Name]); %need to make this automat
 
 %Need to figure out how to change colormap for Nodes seperately.
 text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P(threshold))) ' (large dot)']);
-title(['Participant Coefficient Analysis, Thresholded | T= ' num2str(IndexTime)]);
+title(['Participant Coeff, Thresholded | T= ' num2str(IndexTime)]);
 
 %% Modular z-Score:
 f7=figure;
@@ -138,7 +138,7 @@ labelnode(p4,highlightElec,[new_electrodes(:).Name]); %need to make this automat
 
 
 text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ(threshold))) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
-title(['Within Module Degree z-Score Analysis, Thresholded | T= ' num2str(IndexTime)]);
+title(['Within Module z-Score, Thresholded | T= ' num2str(IndexTime)]);
 
 %% Connectivity
 f8=figure;
@@ -381,7 +381,7 @@ if drain_exist
         highlight(p12,path2,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
     end
     highlight(p12,path,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
-    title(['Cluster Analysis, Thresholded + Overlayed w Shortest Path | T=' num2str(IndexTime)]);
+    title(['Clustering, Thresholded + Overlayed w Shortest Path | T=' num2str(IndexTime)]);
 end
 
 Explore.GraphView.Distances.Values=d;

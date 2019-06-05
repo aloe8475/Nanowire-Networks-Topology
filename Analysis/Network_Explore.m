@@ -396,12 +396,12 @@ end
 end
 function save_explore(Explore,network,network_load,currentPath)
 cd(currentPath);
-save_directory='..\Data\Network Exploration Analysis\';
+save_directory='..\Data\Explore Analysis\';
 if strcmp(network_load,'z')%Zdenka Code:
     save([save_directory 'Zdenka_' num2str(network.number_of_wires) 'nw_Exploration_Analysis_' date],'Explore');
 elseif strcmp(network_load,'a') %adrian code
     network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
-    save([save_directory 'Adrian_' num2str(network.Name) 'Exploration_Analysis' num2str(Explore.IndexTime) '_Timestamp_' date],'Explore');
+    save([save_directory 'Adrian_' num2str(network.Name) '_Sim_' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Exploration_Analysis_ Timestamp_' num2str(Explore.IndexTime) '_' date],'Explore');
 end
 end
 

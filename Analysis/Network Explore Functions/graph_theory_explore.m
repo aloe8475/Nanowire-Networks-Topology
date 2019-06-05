@@ -76,7 +76,7 @@ labelnode(p3,highlightElec,[new_electrodes(:).Name]); %need to make this automat
 
 text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P)) ' (large dot)']);
 
-title(['Participant Coefficient Analysis | T= ' num2str(IndexTime)]);
+title(['Participant Coeff | T= ' num2str(IndexTime)]);
 if drain_exist
     
     %% Overlay Shortest Path
@@ -95,7 +95,7 @@ if drain_exist
         highlight(p1a,path2,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
     end
     highlight(p1a,path,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
-    title(['Participant Coefficient Analysis overlayed w Shortest Path | T=' num2str(IndexTime)]);
+    title(['Participant Coeff, overlayed w Shortest Path | T=' num2str(IndexTime)]);
 end
 
 %% Modular z-Score:
@@ -139,7 +139,7 @@ labelnode(p4,highlightElec,[new_electrodes(:).Name]); %need to make this automat
 
 text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ)) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
 
-title(['Within Module Degree z-Score Analysis | T= ' num2str(IndexTime)]);
+title(['Within Module z-Score  | T= ' num2str(IndexTime)]);
 if drain_exist
     
     %Overlay Shortest Path
@@ -158,7 +158,7 @@ if drain_exist
         highlight(p2a,path2,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
     end
     highlight(p2a,path,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
-    title(['Within Module Degree z-Score overlayed w Shortest Path | T=' num2str(IndexTime)]);
+    title(['Within Module z-Score, overlayed w Shortest Path | T=' num2str(IndexTime)]);
 end
 %% Connectivity
 f8=figure;
@@ -320,7 +320,7 @@ colorbar
 labelnode(p9,highlightElec,[new_electrodes(:).Name]);
 highlight(p9,highlightElec,'NodeColor','green','Marker','o'); %change simulation number
 
-title(['Communicability Analysis Timestamp ' num2str(IndexTime) ' (log10)']);
+title(['Communicability,  Timestamp ' num2str(IndexTime) ' (log10)']);
 if drain_exist
     
     %Overlay Shortest Path
@@ -381,7 +381,7 @@ if drain_exist
         highlight(p12,path2,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
     end
     highlight(p12,path,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
-    title(['Cluster Analysis overlayed w Shortest Path | T=' num2str(IndexTime)]);
+    title(['Clustering, overlayed w Shortest Path | T=' num2str(IndexTime)]);
 end
 
 Explore.GraphView.Distances.Values=d;
