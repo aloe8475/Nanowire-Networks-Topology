@@ -297,6 +297,11 @@ end
 %Save Variables
 Explore.IndexTime=IndexTime;
 Explore.Name=Sim.Name;
+Explore.GraphTheory=Graph;
+Explore.GraphTheory.Definitions={'GE = Global Efficiency','LE = Local Efficiency', 'COMM = Communicability', 'Ci = Community/Cluster Affiliation',...
+    'Q = Modularity', 'P = Participation Coefficient', 'MZ = Module Degree z Score', 'AvgPath - Average Path Length', ...
+    'GlobalC1ust = number of triangle loops / number of connected triples', 'AvgLocalClust = the average local clustering, where Ci = (number of triangles connected to i) / (number of triples centered on i)', ...
+    'Graph.Clust = a 1xN vector of clustering coefficients per node (where mean(C) = C2)'};
 if threshold_network=='t'
     Explore.Thresholded='Yes';
 else
@@ -667,6 +672,17 @@ Graph.LE = efficiency_bin(net_mat,1);
 
 %communicability --> an estimate of the ease with which each pair of nodes can connect in the network
 Graph.COMM = expm(net_mat);
+
+%Clustering Coefficient
+[Graph.GlobalC1ust,Graph.AvgLocalClust, Graph.Clust] = clustCoeff(net_mat);
+% Graph.GlobalC1ust = number of triangle loops / number of connected triples
+% Graph.AvgLocalClust = the average local clustering, where Ci = (number of triangles connected to i) / (number of triples centered on i)
+% Graph.Clust = a 1xN vector of clustering coefficients per node (where mean(C) = C2)
+
+%Path Length
+Graph.Path = path_length(net_mat);
+%Average Path Length
+Graph.AvgPath=mean(Graph.Path);
 
 %modularity --> an estimate of how segregated the network is
 [Graph.Ci,Graph.Q] = community_louvain(net_mat,1);

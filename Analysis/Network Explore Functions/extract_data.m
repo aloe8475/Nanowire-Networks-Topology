@@ -10,9 +10,11 @@ sourceIndex=find(contains(network.Simulations{simNum}.Electrodes.Name,'Source'))
 for i = 1:length(sourceIndex)
 VSource(:,i)=network.Simulations{simNum}.Data.(['VSource' num2str(i)]);
 end 
-for i=1:length(drainIndex)
-    IDrain(:,i)=network.Simulations{simNum}.Data.(['IDrain' num2str(i)]);
-end 
+if ismember(['IDrain' num2str(i)],fieldnames(network.Simulations{simNum}.Data)) %if we have drains
+    for i=1:length(drainIndex)
+        IDrain(:,i)=network.Simulations{simNum}.Data.(['IDrain' num2str(i)]);
+    end
+end
 
 computer=getenv('computername');
 switch computer
