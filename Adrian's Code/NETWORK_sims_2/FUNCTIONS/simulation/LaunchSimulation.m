@@ -29,9 +29,13 @@ toc;
 
 
 numel=length(SimSets.Settings.ElectrodesInfo);
-NewName=strcat(SimSets.Settings.PreName,'_M_',SimSets.Settings.Model,...
-    '_',num2str(numel),'_Electrodes_',...
-    '_T:',num2str(length(t)));
+
+ElectrodePosStr =num2str([SimSets.Electrodes(:,:).PosIndex]');
+ElectrodePosStr=regexprep(ElectrodePosStr, '  ', '_');
+
+NewName=[SimSets.Settings.PreName '_M_' SimSets.Settings.Model '_Type_' SimSets.Settings.SigType ...
+    '_' num2str(numel) '_Electrodes_Positions_' ElectrodePosStr '_Vmax_' num2str(SimSets.Settings.Vmax) 'V' ,...
+    '_T_' num2str(length(t)) '_Created_' date];
 
 DataSim=Sim;
 
