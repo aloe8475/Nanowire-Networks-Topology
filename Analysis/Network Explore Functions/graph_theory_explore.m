@@ -95,7 +95,7 @@ if drain_exist
         highlight(p1a,path2,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
     end
     highlight(p1a,path,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
-    title(['Participant Coefficient Analysis overlayed with Shortest Path | T=' num2str(IndexTime)]);
+    title(['Participant Coefficient Analysis overlayed w Shortest Path | T=' num2str(IndexTime)]);
 end
 
 %% Modular z-Score:
@@ -158,7 +158,7 @@ if drain_exist
         highlight(p2a,path2,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
     end
     highlight(p2a,path,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
-    title(['Within Module Degree z-Score overlayed with Shortest Path | T=' num2str(IndexTime)]);
+    title(['Within Module Degree z-Score overlayed w Shortest Path | T=' num2str(IndexTime)]);
 end
 %% Connectivity
 f8=figure;
@@ -281,7 +281,7 @@ if drain_exist
         highlight(p7,path2,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
     end
     highlight(p7,path,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
-    title(['Shortest Path + Overlayed on Current | T=' num2str(IndexTime)]);
+    title(['Current, Overlayed w Shortest Path| T=' num2str(IndexTime)]);
 end
 
 %% Communicability
@@ -290,6 +290,7 @@ end
 f12=figure;
 currAx=gca;
 p9=plot(currAx,G);
+p9.NodeLabel={};
 
 % extract lower triangular part of Adjacency matrix of Graph.COMM
 [j,i,~]=find(tril(Adj));
@@ -361,7 +362,7 @@ p11.NodeCData=Graph.Ci;
 % labelnode(p11,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
 labelnode(p11,highlightElec,[new_electrodes(:).Name]);
 
-colormap hsv
+colormap hsv(6)
 % colorbar
 if drain_exist
     %Overlay Shortest Path
@@ -380,7 +381,7 @@ if drain_exist
         highlight(p12,path2,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
     end
     highlight(p12,path,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
-    title(['Cluster Analysis overlayed with Shortest Path | T=' num2str(IndexTime)]);
+    title(['Cluster Analysis overlayed w Shortest Path | T=' num2str(IndexTime)]);
 end
 
 Explore.GraphView.Distances.Values=d;

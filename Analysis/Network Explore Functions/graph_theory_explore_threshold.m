@@ -381,7 +381,7 @@ if drain_exist
         highlight(p12,path2,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
     end
     highlight(p12,path,'EdgeColor','[0.95, 0.95, 0.95]','LineWidth',6,'LineStyle','-');
-    title(['Cluster Analysis, Thresholded + Overlayed with Shortest Path | T=' num2str(IndexTime)]);
+    title(['Cluster Analysis, Thresholded + Overlayed w Shortest Path | T=' num2str(IndexTime)]);
 end
 
 Explore.GraphView.Distances.Values=d;
