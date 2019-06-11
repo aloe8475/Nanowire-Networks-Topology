@@ -25,6 +25,7 @@ clear SelNet
 % Delete default simulation data:
 network(1).Simulations = [];
 
+numNetworks=1;
 i=1;
 second_network=input('Do you want to load a second Network? \n','s');
 if second_network=='y'
@@ -50,15 +51,11 @@ if second_network=='y'
                 % Delete default simulation data:
                 network(2).Simulations = [];
                 % save a var with number of networks
-                numNetworks=2;
+                numNetworks=numNetworks+1;
                 i=i+1; %can also use break
             end
         end
-        
     end
-elseif second_network=='n'
-    % save a var with number of networks
-    numNetworks=1;
 end
 
 %% Load Simulation Data
@@ -116,7 +113,12 @@ if sims_load=='y'
         [FileName,PathName] = uigetfile('*.mat','Select the Explore saved data');
         f_explore=fullfile(PathName,FileName);
         load(f_explore);
-        network.Simulations=SelSims;
+        if exist('SelSims','var') == 1
+        temp= SelSims;%save simulations from test network if it hasn't been changed
+        else 
+        temp = network.Simulations;%save simulations from test network if it has been changed
+        end 
+        network.Simulations=temp;
         for i=1:length(network.Simulations)
         network.Simulations{i}.Type='Explore Simulation';
         end 

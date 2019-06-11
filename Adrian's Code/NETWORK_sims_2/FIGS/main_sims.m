@@ -415,7 +415,15 @@ guidata(hObject,handles);
 % --- Executes on button press in OpenButton
 function OpenButton_Callback(hObject, eventdata, handles)
 % Open a previous simulation/list of networks saved as a mat file
-currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
+computer=getenv('computername');
+switch computer
+    case 'W4PT80T2'
+        currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
+    case ''
+        currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks';
+    case 'LAPTOP-S1BV3HR7'
+        currentPath='D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
+end
 cd(currentPath);
 [FileName,PathName] = uigetfile('*.mat','Select the Network saved data');
 f=fullfile(PathName,FileName);
@@ -445,7 +453,15 @@ guidata(hObject,handles);
 function handles = OpenButton_SimsCallback(hObject, eventdata, handles)
 % Open a previous network saved as a mat file, the network contains
 % all the previous simulations (that have not been deleted)
-currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
+computer=getenv('computername');
+switch computer
+    case 'W4PT80T2'
+        currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
+    case ''
+        currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks/Simulations Only';
+    case 'LAPTOP-S1BV3HR7'
+        currentPath='D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
+end
 cd(currentPath);
 [FileName,PathName] = uigetfile('*.mat','Select the Simulation saved data');
 f=fullfile(PathName,FileName);
@@ -491,8 +507,15 @@ guidata(hObject,handles);
 function SaveButton_SimsCallback(hObject, eventdata, handles)
 % Save selected simulations in a mat file
 % in the folder that you choose
-currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
-
+computer=getenv('computername');
+switch computer
+    case 'W4PT80T2'
+        currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
+    case ''
+        currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks/Simulations Only';
+    case 'LAPTOP-S1BV3HR7'
+        currentPath='D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
+end
 IndNet=handles.NetList.Value; %need for the index
 SelNet=handles.Networks{IndNet}; %need for the name
 SelSims=SelNet.Simulations;
@@ -529,8 +552,15 @@ Name=strrep(Name,':','_');
 Name=strrep(Name,'/','_');
 Name=strcat(Name,'.mat');
 
-currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
-
+computer=getenv('computername');
+switch computer
+    case 'W4PT80T2'
+        currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
+    case ''
+        currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks';
+    case 'LAPTOP-S1BV3HR7'
+        currentPath='D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
+end
 cd(currentPath);
 SelDir=uigetdir();
 if ~isequal(SelDir,0)
