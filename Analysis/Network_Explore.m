@@ -771,6 +771,7 @@ if binarise_network=='y'
     threshold_choice='t';
 else
     lower(input('Do you want to plot the entire Graph or the Thresholded Graph (>1 degree)? g - entire, t - threshold \n','s'));
+    threshold_choice=[];
 end
 if threshold_choice=='t'
     threshold=Graph.DEG>1; %greater than 1 degree threshold - 04/06/19 do I change this to >= 1?
