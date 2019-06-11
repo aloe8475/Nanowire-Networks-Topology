@@ -207,7 +207,7 @@ end
 
 tic;
 [NewSim.Data,NewSim.Name]=LaunchSimulation(NewSim);
-
+NewSim.DateCreated=date;
 
 handles.InfoText.String=strcat('Simulation completed. Elapsed time is',{' '},num2str(toc),{' '},'seconds');
 NewSim.SimInfo=GetSimInfo(NewSim.Data);

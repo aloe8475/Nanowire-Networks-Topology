@@ -20,10 +20,16 @@ end
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2'
-        path='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only\Python Data';
+        path='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only\Python Data\';
         % path='D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only\Python Data\';
 end
+
+SelSims=network.Simulations{simNum};
+AdjMat=SelSims.SelLayout.AdjMat;
 if save_drain=='y'
-    save([path network.Simulations{simNum}.Type '_' num2str(simNum) '_ForPython.mat'],'IDrain','VSource'); %only save data if we have at least 1 source and 1 drain
+    save_name=[network.Name SelSims.Settings.Model '_' SelSims.Settings.SigType '_' num2str(length(SelSims)) 'SimsOnly_' num2str(SelSims.Settings.Time) '_Sec_' num2str(height(SelSims.Electrodes)) 'Electrodes_Vmax_' num2str(SelSims.Settings.Vmax) '_' network.Simulations{simNum}.Type '_' num2str(simNum) '_' date '_ForPython'];
+    save_name=strrep(save_name,':','_');
+    save_name=strrep(save_name,'/','_');
+    save([path save_name '.mat'],'IDrain','VSource','AdjMat'); %only save data if we have at least 1 source and 1 drain
 end
 end
