@@ -698,6 +698,10 @@ Graph.LE = efficiency_bin(net_mat,1);
 Graph.Diameter=diameter(net_mat);
 
 % Density 
+%Network Density:
+% This is defined, for a given set of nodes, as the number of actual edges
+% divided by the number of potential edges.
+% I.e., the percentage of possible connections that actually exist.
 Graph.Density=density_und(net_mat);
 
 %Betweeness Centrality
@@ -741,6 +745,8 @@ Graph.AvgPath=mean(Graph.Path);
 
 %Modularity:
 Graph.Modularity=modularity_und(full(net_mat));
+%The optimal community structure is a subdivision of the network into nonoverlapping groups of nodes in a way that maximizes the number of within-group edges, and minimizes the number of between-group edges. 
+%The modularity is a statistic that quantifies the degree to which the network may be subdivided into such clearly delineated groups
 
 %degree --> a count of how many edges are connected to each node
 Graph.DEG = degrees_und(net_mat);
@@ -754,14 +760,10 @@ Graph.MZ = module_degree_zscore(net_mat,Graph.Ci);
 %Ci from 'community_louvain.m'
 
 
-%Network Density:
-% This is defined, for a given set of nodes, as the number of actual edges
-% divided by the number of potential edges.
-% I.e., the percentage of possible connections that actually exist.
+%save Adj Matrix 
+Graph.AdjMat=net_mat;
 
-
-%save network matrix to graph struct
-Graph.network=net_mat;
+%save selected time
 Graph.IndexTime=IndexTime;
 end
 function Graph=plot_graph(Graph, network,network_load, currentSim,sim_loaded,currentPath,binarise_network,simNum)
