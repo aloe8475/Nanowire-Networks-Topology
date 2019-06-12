@@ -20,6 +20,7 @@ switch computer
         currentPath='/suphys/aloe8475/Documents/CODE/Analysis';
     case 'LAPTOP-S1BV3HR7'
         currentPath='D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis';
+    %case '' %--- Add other computer paths (e.g. Mike)
 end
 cd(currentPath);
 load_data_question=lower(input('Load network data, Analysis Data Only or None? N - None, D - Network Data, A - Analysis Data\n','s'));
@@ -86,11 +87,10 @@ while i == 1
         i=i+1;
     elseif analysis_type=='l'
         %% LDA Analysis
-        if load_data_question=='d' 
-            extract_data(network,simNum);
+            extract_data(network,simNum); %extract data for python
             fprintf(['Extracting Data for Python Use...\n\n\n']);
             fprintf(['Data Extracted \n\n\n']);
-        end
+            
         LDA_Analysis=lda_analysis(currentSim,network,network_load,simNum);
         i=i+1;
     end
@@ -337,6 +337,9 @@ network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it g
 
 if save_explore_plots=='y'
     if threshold_network~='t'
+        % NOTE: 05/06 - for simulations created after this date, we need to
+        % change the file names to Sim.Name, and all this info will be in
+        % there already.
         saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'jpg');
         saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'eps');
         saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
@@ -471,8 +474,8 @@ LDA_Analysis(simNum).TypeOfData='Training';
 % hold off
 
 %Cross Validate:
-CVSVMModel = crossval(SVMModel);
-classLoss = kfoldLoss(CVSVMModel); %Generalization Rate
+% CVSVMModel = crossval(SVMModel);
+% classLoss = kfoldLoss(CVSVMModel); %Generalization Rate
 
 
 
@@ -768,6 +771,7 @@ if binarise_network=='y'
     threshold_choice='t';
 else
     lower(input('Do you want to plot the entire Graph or the Thresholded Graph (>1 degree)? g - entire, t - threshold \n','s'));
+    threshold_choice=[];
 end
 if threshold_choice=='t'
     threshold=Graph.DEG>1; %greater than 1 degree threshold - 04/06/19 do I change this to >= 1?
