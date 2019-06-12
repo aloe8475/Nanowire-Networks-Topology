@@ -117,7 +117,7 @@ while i == 1
         %% Plotting Graph
         plot_state=lower(input('Would you like to plot Graph Analysis? y or n \n','s'));
         if plot_state=='y'
-            Graph=plot_graph(Graph,network(networkNum),network_load,currentSim,sim_loaded,currentPath,binarise_network);
+            Graph=plot_graph(Graph,network(networkNum),network_load,currentSim,sim_loaded,currentPath,binarise_network,simNum);
         end
         i=i+1;
         %% Saving Graph
@@ -694,6 +694,11 @@ Graph.GE = efficiency_bin(net_mat,0);
 %Local efficiency --> 1/characteristic path length, at each node
 Graph.LE = efficiency_bin(net_mat,1);
 
+% Diameter
+Graph.Diameter=diameter(net_mat);
+
+% Density 
+Graph.Density=density_und(net_mat);
 
 %Betweeness Centrality
 Graph.BC=betweenness_bin(net_mat); 
@@ -759,7 +764,7 @@ Graph.MZ = module_degree_zscore(net_mat,Graph.Ci);
 Graph.network=net_mat;
 Graph.IndexTime=IndexTime;
 end
-function Graph=plot_graph(Graph, network,network_load, currentSim,sim_loaded,currentPath,binarise_network)
+function Graph=plot_graph(Graph, network,network_load, currentSim,sim_loaded,currentPath,binarise_network,simNum)
 cd(currentPath)
 save_directory='..\Data\Figures\Graph Analysis\';
 
@@ -910,7 +915,11 @@ if threshold_choice=='t'
     labelnode(p7,[1:size(node_indices,2)],cellstr(num2str(node_indices'))); %label each node with original node number
 end
 labelnode(p7,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
+if threshold_choice=='t'
 text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P(threshold))) ' (large dot)']);
+else 
+text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P)) ' (large dot)']);
+end
 title(['Participant Coefficient Analysis Timestamp ' num2str(IndexTime)]);
 
 %% Module Degree Z-Score:
@@ -933,7 +942,11 @@ if threshold_choice=='t'
     labelnode(p8,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
 end
 labelnode(p8,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
-text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ(threshold))) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
+if threshold_choice=='t'
+text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ(threshold))) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ(threshold))) ' (large dot)']);
+else 
+text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ)) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
+end 
 title(['Module Degree z-Score Analysis Timestamp ' num2str(IndexTime)]);
 
 
@@ -988,8 +1001,10 @@ title(['Communicability Analysis Timestamp ' num2str(IndexTime) ' (log10)']);
 %% CIRCUIT RANK -- measure of recurrent loops (feedback loops)
 % based on analyze_network.py
 %circuit rank = num edges - num nodes + num connected components
-Graph.CircuitRank = numedges(g) - numnodes(g) + sum(conncomp(g));
-Graph.Indices=node_indices;
+Graph.CircuitRank = numedges(g) - (numnodes(g) - 1);
+if threshold_choice=='t'
+    Graph.Indices=node_indices;
+end 
 
 %% Save
 network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
