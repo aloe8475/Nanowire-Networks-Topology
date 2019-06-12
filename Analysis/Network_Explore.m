@@ -45,7 +45,7 @@ end
 if load_data_question~='a'
     if explore_network=='t'
         networkNum=input(['Which Network # do you want to select for Training? 1 - ' num2str(length(network)) '\n']);
-        simNum=input(['Which Simulation # do you want to select for Training? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
+        simNum=input(['Which Simulation # do you want to select for Training? 1 - '  num2str(length(network(networkNum).numTrainingSims)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
     else
         networkNum=input(['Which Network # do you want to explore? 1 - ' num2str(length(network)) '\n']);
         simNum=input(['Which Simulation # do you want to explore? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
@@ -154,8 +154,11 @@ if sim_loaded==1
         tempSim=num2cell(tempSim);
         network.Simulations(2) = [];
         network.Simulations=[network.Simulations tempSim];
-        fprintf(['Your Training Simulation is Simulation 1 \n']);
-        fprintf(['Your Testing Simulations are Simulations 2 - ' num2str(length(network.Simulations)) '\n']);
+        
+        %number of training + number of testing:
+        
+        fprintf(['Your Training Simulations are Simulations 1 - ' num2str(network.numTrainingSims) '\n']);
+        fprintf(['Your Testing Simulations are Simulations ' num2str(network.numTrainingSims +1) ' - ' num2str(network.numTestingSims) '\n']);
         
         fprintf('\n -------------------------- \nStart Analysis: \n');
         
@@ -496,13 +499,13 @@ if numNetworks>1 %if we have more than 1 simulation, they can input 1 as an opti
     simulationChoice=input(['Which Simulation # do you want to apply LDA to? 1 - '  num2str(length(network(networkNum2).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
 else % otherwise, can only input 2 or higher
     while 1
-        simulationChoice=input(['Which Simulation # do you want to apply LDA to? 2 - '  num2str(length(network(networkNum2).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
+        simulationChoice=input(['Which Simulation # do you want to apply LDA to? ' num2str(network(networkNum2).numTrainingSims+1) '- '  num2str(network(networkNum2).numTrainingSims) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
         if simulationChoice >1 && simulationChoice <=length(network(networkNum2).Simulations)
             break;
         elseif simulationChoice ==1
             fprintf('Cannot Train and Test the same Simulation, please choose again \n');
         else
-            fprintf(['Please Choose a number between 2 and ' num2str(length(network(networkNum2).Simulations))]);
+            fprintf(['Please Choose a number between '  num2str(network(networkNum2).numTrainingSims+1) ' and ' num2str(network(networkNum2).numTrainingSims)]);
         end
     end
     LDA_Analysis(simulationChoice).Output=[full(simulations{simulationChoice}.Data.IDrain1) full(simulations{simulationChoice}.Data.IDrain2)];
