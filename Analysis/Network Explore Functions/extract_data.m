@@ -26,10 +26,11 @@ end
 
 SelSims=network.Simulations{simNum};
 AdjMat=SelSims.SelLayout.AdjMat;
+Time=SelSims.Settings.Time;
 if save_drain=='y'
     save_name=[network.Name SelSims.Settings.Model '_' SelSims.Settings.SigType '_' num2str(length(SelSims)) 'SimsOnly_' num2str(SelSims.Settings.Time) '_Sec_' num2str(height(SelSims.Electrodes)) 'Electrodes_Vmax_' num2str(SelSims.Settings.Vmax) '_' network.Simulations{simNum}.Type '_' num2str(simNum) '_' date '_ForPython'];
     save_name=strrep(save_name,':','_');
     save_name=strrep(save_name,'/','_');
-    save([path save_name '.mat'],'IDrain','VSource','AdjMat'); %only save data if we have at least 1 source and 1 drain
+    save([path save_name '.mat'],'IDrain','VSource','AdjMat','Time'); %only save data if we have at least 1 source and 1 drain
 end
 end

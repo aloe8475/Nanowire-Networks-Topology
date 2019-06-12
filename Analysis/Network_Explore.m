@@ -45,7 +45,7 @@ end
 if load_data_question~='a'
     if explore_network=='t'
         networkNum=input(['Which Network # do you want to select for Training? 1 - ' num2str(length(network)) '\n']);
-        simNum=input(['Which Simulation # do you want to select for Training? 1 - '  num2str(length(network(networkNum).numTrainingSims)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
+        simNum=input(['Which Simulation # do you want to select for Training? 1 - '  num2str(network(networkNum).numTrainingSims) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
     else
         networkNum=input(['Which Network # do you want to explore? 1 - ' num2str(length(network)) '\n']);
         simNum=input(['Which Simulation # do you want to explore? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
@@ -151,9 +151,9 @@ network_load='a';%lower(input('Which Network do you want to analyse? Z - Zdenka,
 if sim_loaded==1
     if explore_network=='t' %if we have training and testing simulations
         tempSim=network.Simulations{2};
-        tempSim=num2cell(tempSim);
-        network.Simulations(2) = [];
-        network.Simulations=[network.Simulations tempSim];
+%         tempSim=num2cell(tempSim);
+%         network.Simulations(2) = [];
+%         network.Simulations=[network.Simulations tempSim];
         
         %number of training + number of testing:
         

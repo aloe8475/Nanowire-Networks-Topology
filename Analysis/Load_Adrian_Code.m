@@ -96,9 +96,13 @@ if sims_load=='y'
         
         if numNetworks==1 %if both training and testing are from same networks, just combine the simulations
             network.Simulations=[temp1 temp2];
-            network.Simulations{1}.Type='Training Simulation'; %label the training sim
-            for i=2:length(network.Simulations)
+            for j = 1:length(temp1)
+            network.Simulations{j}.Type='Training Simulation'; %label the training sim
+            network.numTrainingSims=length(temp1);
+            end 
+            for i=(length(temp1)+1):length(network.Simulations)
             network.Simulations{i}.Type='Testing Simulation';
+            network.numTestingSims=length(network.Simulations)-length(temp1);
             end 
         elseif numNetworks==2 %if the two networks are different, save the simulations in the different networks
             network(training_network).Simulations=temp1;
