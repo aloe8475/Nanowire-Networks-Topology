@@ -453,8 +453,8 @@ LDA_Analysis(simNum).Output=Output;
 LDA_Analysis(simNum).Input=Input;
 LDA_Analysis(simNum).Target=Target;
 
-LDA_Analysis(simNum).normalisedOutput=LDA_normalise(Output);
-LDA_Analysis(simNum).normalisedInput=LDA_normalise(Input);
+LDA_Analysis(simNum).normalisedOutput=LDA_normalise_drain(Output);
+LDA_Analysis(simNum).normalisedInput=LDA_normalise_source(Input);
 LDA_Analysis(simNum).normalisedW=LDA(LDA_Analysis(simNum).normalisedOutput,Target);
 LDA_Analysis(simNum).normalisedL=[ones(size(LDA_Analysis(simNum).normalisedOutput,1),1) LDA_Analysis(simNum).normalisedOutput] * LDA_Analysis(simNum).normalisedW';
 LDA_Analysis(simNum).normalisedP=exp(LDA_Analysis(simNum).normalisedL) ./ repmat(sum(exp(LDA_Analysis(simNum).normalisedL),2),[1 2]);
