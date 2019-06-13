@@ -20,7 +20,7 @@ end
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2'
-        path='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only\Python Data\';
+        path='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only\Python Data\';
         % path='D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only\Python Data\';
 end
 

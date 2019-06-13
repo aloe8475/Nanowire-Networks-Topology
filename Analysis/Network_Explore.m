@@ -15,7 +15,7 @@ dbstop if error
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2' %if on desktop at uni - Alon
-        currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Analysis';
+        currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis';
     case '' %if on linux
         currentPath='/suphys/aloe8475/Documents/CODE/Analysis';
     case 'LAPTOP-S1BV3HR7'

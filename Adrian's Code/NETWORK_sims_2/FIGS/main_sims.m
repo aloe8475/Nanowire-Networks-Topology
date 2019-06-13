@@ -418,7 +418,7 @@ function OpenButton_Callback(hObject, eventdata, handles)
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2'
-        currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
+        currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
     case ''
         currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks';
     case 'LAPTOP-S1BV3HR7'
@@ -456,7 +456,7 @@ function handles = OpenButton_SimsCallback(hObject, eventdata, handles)
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2'
-        currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
+        currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
     case ''
         currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks/Simulations Only';
     case 'LAPTOP-S1BV3HR7'
@@ -510,7 +510,7 @@ function SaveButton_SimsCallback(hObject, eventdata, handles)
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2'
-        currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
+        currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
     case ''
         currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks/Simulations Only';
     case 'LAPTOP-S1BV3HR7'
@@ -555,7 +555,7 @@ Name=strcat(Name,'.mat');
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2'
-        currentPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
+        currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
     case ''
         currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks';
     case 'LAPTOP-S1BV3HR7'

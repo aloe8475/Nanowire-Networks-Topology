@@ -7,7 +7,7 @@ function [network, sim_loaded, explore_network, numNetworks] = Load_Adrian_Code(
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2'
-        dataPath='C:\Users\aloe8475\Documents\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
+        dataPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
     case ''
         dataPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks';
     case 'LAPTOP-S1BV3HR7'
