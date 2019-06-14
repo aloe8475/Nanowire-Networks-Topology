@@ -37,8 +37,15 @@
 % end
 % 
 % n1000.network.Simulations=temp;
-
-explore_location='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Explore Analysis\';
+switch computer
+    case 'W4PT80T2' %if on desktop at uni - Alon
+        explore_location='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\';
+    case '' %if on linux
+        explore_location='/suphys/aloe8475/Documents/CODE/Data/Explore Analysis/';
+    case 'LAPTOP-S1BV3HR7'
+        explore_location='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Explore Analysis\';
+    %case '' %--- Add other computer paths (e.g. Mike)
+end
 
 %Load three explore analyses:
 e100=load([explore_location 'Adrian_Net_Sx20_NoW100_0325-2019_112338__Sim_1_SourceElectrode_6_DrainElectrode_76_Exploration_Analysis_ Timestamp_400_06-Jun-2019.mat']);
@@ -46,14 +53,20 @@ e500=load([explore_location 'Adrian_Net_Sx20_NoW500_0330-2019_111659__Sim_1_Sour
 e1000=load([explore_location 'Adrian_Net_Sx20_NoW1000_0606-2019_113353__Sim_1_SourceElectrode_32_DrainElectrode_1000_Exploration_Analysis_ Timestamp_400_06-Jun-2019.mat']);
 
 
+human.GlobalClust=0.53;
+human.AvgPath=2.49;
+random.GlobalClust=0.1;
+random.AvgPath=2.5;
+ordered.GlobalClust=0.5;
+ordered.AvgPath=10;
    
 %% Analysis
-x=[e100.Explore.GraphTheory.GlobalC1ust, e500.Explore.GraphTheory.GlobalC1ust, e1000.Explore.GraphTheory.GlobalC1ust];
-y=[e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath];
+x=[random.GlobalClust human.GlobalClust ordered.GlobalClust e100.Explore.GraphTheory.GlobalC1ust, e500.Explore.GraphTheory.GlobalC1ust, e1000.Explore.GraphTheory.GlobalC1ust ];
+y=[random.AvgPath human.AvgPath ordered.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath];
 f=figure;
 p=plot(x,y,'o-');
 xlim([0.35 0.42])
-text(x,y,{'100nw','500nw','1000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
+text(x,y,{'Random Nw','Human Nw','Ordered Nw','100nw','500nw','1000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
 xlabel('Global Clustering Coefficient');
 ylabel('Global Mean Path Length');
 p.MarkerEdgeColor='r';
