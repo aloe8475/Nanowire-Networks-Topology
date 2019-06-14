@@ -306,7 +306,7 @@ Adj2=(Sim.Data.AdjMat{IndexTime});%convert 498x498 matrix to EdgeCData ~(1x6065)
 com2=zeros(1,length(j));
 
 for k=1:length(j)
-    com2(k)=Graph.network(i(k),j(k));
+    com2(k)=Graph.AdjMat(i(k),j(k));
 end
 
 %Find Graph.COMM in network

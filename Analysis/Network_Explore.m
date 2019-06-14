@@ -37,6 +37,8 @@ elseif load_data_question=='a'
     networkNum=input(['Which Network # do you want to load? 1 - ' num2str(length(network)) '\n']);
     simNum=input(['Which Simulation # do you want to load? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
     [LDA_Analysis(simNum)] = load_LDA_data(currentPath);
+else
+    close all
 end
 
 %% Choose Simulations
@@ -66,6 +68,9 @@ i = 1;
 while i == 1
     %Choose Analysis to perform
     if explore_network=='t'
+        extract_data(network); %extract data for python
+            fprintf(['Extracting Data for Python Use...\n\n\n']);
+            fprintf(['Data Extracted \n\n\n']);
         analysis_type=lower(input('Which analysis would you like to perform? G - graph, E - Explore Network,L - LDA, N - none \n','s'));
     elseif explore_network=='e' % we don't want to allow LDA if just exploring
         analysis_type=lower(input('Which analysis would you like to perform? G - graph, E - Explore Network, N - none \n','s'));
@@ -86,11 +91,7 @@ while i == 1
         end
         i=i+1;
     elseif analysis_type=='l'
-        %% LDA Analysis
-            extract_data(network,simNum); %extract data for python
-            fprintf(['Extracting Data for Python Use...\n\n\n']);
-            fprintf(['Data Extracted \n\n\n']);
-            
+        %% LDA Analysis            
         LDA_Analysis=lda_analysis(currentSim,network,network_load,simNum);
         i=i+1;
     end
@@ -251,11 +252,11 @@ else
 end
 if threshold_network=='t'
     threshold=Graph.DEG>1; %greater than 1 degree threshold
-    Graph.networkThreshold=Graph.network(threshold,threshold); %applying degree threshold
+    Graph.networkThreshold=Graph.AdjMat(threshold,threshold); %applying degree threshold
     G=graph(Graph.networkThreshold);
     node_indices=find(threshold==1); %find nodes with threshold == 1
 else
-    G=graph(Graph.network);
+    G=graph(Graph.AdjMat);
 end
 
 %% Graph View
@@ -343,6 +344,8 @@ if save_explore_plots=='y'
         % NOTE: 05/06 - for simulations created after this date, we need to
         % change the file names to Sim.Name, and all this info will be in
         % there already.
+        saveas(f,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_Timeseries'],'jpg');
+        saveas(f,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_Timeseries'],'eps');
         saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'jpg');
         saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Currents_Timestamp' num2str(IndexTime)],'eps');
         saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_NetworkView_Resistance_Timestamp' num2str(IndexTime)],'jpg');
@@ -499,13 +502,13 @@ if numNetworks>1 %if we have more than 1 simulation, they can input 1 as an opti
     simulationChoice=input(['Which Simulation # do you want to apply LDA to? 1 - '  num2str(length(network(networkNum2).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
 else % otherwise, can only input 2 or higher
     while 1
-        simulationChoice=input(['Which Simulation # do you want to apply LDA to? ' num2str(network(networkNum2).numTrainingSims+1) '- '  num2str(network(networkNum2).numTrainingSims) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
+        simulationChoice=input(['Which Simulation # do you want to apply LDA to? ' num2str(network(networkNum2).numTrainingSims+1) '- '  num2str(network(networkNum2).numTestingSims) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
         if simulationChoice >1 && simulationChoice <=length(network(networkNum2).Simulations)
             break;
         elseif simulationChoice ==1
             fprintf('Cannot Train and Test the same Simulation, please choose again \n');
         else
-            fprintf(['Please Choose a number between '  num2str(network(networkNum2).numTrainingSims+1) ' and ' num2str(network(networkNum2).numTrainingSims)]);
+            fprintf(['Please Choose a number between '  num2str(network(networkNum2).numTrainingSims+1) ' and ' num2str(network(networkNum2).numTestingSims)]);
         end
     end
     LDA_Analysis(simulationChoice).Output=[full(simulations{simulationChoice}.Data.IDrain1) full(simulations{simulationChoice}.Data.IDrain2)];
@@ -524,14 +527,26 @@ function plot_LDA(LDA_Analysis, simNum, networkName,currentPath,simulations)
 cd(currentPath);
 SelSims=simulations{simNum};
 save_directory='..\Data\Figures\LDA\LDA Training\';
+%plot inputs
+fin=figure;
+plot(LDA_Analysis.Input)
+title('Source Electrodes');
+ylabel('Current (A)');
+xlabel('Timestamp (0.01sec)');
+%plot outputs
+fout=figure;
+plot(LDA_Analysis.Output)
+title('Drain Electrodes');
+ylabel('Current (A)');
+xlabel('Timestamp (0.01sec)');
 %plot LDA
 LDAf=figure;
 sgtitle('LDA Classification Training');
 subplot(4,1,1)
 plot(LDA_Analysis.Input)
 title('Source Electrodes');
-ylabel('Current (A)')
-xlabel('Timestamp (0.01sec)')
+ylabel('Current (A)');
+xlabel('Timestamp (0.01sec)');
 subplot(4,1,2)
 plot(LDA_Analysis.Output)
 title('Drain Electrodes');
@@ -607,17 +622,34 @@ networkName(regexp(networkName,'[/:]'))=[]; %remove '/' character because it giv
 
 save_status=lower(input('Would you like to save the LDA Plots? y or n \n','s'));
 if save_status=='y'
-    saveas(LDAf,[save_directory num2str(networkName) 'Simulation_' SelSims.Settings.Model '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_LDA_Classification_Training'],'jpg'); % CHANGE DATE OF SIMULATION
-    saveas(LDAf,[save_directory num2str(networkName) 'Simulation_' SelSims.Settings.Model '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_LDA_Classification_Training'],'eps');
-    saveas(LDAff,[save_directory num2str(networkName) 'Simulation_' SelSims.Settings.Model '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_logLDA_Classification_Training'],'jpg');
-    saveas(LDAff,[save_directory num2str(networkName) 'Simulation_' SelSims.Settings.Model '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec__logLDA_Classification_Training'],'eps');
-    saveas(LDAnormf,[save_directory num2str(networkName) 'Simulation_' SelSims.Settings.Model '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_normalised_LDA_Classification_Training'],'jpg');
-    saveas(LDAnormf,[save_directory num2str(networkName) 'Simulation_' SelSims.Settings.Model '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_normalised_Classification_Training'],'eps');
+    saveas(fout,[save_directory num2str(networkName) SelSims.Name '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_Training_Inputs'],'jpg'); % CHANGE DATE OF SIMULATION
+    saveas(fout,[save_directory num2str(networkName) SelSims.Name '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_Training_Inputs'],'eps');
+    saveas(fin,[save_directory num2str(networkName) SelSims.Name  '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_Training_Outputs'],'jpg'); % CHANGE DATE OF SIMULATION
+    saveas(fin,[save_directory num2str(networkName) SelSims.Name  '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_Training_Outputs'],'eps');
+    saveas(LDAf,[save_directory num2str(networkName) SelSims.Name  '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_LDA_Classification_Training'],'jpg'); % CHANGE DATE OF SIMULATION
+    saveas(LDAf,[save_directory num2str(networkName) SelSims.Name  '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_LDA_Classification_Training'],'eps');
+    saveas(LDAff,[save_directory num2str(networkName) SelSims.Name  '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_logLDA_Classification_Training'],'jpg');
+    saveas(LDAff,[save_directory num2str(networkName) SelSims.Name '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec__logLDA_Classification_Training'],'eps');
+    saveas(LDAnormf,[save_directory num2str(networkName) SelSims.Name '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_normalised_LDA_Classification_Training'],'jpg');
+    saveas(LDAnormf,[save_directory num2str(networkName) SelSims.Name '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_normalised_Classification_Training'],'eps');
 end
 end
 function plot_LDA_Applied(LDA_Analysis,simNum,simulationChoice,networkName,currentPath,SelSims)
 cd(currentPath)
 save_directory='..\Data\Figures\LDA\LDA Testing\';
+%plot inputs
+fin=figure;
+plot(LDA_Analysis.Input)
+title('Source Electrodes');
+ylabel('Current (A)');
+xlabel('Timestamp (0.01sec)');
+%plot outputs
+fout=figure;
+plot(LDA_Analysis.Output)
+title('Drain Electrodes');
+ylabel('Current (A)');
+xlabel('Timestamp (0.01sec)');
+
 appliedF=figure;
 sgtitle('Electrode LDA Classification Testing');
 subplot(4,1,1)
@@ -644,8 +676,13 @@ xlabel('Timestamp (0.01sec)')
 networkName(regexp(networkName,'[/:]'))=[]; %remove '/' character because it gives us saving problems
 save_status=lower(input('Would you like to save the Applied LDA Plots? y or n \n','s'));
 if save_status=='y'
-    saveas(appliedF,[save_directory num2str(networkName) 'Simulation_' SelSims.Settings.Model '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_LDA_Classification_TrainingSim_' num2str(simNum) '_TestingSim' num2str(simulationChoice) '_' date],'jpg');
-    saveas(appliedF,[save_directory num2str(networkName) 'Simulation_' SelSims.Settings.Model '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_LDA_Classification_TrainingSim_' num2str(simNum) '_TestingSim' num2str(simulationChoice) '_' date],'eps');
+      saveas(fout,[save_directory num2str(networkName) SelSims.Name '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_Testing_Inputs'],'jpg'); % CHANGE DATE OF SIMULATION
+    saveas(fout,[save_directory num2str(networkName) SelSims.Name '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_Testing_Inputs'],'eps');
+    saveas(fin,[save_directory num2str(networkName) SelSims.Name  '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_Testing_Outputs'],'jpg'); % CHANGE DATE OF SIMULATION
+    saveas(fin,[save_directory num2str(networkName) SelSims.Name  '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_Testing_Outputs'],'eps');
+    
+    saveas(appliedF,[save_directory num2str(networkName) SelSims.Name '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_LDA_Classification_TrainingSim_' num2str(simNum) '_TestingSim' num2str(simulationChoice) '_' date],'jpg');
+    saveas(appliedF,[save_directory num2str(networkName) SelSims.Name '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_LDA_Classification_TrainingSim_' num2str(simNum) '_TestingSim' num2str(simulationChoice) '_' date],'eps');
 end
 end
 function save_LDA(LDA_Analysis,network,network_load,sim_loaded,currentPath)
@@ -785,10 +822,10 @@ else
 end
 if threshold_choice=='t'
     threshold=Graph.DEG>1; %greater than 1 degree threshold - 04/06/19 do I change this to >= 1?
-    Graph.networkThreshold=Graph.network(threshold,threshold); %applying degree threshold
+    Graph.networkThreshold=Graph.AdjMat(threshold,threshold); %applying degree threshold
     g=graph(Graph.networkThreshold);
 else
-    g=graph(Graph.network);
+    g=graph(Graph.AdjMat);
 end
 f1=figure;
 p1=plot(g);
@@ -982,7 +1019,7 @@ for k=1:length(j)
     if threshold_choice=='t'
         wd2(k)=Graph.networkThreshold(i(k),j(k));
     else
-        wd2(k)=Graph.network(i(k),j(k));
+        wd2(k)=Graph.AdjMat(i(k),j(k));
     end
 end
 
