@@ -43,7 +43,8 @@ $RECYCLE.BIN/
 *.rar
 *.zip
 
-
+# Directories 
+/Adrian's Code/NETWORK_sims_2/Saved Networks/Simulations Only/OLD/
 # =========================
 # Operating System Files
 # =========================
