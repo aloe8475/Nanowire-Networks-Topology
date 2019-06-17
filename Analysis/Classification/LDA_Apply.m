@@ -1,6 +1,6 @@
 function [P, L,normalisedOutput,normalisedInput]=LDA_Apply(W, rawOutputs,rawInputs)
-[normalisedOutput]=LDA_normalise(rawOutputs);
-[normalisedInput]=LDA_normalise(rawInputs);
+[normalisedOutput]=LDA_normalise_drain(rawOutputs);
+[normalisedInput]=LDA_normalise_source(rawInputs);
 
 L = [ones(size(normalisedOutput,1),1) normalisedOutput] * W';
 P = exp(L) ./ repmat(sum(exp(L),2),[1 2]);

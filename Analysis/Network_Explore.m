@@ -622,16 +622,17 @@ networkName(regexp(networkName,'[/:]'))=[]; %remove '/' character because it giv
 
 save_status=lower(input('Would you like to save the LDA Plots? y or n \n','s'));
 if save_status=='y'
-    saveas(fout,[save_directory num2str(networkName) SelSims.Name '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_Training_Inputs'],'jpg'); % CHANGE DATE OF SIMULATION
-    saveas(fout,[save_directory num2str(networkName) SelSims.Name '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_Training_Inputs'],'eps');
-    saveas(fin,[save_directory num2str(networkName) SelSims.Name  '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_Training_Outputs'],'jpg'); % CHANGE DATE OF SIMULATION
-    saveas(fin,[save_directory num2str(networkName) SelSims.Name  '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_Training_Outputs'],'eps');
-    saveas(LDAf,[save_directory num2str(networkName) SelSims.Name  '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_LDA_Classification_Training'],'jpg'); % CHANGE DATE OF SIMULATION
-    saveas(LDAf,[save_directory num2str(networkName) SelSims.Name  '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_LDA_Classification_Training'],'eps');
-    saveas(LDAff,[save_directory num2str(networkName) SelSims.Name  '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_logLDA_Classification_Training'],'jpg');
-    saveas(LDAff,[save_directory num2str(networkName) SelSims.Name '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec__logLDA_Classification_Training'],'eps');
-    saveas(LDAnormf,[save_directory num2str(networkName) SelSims.Name '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_normalised_LDA_Classification_Training'],'jpg');
-    saveas(LDAnormf,[save_directory num2str(networkName) SelSims.Name '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_normalised_Classification_Training'],'eps');
+    SelSims.Name=strrep(SelSims.Name,'.','');
+    saveas(fout,[save_directory num2str(networkName) SelSims.Name  '_Sec_Training_Inputs'],'jpg'); 
+    saveas(fout,[save_directory num2str(networkName) SelSims.Name  '_Sec_Training_Inputs'],'eps');
+    saveas(fin,[save_directory num2str(networkName) SelSims.Name   '_Sec_Training_Outputs'],'jpg');
+    saveas(fin,[save_directory num2str(networkName) SelSims.Name  '_Sec_Training_Outputs'],'eps');
+    saveas(LDAf,[save_directory num2str(networkName) SelSims.Name  '_Sec_LDA_Classification_Training'],'jpg'); 
+    saveas(LDAf,[save_directory num2str(networkName) SelSims.Name   '_Sec_LDA_Classification_Training'],'eps');
+    saveas(LDAff,[save_directory num2str(networkName) SelSims.Name   '_Sec_logLDA_Classification_Training'],'jpg');
+    saveas(LDAff,[save_directory num2str(networkName) SelSims.Name  '_Sec_logLDA_Classification_Training'],'eps');
+    saveas(LDAnormf,[save_directory num2str(networkName) SelSims.Name  '_Sec_norm_LDA_Classification_Training'],'jpg');
+    saveas(LDAnormf,[save_directory num2str(networkName) SelSims.Name  '_Sec_norm_LDA_Classification_Training'],'eps');
 end
 end
 function plot_LDA_Applied(LDA_Analysis,simNum,simulationChoice,networkName,currentPath,SelSims)
@@ -675,14 +676,18 @@ xlabel('Timestamp (0.01sec)')
 
 networkName(regexp(networkName,'[/:]'))=[]; %remove '/' character because it gives us saving problems
 save_status=lower(input('Would you like to save the Applied LDA Plots? y or n \n','s'));
+
+
 if save_status=='y'
-      saveas(fout,[save_directory num2str(networkName) SelSims.Name '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_Testing_Inputs'],'jpg'); % CHANGE DATE OF SIMULATION
-    saveas(fout,[save_directory num2str(networkName) SelSims.Name '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_Testing_Inputs'],'eps');
-    saveas(fin,[save_directory num2str(networkName) SelSims.Name  '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_Testing_Outputs'],'jpg'); % CHANGE DATE OF SIMULATION
-    saveas(fin,[save_directory num2str(networkName) SelSims.Name  '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_Testing_Outputs'],'eps');
+    SelSims.Name=strrep(SelSims.Name,'.','');
     
-    saveas(appliedF,[save_directory num2str(networkName) SelSims.Name '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_LDA_Classification_TrainingSim_' num2str(simNum) '_TestingSim' num2str(simulationChoice) '_' date],'jpg');
-    saveas(appliedF,[save_directory num2str(networkName) SelSims.Name '_' SelSims.Settings.SigType '_' num2str(SelSims.Settings.Time) '_Sec_LDA_Classification_TrainingSim_' num2str(simNum) '_TestingSim' num2str(simulationChoice) '_' date],'eps');
+    saveas(fout,[save_directory num2str(networkName) SelSims.Name '_Sec_Testing_Inputs'],'jpg'); % CHANGE DATE OF SIMULATION
+    saveas(fout,[save_directory num2str(networkName) SelSims.Name '_Sec_Testing_Inputs'],'eps');
+    saveas(fin,[save_directory num2str(networkName) SelSims.Name  '_Sec_Testing_Outputs'],'jpg'); % CHANGE DATE OF SIMULATION
+    saveas(fin,[save_directory num2str(networkName) SelSims.Name  '_Sec_Testing_Outputs'],'eps');
+    
+    saveas(appliedF,[save_directory num2str(networkName) SelSims.Name '_Sec_LDA_Class_TrainingSim' num2str(simNum) '_TestingSim' num2str(simulationChoice)],'jpg');
+    saveas(appliedF,[save_directory num2str(networkName) SelSims.Name '_Sec_LDA_Class_TrainingSim' num2str(simNum) '_TestingSim' num2str(simulationChoice)],'eps');
 end
 end
 function save_LDA(LDA_Analysis,network,network_load,sim_loaded,currentPath)
