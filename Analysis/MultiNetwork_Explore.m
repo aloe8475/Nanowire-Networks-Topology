@@ -37,6 +37,7 @@
 % end
 % 
 % n1000.network.Simulations=temp;
+computer=getenv('computername');
 switch computer
     case 'W4PT80T2' %if on desktop at uni - Alon
         explore_location='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\';
@@ -48,26 +49,66 @@ switch computer
 end
 
 %Load three explore analyses:
-e100=load([explore_location 'Adrian_Net_Sx20_NoW100_0325-2019_112338__Sim_1_SourceElectrode_6_DrainElectrode_76_Exploration_Analysis_ Timestamp_400_06-Jun-2019.mat']);
-e500=load([explore_location 'Adrian_Net_Sx20_NoW500_0330-2019_111659__Sim_1_SourceElectrode_18_DrainElectrode_492_Exploration_Analysis_ Timestamp_400_06-Jun-2019.mat']);
-e1000=load([explore_location 'Adrian_Net_Sx20_NoW1000_0606-2019_113353__Sim_1_SourceElectrode_32_DrainElectrode_1000_Exploration_Analysis_ Timestamp_400_06-Jun-2019.mat']);
+e100=load([explore_location 'Adrian_Net_Sx20_NoW100_0325-2019_112338__Sim_1_SourceElectrode_6_DrainElectrode_76_Exploration_Analysis_ Timestamp_400_18-Jun-2019.mat']);
+e500=load([explore_location 'Adrian_Net_Sx20_NoW500_0330-2019_111659__Sim_1_SourceElectrode_18_DrainElectrode_492_Exploration_Analysis_ Timestamp_400_18-Jun-2019.mat']);
+e1000=load([explore_location 'Adrian_Net_Sx20_NoW1000_0606-2019_113353__Sim_1_SourceElectrode_32_DrainElectrode_1000_Exploration_Analysis_ Timestamp_400_18-Jun-2019.mat']);
 
+%% Random Graph Analysis:
+%Create random graph with same number of vertices as 500nw network, and the
+%avg degree of 500nw network.
+A=createRandRegGraph(height(e500.Explore.GraphView.Nodes),round(full(mean(e500.Explore.GraphTheory.DEG))));
+random.Adj=A;
+ranGraph=graph(A);
+random.Graph=ranGraph;
+%Random Cluster
+[random.Ci,random.Q] = community_louvain(A,1);
+[random.GlobalClust,random.AvgLocalClust, random.Clust] = clustCoeff(A);
+%Random Path Length
+random.Path = path_length(A);
+random.AvgPath=mean(random.Path);
+%Circuit Rank
+random.CircuitRank=numedges(ranGraph) - (numnodes(ranGraph) - 1);
 
+%% Human Graph Analysis
 human.GlobalClust=0.53;
 human.AvgPath=2.49;
-random.GlobalClust=0.1;
-random.AvgPath=2.5;
-ordered.GlobalClust=0.5;
-ordered.AvgPath=10;
-   
-%% Analysis
-x=[random.GlobalClust human.GlobalClust ordered.GlobalClust e100.Explore.GraphTheory.GlobalC1ust, e500.Explore.GraphTheory.GlobalC1ust, e1000.Explore.GraphTheory.GlobalC1ust ];
+%Taken from (Achard et al., 2006)
+
+%% Ordered Graph Analysis
+n = 25;
+B = delsq(numgrid('S',n));
+G = graph(B,'omitselfloops');
+ordered.Adj=adjacency(G);
+%Random Cluster
+[ordered.Ci,ordered.Q] = community_louvain(ordered.Adj,1);
+[ordered.GlobalClust,ordered.AvgLocalClust, ordered.Clust] = clustCoeff(ordered.Adj);
+%Random Path Length
+ordered.Path = path_length(ordered.Adj);
+ordered.AvgPath=mean(ordered.Path);
+ordered.Graph=G;
+%Circuit Rank
+ordered.CircuitRank=numedges(G) - (numnodes(G) - 1);
+
+%% AgNW 
+%Circuit Rank
+AgNW.CircuitRank=[e100.Explore.GraphTheory.CircuitRank e500.Explore.GraphTheory.CircuitRank e1000.Explore.GraphTheory.CircuitRank];
+AgNW.GlobalClust=[e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath];
+AgNW.AvgPath=[e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath];
+
+%% Plot:
+% Small World Analysis
+x=[random.GlobalClust human.GlobalClust ordered.GlobalClust e100.Explore.GraphTheory.GlobalClust, e500.Explore.GraphTheory.GlobalClust, e1000.Explore.GraphTheory.GlobalClust ];
 y=[random.AvgPath human.AvgPath ordered.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath];
 f=figure;
-p=plot(x,y,'o-');
-xlim([0.35 0.42])
-text(x,y,{'Random Nw','Human Nw','Ordered Nw','100nw','500nw','1000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
+p=gscatter(x,y);
+% xlim([0.05 0.6])
+% ylim([2 16])
+text(x,y,{'500nw Random Nw','Human Nw','500nw Ordered Nw','100nw','500nw','1000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
 xlabel('Global Clustering Coefficient');
 ylabel('Global Mean Path Length');
-p.MarkerEdgeColor='r';
+p.MarkerEdgeColor='b';
+p(:,1).MarkerEdgeColor='r';
 p.LineWidth=1.5;
+
+%Circuit Rank:
+circuitRank=[random.CircuitRank human.CircuitRank ordered.CircuitRank AgNW.CircuitRank];

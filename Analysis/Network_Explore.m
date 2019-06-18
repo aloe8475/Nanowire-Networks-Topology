@@ -322,6 +322,7 @@ end
 %Save Variables
 Explore.IndexTime=IndexTime;
 Explore.Name=Sim.Name;
+Graph.CircuitRank = numedges(G) - (numnodes(G) - 1);
 Explore.GraphTheory=Graph;
 Explore.GraphTheory.Definitions={'GE = Global Efficiency','LE = Local Efficiency', 'COMM = Communicability', 'Ci = Community/Cluster Affiliation',...
     'Q = Modularity', 'P = Participation Coefficient', 'MZ = Module Degree z Score', 'AvgPath - Average Path Length', ...
@@ -765,7 +766,7 @@ Graph.SC=subgraph_centrality(full(net_mat));
 Graph.COMM = expm(net_mat);
 
 %Clustering Coefficient
-[Graph.GlobalC1ust,Graph.AvgLocalClust, Graph.Clust] = clustCoeff(net_mat);
+[Graph.GlobalClust,Graph.AvgLocalClust, Graph.Clust] = clustCoeff(net_mat);
 % Graph.Clust2=clustering_coef_bu(net_mat);
 % Graph.GlobalC1ust = number of triangle loops / number of connected triples
 % Graph.AvgLocalClust = the average local clustering, where Ci = (number of triangles connected to i) / (number of triples centered on i)
