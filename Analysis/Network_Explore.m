@@ -239,11 +239,13 @@ IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(size(Sim.Da
 %% Network View
 % Function that plots network view of current and resistance
 [f1, f2, Adj, NumEl, Explore] = network_view(Sim,IndexTime, NodeList);
+fprintf('Network Analysis Complete \n');
 
 %% Overlay Graph Theory:
 % -----------------------------
 %Threshold
 [Graph, binarise_network]=graph_analysis(network,network_load,Sim,IndexTime);
+fprintf('Graph Analysis Complete \n');
 %Threshold graph degree:
 if binarise_network=='y'
     threshold_network='t';
@@ -270,8 +272,11 @@ end
 % Function that plots graph theory overlayed on graph view of currents
 if threshold_network=='t'
     [f6, f7, f8, f9, f10, f11,f12,f13, Explore,sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj,Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices,drain_exist);
+    fprintf('Graph Theory Complete \n');
+
 else
     [f6, f7, f8, f9, f10, f11,f12,f13, Explore, sourceElec, drainElec]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore, Graph, highlightElec, new_electrodes,drain_exist);
+        fprintf('Graph Theory Complete \n');
 end
 
 %Biograph view
@@ -287,26 +292,27 @@ end
 %% Searching Algorithms
 
 if threshold_network=='t' %only conduct search if we thresholded the network - otherwise too complex
-    T1 = bfsearch(G,sourceElec,'allevents'); %Breadth-First Search
-    T2 = dfsearch(G, sourceElec, 'allevents', 'Restart', true); %Depth-First Search
+%     T1 = bfsearch(G,sourceElec,'allevents'); %Breadth-First Search
+%     T2 = dfsearch(G, sourceElec, 'allevents', 'Restart', true); %Depth-First Search
     %figure;
     %visualize_search(G,T1) %Visual search step by step
     % visualize_search(G,T2) %Visual search step by step
     
     %plot searching algorithms
     %bfsearch
-    fs1=figure;p = plot(G,'Layout','layered');
-    events = {'edgetonew','edgetofinished','startnode'};
-    T = bfsearch(G,sourceElec,events,'Restart',true);
-    highlight(p, 'Edges', T.EdgeIndex(T.Event == 'edgetofinished'), 'EdgeColor', 'k')
-    highlight(p, 'Edges', T.EdgeIndex(T.Event == 'edgetonew'), 'EdgeColor', 'r')
-    highlight(p,T.Node(~isnan(T.Node)),'NodeColor','g')
-    if drain_exist
-    %Overlay shortest path:
-    [dist,path,pred]=graphshortestpath(Adj2,sourceElec,drainElec,'Directed','false');
-    highlight(p,path,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
-    title('Layered Graph Breadth-First Search overlayed w Shortest Path');
-    end 
+%     fs1=figure;p = plot(G,'Layout','layered');
+%     events = {'edgetonew','edgetofinished','startnode'};
+%     T = bfsearch(G,sourceElec,events,'Restart',true);
+%     highlight(p, 'Edges', T.EdgeIndex(T.Event == 'edgetofinished'), 'EdgeColor', 'k')
+%     highlight(p, 'Edges', T.EdgeIndex(T.Event == 'edgetonew'), 'EdgeColor', 'r')
+%     highlight(p,T.Node(~isnan(T.Node)),'NodeColor','g')
+%     if drain_exist
+%     %Overlay shortest path:
+%     [dist,path,pred]=graphshortestpath(Adj2,sourceElec,drainElec,'Directed','false');
+%     highlight(p,path,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
+%     title('Layered Graph Breadth-First Search overlayed w Shortest Path');
+%         fprintf('Shortest Path Complete \n');
+%     end 
     %Outputs:
     
     %'discovernode' (default)-A new node has been discovered.
@@ -718,30 +724,38 @@ elseif strcmp(network_load,'a') %adrian code
         %what we are doing here is creating a matrix of 0 and 1 (high and
         %low resistence), so that we can plot ONLY those nodes/edges that
         %have low resistence and are relevant.
-        
+        fprintf('Binarising... \n');
         a= full(currentSim.Data.Rmat{IndexTime});
         a(a==5000)=1; %if resistance is low, we make it 1 (on)
         a(a==5000000)=0;  %if it is high we make it 0 (off)
         net_mat=a;
         Graph.binarised='Yes - Using Resistance';
+        fprintf('Binarisation Complete \n');
     else
+        fprintf('Binarising... \n');
         net_mat=currentSim.SelLayout.AdjMat; %use standard adjacency matrix
         Graph.binarised='No';
+        fprintf('Binarisation Complete \n');
     end
     %    net_mat=full(simulations(simNum).Data.AdjMat{IndexTime}); %this gives an adj matrix for the network used for a chosen simulation at a specific timestamp
 end
 
 %Global efficiency --> 1/characteristic path length, averaged over the whole network. An estimate of how integrated the network is.
-Graph.GE = efficiency_bin(net_mat,0);
+% & Distance Matrix
+%The distance matrix contains lengths of shortest paths between all pairs of nodes
+[Graph.Distance, Graph.GE] = efficiency_bin(net_mat,0);
+fprintf('Global Efficiency Complete \n');
 
 %Topological features will allow us to understand whether it was good or
 %bad for classification.
 
 %Local efficiency --> 1/characteristic path length, at each node
-Graph.LE = efficiency_bin(net_mat,1);
+[localDistance, Graph.LE]= efficiency_bin(net_mat,1);
+fprintf('Local Efficiency Complete \n');
 
 % Diameter
 Graph.Diameter=diameter(net_mat);
+fprintf('Diameter Complete \n');
 
 % Density 
 %Network Density:
@@ -749,21 +763,26 @@ Graph.Diameter=diameter(net_mat);
 % divided by the number of potential edges.
 % I.e., the percentage of possible connections that actually exist.
 Graph.Density=density_und(net_mat);
+fprintf('Density Complete \n');
 
 %Betweeness Centrality
 Graph.BC=betweenness_bin(net_mat); 
 % Node betweenness centrality is the fraction of all shortest paths in the network that contain a given node. Nodes with high values of betweenness centrality participate in a large number of shortest paths.
+% fprintf('Betweenness Centrality Complete \n');
 
 %Eigenvector Centrality
-Graph.EC=eigenvector_centrality_und(full(net_mat));
+% Graph.EC=eigenvector_centrality_und(full(net_mat));
 % Eigenector centrality is a self-referential measure of centrality -- nodes have high eigenvector centrality if they connect to other nodes that have high eigenvector centrality.
+% fprintf('Eigenvector Centrality Complete \n');
 
 %Subgraph Centrality
-Graph.SC=subgraph_centrality(full(net_mat));
+% Graph.SC=subgraph_centrality(full(net_mat));
 %The subgraph centrality of a node is a weighted sum of closed walks of different lengths in the network starting and ending at the node.
+% fprintf('Subgraph Centrality Complete \n');
 
 %communicability --> an estimate of the ease with which each pair of nodes can connect in the network
 Graph.COMM = expm(net_mat);
+fprintf('Communicability Complete \n');
 
 %Clustering Coefficient
 [Graph.GlobalClust,Graph.AvgLocalClust, Graph.Clust] = clustCoeff(net_mat);
@@ -771,16 +790,18 @@ Graph.COMM = expm(net_mat);
 % Graph.GlobalC1ust = number of triangle loops / number of connected triples
 % Graph.AvgLocalClust = the average local clustering, where Ci = (number of triangles connected to i) / (number of triples centered on i)
 % Graph.Clust = a 1xN vector of clustering coefficients per node (where mean(C) = C2)
+fprintf('Clustering Coefficient Complete \n');
 
-%Distance Matrix
-%The distance matrix contains lengths of shortest paths between all pairs of nodes
-Graph.Distance=distance_bin(net_mat);
+
+% Graph.Distance=distance_bin(net_mat);
+% fprintf('Distance Matrix Complete \n');
 
 %Path Length
 Graph.Path = path_length(net_mat);
 Graph.CharPath=charpath(Graph.Distance);
 %Average Path Length
 Graph.AvgPath=mean(Graph.Path);
+fprintf('Path Length Complete \n');
 
 
 %modularity --> an estimate of how segregated the network is
@@ -788,23 +809,27 @@ Graph.AvgPath=mean(Graph.Path);
 %The Ci term is the module assignment for each node
 %The Q term is the 'quality' of the partition --> how modular the network is.
 % -- this should tell us how well we can classify
+fprintf('Ci & Q Complete \n');
 
 %Modularity:
 Graph.Modularity=modularity_und(full(net_mat));
 %The optimal community structure is a subdivision of the network into nonoverlapping groups of nodes in a way that maximizes the number of within-group edges, and minimizes the number of between-group edges. 
 %The modularity is a statistic that quantifies the degree to which the network may be subdivided into such clearly delineated groups
+fprintf('Modularity Complete \n');
 
 %degree --> a count of how many edges are connected to each node
 Graph.DEG = degrees_und(net_mat);
+fprintf('Degree Complete \n');
 
 %participation coefficient --> an estimate of how integrative a node is
 Graph.P = participation_coef(net_mat,Graph.Ci);
 %Ci from 'community_louvain.m'
+fprintf('Participation Coefficient Complete \n');
 
 %module degree z-score --> an estimate of how segregated a node is
 Graph.MZ = module_degree_zscore(net_mat,Graph.Ci);
 %Ci from 'community_louvain.m'
-
+fprintf('Module Z Score Complete \n');
 
 %save Adj Matrix 
 Graph.AdjMat=net_mat;
@@ -942,7 +967,7 @@ else
     p6.NodeCData=Graph.Ci;
 end
 labelnode(p6,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
-colormap hsv(6) %change number of colors here if there are more/less than 6 clusters
+colormap hsv(20) %change number of colors here if there are more/less than 6 clusters
 title(['Cluster Analysis ' num2str(IndexTime)]);
 
 %% Participant Coefficient Analysis:
