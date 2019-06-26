@@ -29,6 +29,7 @@ NSPd=NPd;                  	%number of shortest paths of length |d|
 NSP=NSPd; NSP(I)=1;        	%number of shortest paths of any length
 L=NSPd; L(I)=1;           	%length of shortest paths
 
+time1=tic;
 %calculate NSP and L
 while find(NSPd,1)
     d=d+1;
@@ -36,6 +37,10 @@ while find(NSPd,1)
     NSPd=NPd.*(L==0);
     NSP=NSP+NSPd;
     L=L+d.*(NSPd~=0);
+    if mod(d,100)==0
+    fprintf([num2str(d) ' \n'])
+    toc(time1)
+    end
 end
 L(~L)=inf; L(I)=0;          %L for disconnected vertices is inf
 NSP(~NSP)=1;                %NSP for disconnected vertices is 1

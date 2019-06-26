@@ -534,7 +534,20 @@ function plot_LDA(LDA_Analysis, simNum, networkName,currentPath,simulations)
 cd(currentPath);
 SelSims=simulations{simNum};
 save_directory='..\Data\Figures\LDA\LDA Training\';
-%plot inputs
+%Plot Electrode Locations:
+fElectrodes=figure;
+Sim=simulations{simNum};
+AdjMat=Sim.SelLayout.AdjMat;
+G=graph(AdjMat);
+p1=plot(G);
+p1.NodeLabel={};
+highlightElec=Sim.Electrodes.PosIndex;
+    highlight(p1,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
+    labelnode(p1,highlightElec,[Sim.Electrodes.Name]); %need to make this better - change 3:4 to a variable
+
+    title('Training Electrodes (Graph View)');
+
+    %plot inputs
 fin=figure;
 plot(LDA_Analysis.Input)
 title('Source Electrodes');
@@ -630,6 +643,8 @@ networkName(regexp(networkName,'[/:]'))=[]; %remove '/' character because it giv
 save_status=lower(input('Would you like to save the LDA Plots? y or n \n','s'));
 if save_status=='y'
     SelSims.Name=strrep(SelSims.Name,'.','');
+    saveas(fElectrodes,[save_directory num2str(networkName) SelSims.Name  '_Sec_Electrode_Position'],'jpg'); 
+    saveas(fElectrodes,[save_directory num2str(networkName) SelSims.Name  '_Sec_Electrode_Position'],'eps'); 
     saveas(fout,[save_directory num2str(networkName) SelSims.Name  '_Sec_Training_Inputs'],'jpg'); 
     saveas(fout,[save_directory num2str(networkName) SelSims.Name  '_Sec_Training_Inputs'],'eps');
     saveas(fin,[save_directory num2str(networkName) SelSims.Name   '_Sec_Training_Outputs'],'jpg');
@@ -803,6 +818,9 @@ Graph.CharPath=charpath(Graph.Distance);
 Graph.AvgPath=mean(Graph.Path);
 fprintf('Path Length Complete \n');
 
+%Small World Propensity:
+Graph.SmallWorldProp=small_world_propensity(net_mat);
+fprintf('Small World Propensity Complete \n');
 
 %modularity --> an estimate of how segregated the network is
 [Graph.Ci,Graph.Q] = community_louvain(net_mat,1);

@@ -22,7 +22,8 @@ for simNum = 1:length(network.Simulations)
     switch computer
         case 'W4PT80T2'
             path='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only\Python Data\';
-            % path='D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only\Python Data\';
+        case 'LAPTOP-S1BV3HR7'
+            path='D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only\Python Data\';
     end
     
     SelSims=network.Simulations{simNum};
