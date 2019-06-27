@@ -4,6 +4,7 @@ savePath='D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis\Network Explore Functions
 %% Random Graph Analysis:
 %Create random graph with same number of vertices as 'explore' network, and the
 %avg degree of 'explore' network.
+dbstop if error
 
 for i = 1:100
 A=createRandRegGraph(height(explore.Explore.GraphView.Nodes),round(full(mean(explore.Explore.GraphTheory.DEG))));
@@ -37,7 +38,17 @@ random100.StdPath=std([random(:).AvgPath]);
 random100.AvgGlobalClust=mean([random(:).GlobalClust]);
 random100.StdGlobalClust=std([random(:).GlobalClust]);
 
-save([savePath 'Random_Graphs_500nw.mat'],'random','rndNetworkExist','random100');
+
+random100.AvgPCoeff=mean([ordered(:).P]);
+random100.StdPCoeff=std([ordered(:).P]);
+
+random100.AvgBC=mean([ordered(:).BC]);
+random100.StdBC=std([ordered(:).BC]);
+
+random100.AvgSmallWorldProp=mean([ordered(:).SmallWorldProp]);
+random100.StdSmallWorldProp=std([ordered(:).SmallWorldProp]);
+
+save([savePath 'Random_Graphs_500nw.mat'],'random','random100');
 
 
 %% Ordered Graph Analysis
@@ -76,7 +87,14 @@ ordered100.StdPath=std([ordered(:).AvgPath]);
 ordered100.AvgGlobalClust=mean([ordered(:).GlobalClust]);
 ordered100.StdGlobalClust=std([ordered(:).GlobalClust]);
 
-rndNetworkExist=1;
+ordered100.AvgPCoeff=mean([ordered(:).P]);
+ordered100.StdPCoeff=std([ordered(:).P]);
 
-save([savePath 'Ordered_Graphs_500nw.mat'],'ordered','rndNetworkExist','ordered100');
+ordered100.AvgBC=mean([ordered(:).BC]);
+ordered100.StdBC=std([ordered(:).BC]);
+
+ordered100.AvgSmallWorldProp=mean([ordered(:).SmallWorldProp]);
+ordered100.StdSmallWorldProp=std([ordered(:).SmallWorldProp]);
+
+save([savePath 'Ordered_Graphs_500nw.mat'],'ordered','ordered100');
 end 
