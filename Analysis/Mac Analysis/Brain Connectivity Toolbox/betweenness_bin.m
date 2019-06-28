@@ -1,4 +1,4 @@
-function BC=betweenness_bin(G)
+function [BC, normBC]=betweenness_bin(G)
 %BETWEENNESS_BIN    Node betweenness centrality
 %
 %   BC = betweenness_bin(A);
@@ -29,7 +29,6 @@ NSPd=NPd;                  	%number of shortest paths of length |d|
 NSP=NSPd; NSP(I)=1;        	%number of shortest paths of any length
 L=NSPd; L(I)=1;           	%length of shortest paths
 
-time1=tic;
 %calculate NSP and L
 while find(NSPd,1)
     d=d+1;
@@ -37,10 +36,6 @@ while find(NSPd,1)
     NSPd=NPd.*(L==0);
     NSP=NSP+NSPd;
     L=L+d.*(NSPd~=0);
-    if mod(d,100)==0
-    fprintf([num2str(d) ' \n'])
-    toc(time1)
-    end
 end
 L(~L)=inf; L(I)=0;          %L for disconnected vertices is inf
 NSP(~NSP)=1;                %NSP for disconnected vertices is 1
@@ -55,4 +50,5 @@ for d=diam:-1:2
     DP=DP + DPd1;           %DPd1: dependencies on vertices |d-1| from source
 end
 
-BC=sum(DP,1);               %compute betweenness
+BC=sum(DP,1); %compute betweenness
+normBC=BC/((n-1)*(n-2)); %compute normalised betweenness

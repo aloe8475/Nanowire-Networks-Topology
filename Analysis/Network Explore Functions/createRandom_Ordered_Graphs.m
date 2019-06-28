@@ -18,7 +18,10 @@ random(i).Graph=ranGraph;
 random(i).P = participation_coef(A,random(i).Ci);
 
 %Betweenness Centrality:
-random(i).BC=betweenness_bin(A);
+[random(i).BC, random(i).normBC]=betweenness_bin(A);
+
+%Communicability:
+random(i).COMM = expm(A);
 
 %Random Path Length
 random(i).Path = path_length(A);
@@ -39,14 +42,17 @@ random100.AvgGlobalClust=mean([random(:).GlobalClust]);
 random100.StdGlobalClust=std([random(:).GlobalClust]);
 
 
-random100.AvgPCoeff=mean([ordered(:).P]);
-random100.StdPCoeff=std([ordered(:).P]);
+random100.AvgPCoeff=mean([random(:).P]);
+random100.StdPCoeff=std([random(:).P]);
 
-random100.AvgBC=mean([ordered(:).BC]);
-random100.StdBC=std([ordered(:).BC]);
+random100.AvgBC=mean([random(:).BC]);
+random100.StdBC=std([random(:).BC]);
 
-random100.AvgSmallWorldProp=mean([ordered(:).SmallWorldProp]);
-random100.StdSmallWorldProp=std([ordered(:).SmallWorldProp]);
+random100.AvgSmallWorldProp=mean([random(:).SmallWorldProp]);
+random100.StdSmallWorldProp=std([random(:).SmallWorldProp]);
+
+random100.AvgCOMM=mean([random(:).COMM]);
+random100.StdCOMM=std([random(:).COMM]);
 
 save([savePath 'Random_Graphs_500nw.mat'],'random','random100');
 
@@ -67,8 +73,11 @@ B=ordered(j).Adj;
 %Participation Coefficient:
 ordered(j).P = participation_coef(B,ordered(j).Ci);
 
+%Communicability:
+ordered(i).COMM = expm(B);
+
 %Betweenness Centrality:
-ordered(j).BC=betweenness_bin(B);
+[ordered(i).BC, ordered(i).normBC]=betweenness_bin(B);
 
 %Random Path Length
 ordered(j).Path = path_length(B);
@@ -95,6 +104,9 @@ ordered100.StdBC=std([ordered(:).BC]);
 
 ordered100.AvgSmallWorldProp=mean([ordered(:).SmallWorldProp]);
 ordered100.StdSmallWorldProp=std([ordered(:).SmallWorldProp]);
+
+ordered100.AvgCOMM=mean([ordered(:).COMM]);
+ordered100.StdCOMM=std([ordered(:).COMM]);
 
 save([savePath 'Ordered_Graphs_500nw.mat'],'ordered','ordered100');
 end 

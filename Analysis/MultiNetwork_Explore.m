@@ -43,27 +43,40 @@ human.AvgPath=2.49;
 %% Random and Ordered Graph Analysis
 
 createNewRand=lower(input('Would you like to create new Random and Ordered graphs? (Note this will take 4+ Hours) \n','s'));
-if createNewRand=='n'
-    loadPath='D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis\Network Explore Functions\';
-    if exist([loadPath 'Ordered_Graphs_500nw.mat'], 'file') && exist([loadPath 'Random_Graphs_500nw.mat'],'file')
+loadPath=explore_location;
+if createNewRand=='n'   
+    if exist([loadPath 'Ordered_Graphs_500nw.mat'], 'file') == 2 && exist([loadPath 'Random_Graphs_500nw.mat'],'file') == 2 %2 because .mat file
         load([loadPath 'Ordered_Graphs_500nw.mat']);
         load([loadPath 'Random_Graphs_500nw.mat']);
+        fprintf('Loading Ordered and Random Graphs (500nodes)');
     else
         fprintf('Ordered and Random Graphs have not been created yet \n');
         fprintf('Creating New Graphs \n');
         [random, ordered, random100, ordered100]=createRandom_Ordered_Graphs(e500);
     end
-else
-    fprintf('Ordered and Random Graphs have not been created yet \n');
+elseif exist([loadPath 'Ordered_Graphs_500nw.mat'], 'file') == 2 && exist([loadPath 'Random_Graphs_500nw.mat'],'file') == 2 %2 because .mat file
+    overwrite=lower(input('Graphs (500nodes) have already been created, would you like to overwrite? \n','s'));    
+    if overwrite =='n'
+    fprintf('Loading Ordered and Random Graphs (500nodes) \n');
+    load([loadPath 'Ordered_Graphs_500nw.mat']);
+    load([loadPath 'Random_Graphs_500nw.mat']);
+    else 
     fprintf('Creating New Graphs \n');
     [random, ordered, random100, ordered100]=createRandom_Ordered_Graphs(e500);
+    fprintf('New Graphs Created \n');
+    end 
 end
+
+fprintf('Graphs Loaded... \n Creating Plots... \n');
+
 
 %% Random
 % participation coefficient (mean)
 % communicability
+
 % complexity (from the Sporns, Tononi and Edelman paper I sent through the other day -- still waiting on code from Olaf, but will send through when I get it).
 % betweeness_centrality
+
 %% AgNW
 %Circuit Rank
 AgNW.CircuitRank=[e100.Explore.GraphTheory.CircuitRank e500.Explore.GraphTheory.CircuitRank e1000.Explore.GraphTheory.CircuitRank e2000.Explore.GraphTheory.CircuitRank];
