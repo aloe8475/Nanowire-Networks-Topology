@@ -86,10 +86,9 @@
     end 
     random100.AvgNodes=mean([random(:).numNodes]);
     ordered100.AvgNodes=mean([ordered(:).numNodes]);
-    
+    random100.AvgNodes=mean([random(:).numNodes]);
+    ordered100.AvgNodes=mean([ordered(:).numNodes]);
     %Number of Edges
-    random100.AvgEdges=mean([random(:).numEdges]);
-    ordered100.AvgEdges=mean([ordered(:).numEdges]);
     
     % participation coefficient (mean)
     % Avg PCoeff per Node (across 100 bootstraps):
@@ -97,12 +96,10 @@
     random100.StdPCoeff=std([random(:).P],[],2);
     ordered100.AvgPCoeff=mean([ordered(:).P],2);
     ordered100.StdPCoeff=std([ordered(:).P],[],2);
-    
     % communicability
+    
 
     % complexity (from the Sporns, Tononi and Edelman paper I sent through the other day -- still waiting on code from Olaf, but will send through when I get it).
-    
-    
     % betweeness_centrality
 
     %Average Normalised Betweenness (BC/[(N-1)(N-2)])
