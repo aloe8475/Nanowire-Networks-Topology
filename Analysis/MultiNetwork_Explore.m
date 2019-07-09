@@ -36,9 +36,23 @@
     e2000=load([explore_location 'Adrian_Net_Sx20_NoW2000_0618-2019_125103__Sim_1_SourceElectrode_158_DrainElectrode_1820_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
 
     %% Human Graph Analysis
-    human.GlobalClust=0.53;
-    human.AvgPath=2.49;
-    %Taken from (Achard et al., 2006)
+   %Cluster Coeff & Path Length
+    human.GlobalClust=0.53; %Taken from (Achard et al., 2006) 
+    human.AvgPath=2.49; %Taken from (Achard et al., 2006)
+    %Participation Coefficient & Module z-Score
+    human.PLocalHubs=0.2; %High PCoeff - approximates from (Power et al., 2013)
+    human.PConnectorHubs=0.9; %Low PCoeff
+    human.AvgP=0.52; %Bertolero, Yeo & D'Esposito - 2015 OR 0.62 - Guimera & Nunes, 2005.
+    human.MZHubs=0.9;
+    human.MZNonHubs=0.2;
+    
+    %Complexity
+    
+    %Communicability
+    
+    %Betweenness Centrality
+    
+    %Circuit Rank
 
     %% Random and Ordered Graph Analysis
 
@@ -99,9 +113,8 @@
     ordered100.StdPCoeff=std([ordered(:).P],[],2);
     
     % communicability
-
-    % complexity (from the Sporns, Tononi and Edelman paper I sent through the other day -- still waiting on code from Olaf, but will send through when I get it).
     
+    % complexity (from the Sporns, Tononi and Edelman paper I sent through the other day -- still waiting on code from Olaf, but will send through when I get it).
     
     % betweeness_centrality
 
@@ -173,6 +186,25 @@
             'VerticalAlignment','bottom','horizontalalign','center')];
     end
 
+    %Participation Coefficient & Module z-Score
+    f3=figure;
+    %High PCoeff = Hubs / Central areas (Power et al., 2013)
+    PCoeff=[random100.AvgPCoeff human.PLocalHubs human.PLocalHubs human.PConnectorHubs human.PConnectorHubs ordered100.AvgPCoeff e100.Explore.GraphTheory.P, e500.Explore.GraphTheory.P, e1000.Explore.GraphTheory.P e2000.Explore.GraphTheory.P];
+    MZ=[random100.AvgMZ human.MZHubs human.MZNonHubs human.MZHubs human.MZNonHubs ordered100.AvgMZ e100.Explore.GraphTheory.MZ, e500.Explore.GraphTheory.MZ, e1000.Explore.GraphTheory.MZ e2000.Explore.GraphTheory.MZ];
+    p3=gscatter(PCoeff,MZ);
+    text(PCoeff,MZ,{'500node Random Nw', 'Human Connector Local Provincial Hub','Human Local Peripheral Node','Human Connector Hub','Human Satellite Connector', '500node Ordered Nw', '100nw', '500nw', '1000nw','2000nw'});
+    xlabel('Participant Coefficient Coefficient');
+    ylabel('Module z-Score');
+    p3.MarkerEdgeColor='b';
+    p3(:,1).MarkerEdgeColor='r';
+    p3.LineWidth=1.5;
+    
+    %Communicability
+    
+    %Complexity
+    
+    %Betweenness Centrality
+    
 
     %% OLD CODE
     %% Load three networks

@@ -20,7 +20,7 @@ switch computer
         currentPath='/suphys/aloe8475/Documents/CODE/Analysis';
     case 'LAPTOP-S1BV3HR7'
         currentPath='D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis';
-    %case '' %--- Add other computer paths (e.g. Mike)
+        %case '' %--- Add other computer paths (e.g. Mike)
 end
 cd(currentPath);
 load_data_question=lower(input('Load network data, Analysis Data Only or None? N - None, D - Network Data, A - Analysis Data\n','s'));
@@ -69,8 +69,8 @@ while i == 1
     %Choose Analysis to perform
     if explore_network=='t'
         extract_data(network); %extract data for python
-            fprintf(['Extracting Data for Python Use...\n\n\n']);
-            fprintf(['Data Extracted \n\n\n']);
+        fprintf(['Extracting Data for Python Use...\n\n\n']);
+        fprintf(['Data Extracted \n\n\n']);
         analysis_type=lower(input('Which analysis would you like to perform? G - graph, E - Explore Network,L - LDA, N - none \n','s'));
     elseif explore_network=='e' % we don't want to allow LDA if just exploring
         analysis_type=lower(input('Which analysis would you like to perform? G - graph, E - Explore Network, N - none \n','s'));
@@ -91,7 +91,7 @@ while i == 1
         end
         i=i+1;
     elseif analysis_type=='l'
-        %% LDA Analysis            
+        %% LDA Analysis
         LDA_Analysis=lda_analysis(currentSim,network,network_load,simNum);
         i=i+1;
     end
@@ -152,9 +152,9 @@ network_load='a';%lower(input('Which Network do you want to analyse? Z - Zdenka,
 if sim_loaded==1
     if explore_network=='t' %if we have training and testing simulations
         tempSim=network.Simulations{2};
-%         tempSim=num2cell(tempSim);
-%         network.Simulations(2) = [];
-%         network.Simulations=[network.Simulations tempSim];
+        %         tempSim=num2cell(tempSim);
+        %         network.Simulations(2) = [];
+        %         network.Simulations=[network.Simulations tempSim];
         
         %number of training + number of testing:
         
@@ -205,7 +205,7 @@ f=figure;
 drainIndex=find(contains(Sim.Electrodes.Name,'Drain'));
 if isempty(drainIndex)
     drain_exist=0;
-end 
+end
 sourceIndex=find(contains(Sim.Electrodes.Name,'Source'));
 for i = 1:length(sourceIndex)
     source(:,i)=full(Sim.Data.(['ISource' num2str(i)]));
@@ -273,10 +273,10 @@ end
 if threshold_network=='t'
     [f6, f7, f8, f9, f10, f11,f12,f13, Explore,sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj,Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices,drain_exist);
     fprintf('Graph Theory Complete \n');
-
+    
 else
     [f6, f7, f8, f9, f10, f11,f12,f13, Explore, sourceElec, drainElec]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore, Graph, highlightElec, new_electrodes,drain_exist);
-        fprintf('Graph Theory Complete \n');
+    fprintf('Graph Theory Complete \n');
 end
 
 %Biograph view
@@ -292,27 +292,27 @@ end
 %% Searching Algorithms
 
 if threshold_network=='t' %only conduct search if we thresholded the network - otherwise too complex
-%     T1 = bfsearch(G,sourceElec,'allevents'); %Breadth-First Search
-%     T2 = dfsearch(G, sourceElec, 'allevents', 'Restart', true); %Depth-First Search
+    %     T1 = bfsearch(G,sourceElec,'allevents'); %Breadth-First Search
+    %     T2 = dfsearch(G, sourceElec, 'allevents', 'Restart', true); %Depth-First Search
     %figure;
     %visualize_search(G,T1) %Visual search step by step
     % visualize_search(G,T2) %Visual search step by step
     
     %plot searching algorithms
     %bfsearch
-%     fs1=figure;p = plot(G,'Layout','layered');
-%     events = {'edgetonew','edgetofinished','startnode'};
-%     T = bfsearch(G,sourceElec,events,'Restart',true);
-%     highlight(p, 'Edges', T.EdgeIndex(T.Event == 'edgetofinished'), 'EdgeColor', 'k')
-%     highlight(p, 'Edges', T.EdgeIndex(T.Event == 'edgetonew'), 'EdgeColor', 'r')
-%     highlight(p,T.Node(~isnan(T.Node)),'NodeColor','g')
-%     if drain_exist
-%     %Overlay shortest path:
-%     [dist,path,pred]=graphshortestpath(Adj2,sourceElec,drainElec,'Directed','false');
-%     highlight(p,path,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
-%     title('Layered Graph Breadth-First Search overlayed w Shortest Path');
-%         fprintf('Shortest Path Complete \n');
-%     end 
+    %     fs1=figure;p = plot(G,'Layout','layered');
+    %     events = {'edgetonew','edgetofinished','startnode'};
+    %     T = bfsearch(G,sourceElec,events,'Restart',true);
+    %     highlight(p, 'Edges', T.EdgeIndex(T.Event == 'edgetofinished'), 'EdgeColor', 'k')
+    %     highlight(p, 'Edges', T.EdgeIndex(T.Event == 'edgetonew'), 'EdgeColor', 'r')
+    %     highlight(p,T.Node(~isnan(T.Node)),'NodeColor','g')
+    %     if drain_exist
+    %     %Overlay shortest path:
+    %     [dist,path,pred]=graphshortestpath(Adj2,sourceElec,drainElec,'Directed','false');
+    %     highlight(p,path,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
+    %     title('Layered Graph Breadth-First Search overlayed w Shortest Path');
+    %         fprintf('Shortest Path Complete \n');
+    %     end
     %Outputs:
     
     %'discovernode' (default)-A new node has been discovered.
@@ -426,7 +426,12 @@ function LDA_Analysis=lda_analysis(currentSim,network,network_load,simNum)
 %% LDA Analysis
 %THIS IS WHERE YOU CHANGE THE VARIABLES FOR LDA
 drain1=[full(currentSim.Data.IDrain1)]; %full(simulations(2).Data.IDrain1)];
-drain2=[full(currentSim.Data.IDrain2)]; %full(simulations(2).Data.IDrain2)];
+if exist('currentSim.Data.IDrain2','var')
+    drain2=[full(currentSim.Data.IDrain2)]; %full(simulations(2).Data.IDrain2)];
+    exists =1;
+else
+    exists =0;
+end
 %Current source
 source1=[full(currentSim.Data.ISource1)]; %full(simulations(2).Data.ISource1)];
 source2=[full(currentSim.Data.ISource2)]; %full(simulations(2).Data.ISource2)];
@@ -434,13 +439,16 @@ source2=[full(currentSim.Data.ISource2)]; %full(simulations(2).Data.ISource2)];
 source1Voltage=full(currentSim.Data.VSource1);
 source2Voltage=full(currentSim.Data.VSource2);
 Input = [source1 source2];
-Output = [drain1 drain2]; %OUTPUT is column (variable) x row (observations)
+if exists
+    Output = [drain1 drain2]; %OUTPUT is column (variable) x row (observations)
+else
+    Output=drain1;
+end
 Target = source1Voltage(:,1)>0.001;% uncomment for current: [source1(:,1)> 1.0e-04 *0.001 & source2<0];%TARGET is the classifier we expect
 
 %visualise drain1 and drain2
 figure
-plot(drain1); hold on
-plot(drain2);
+plot(Output);
 
 % Calculate linear discriminant coefficients - finding a line that
 % differentiate Output & Target
@@ -456,7 +464,9 @@ LDA_Analysis(simNum).P = exp(LDA_Analysis(simNum).L) ./ repmat(sum(exp(LDA_Analy
 
 %Save all variables into struct
 LDA_Analysis(simNum).drain1=drain1;
-LDA_Analysis(simNum).drain2=drain2;
+if exists
+    LDA_Analysis(simNum).drain2=drain2;
+end
 LDA_Analysis(simNum).source1=source1;
 LDA_Analysis(simNum).source2=source2;
 LDA_Analysis(simNum).Output=Output;
@@ -491,8 +501,11 @@ LDA_Analysis(simNum).TypeOfData='Training';
 % classLoss = kfoldLoss(CVSVMModel); %Generalization Rate
 
 
-
-clear drain1 drain2 source1 source2 Input Target Output
+if exists
+    clear drain1 drain2 source1 source2 Input Target Output
+else
+    clear drain1 source1 source2 Input Target Output
+end
 %% Saving LDA
 save_state=lower(input('Would you like to save the LDA Analysis? y or n \n','s'));
 if save_state=='y'
@@ -518,7 +531,11 @@ else % otherwise, can only input 2 or higher
             fprintf(['Please Choose a number between '  num2str(network(networkNum2).numTrainingSims+1) ' and ' num2str(network(networkNum2).numTestingSims)]);
         end
     end
-    LDA_Analysis(simulationChoice).Output=[full(simulations{simulationChoice}.Data.IDrain1) full(simulations{simulationChoice}.Data.IDrain2)];
+    if exist('simulations{simulationChoice}.Data.IDrain2','var')
+        LDA_Analysis(simulationChoice).Output=[full(simulations{simulationChoice}.Data.IDrain1) full(simulations{simulationChoice}.Data.IDrain2)];
+    else
+        LDA_Analysis(simulationChoice).Output=[full(simulations{simulationChoice}.Data.IDrain1)];
+    end
     LDA_Analysis(simulationChoice).Input=[full(simulations{simulationChoice}.Data.ISource1) full(simulations{simulationChoice}.Data.ISource2)];
     LDA_Analysis(simulationChoice).Target=[full(simulations{simulationChoice}.Data.VSource1 >0.001)];
     LDA_Analysis(simulationChoice).TypeOfData='Testing';
@@ -542,12 +559,12 @@ G=graph(AdjMat);
 p1=plot(G);
 p1.NodeLabel={};
 highlightElec=Sim.Electrodes.PosIndex;
-    highlight(p1,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
-    labelnode(p1,highlightElec,[Sim.Electrodes.Name]); %need to make this better - change 3:4 to a variable
+highlight(p1,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
+labelnode(p1,highlightElec,[Sim.Electrodes.Name]); %need to make this better - change 3:4 to a variable
 
-    title('Training Electrodes (Graph View)');
+title('Training Electrodes (Graph View)');
 
-    %plot inputs
+%plot inputs
 fin=figure;
 plot(LDA_Analysis.Input)
 title('Source Electrodes');
@@ -643,13 +660,13 @@ networkName(regexp(networkName,'[/:]'))=[]; %remove '/' character because it giv
 save_status=lower(input('Would you like to save the LDA Plots? y or n \n','s'));
 if save_status=='y'
     SelSims.Name=strrep(SelSims.Name,'.','');
-    saveas(fElectrodes,[save_directory num2str(networkName) SelSims.Name  '_Sec_Electrode_Position'],'jpg'); 
-    saveas(fElectrodes,[save_directory num2str(networkName) SelSims.Name  '_Sec_Electrode_Position'],'eps'); 
-    saveas(fout,[save_directory num2str(networkName) SelSims.Name  '_Sec_Training_Inputs'],'jpg'); 
+    saveas(fElectrodes,[save_directory num2str(networkName) SelSims.Name  '_Sec_Electrode_Position'],'jpg');
+    saveas(fElectrodes,[save_directory num2str(networkName) SelSims.Name  '_Sec_Electrode_Position'],'eps');
+    saveas(fout,[save_directory num2str(networkName) SelSims.Name  '_Sec_Training_Inputs'],'jpg');
     saveas(fout,[save_directory num2str(networkName) SelSims.Name  '_Sec_Training_Inputs'],'eps');
     saveas(fin,[save_directory num2str(networkName) SelSims.Name   '_Sec_Training_Outputs'],'jpg');
     saveas(fin,[save_directory num2str(networkName) SelSims.Name  '_Sec_Training_Outputs'],'eps');
-    saveas(LDAf,[save_directory num2str(networkName) SelSims.Name  '_Sec_LDA_Classification_Training'],'jpg'); 
+    saveas(LDAf,[save_directory num2str(networkName) SelSims.Name  '_Sec_LDA_Classification_Training'],'jpg');
     saveas(LDAf,[save_directory num2str(networkName) SelSims.Name   '_Sec_LDA_Classification_Training'],'eps');
     saveas(LDAff,[save_directory num2str(networkName) SelSims.Name   '_Sec_logLDA_Classification_Training'],'jpg');
     saveas(LDAff,[save_directory num2str(networkName) SelSims.Name  '_Sec_logLDA_Classification_Training'],'eps');
@@ -772,7 +789,7 @@ fprintf('Local Efficiency Complete \n');
 Graph.Diameter=diameter(net_mat);
 fprintf('Diameter Complete \n');
 
-% Density 
+% Density
 %Network Density:
 % This is defined, for a given set of nodes, as the number of actual edges
 % divided by the number of potential edges.
@@ -781,7 +798,7 @@ Graph.Density=density_und(net_mat);
 fprintf('Density Complete \n');
 
 %Betweeness Centrality
-Graph.BC=betweenness_bin(net_mat); 
+Graph.BC=betweenness_bin(net_mat);
 % Node betweenness centrality is the fraction of all shortest paths in the network that contain a given node. Nodes with high values of betweenness centrality participate in a large number of shortest paths.
 % fprintf('Betweenness Centrality Complete \n');
 
@@ -831,7 +848,7 @@ fprintf('Ci & Q Complete \n');
 
 %Modularity:
 Graph.Modularity=modularity_und(full(net_mat));
-%The optimal community structure is a subdivision of the network into nonoverlapping groups of nodes in a way that maximizes the number of within-group edges, and minimizes the number of between-group edges. 
+%The optimal community structure is a subdivision of the network into nonoverlapping groups of nodes in a way that maximizes the number of within-group edges, and minimizes the number of between-group edges.
 %The modularity is a statistic that quantifies the degree to which the network may be subdivided into such clearly delineated groups
 fprintf('Modularity Complete \n');
 
@@ -849,7 +866,7 @@ Graph.MZ = module_degree_zscore(net_mat,Graph.Ci);
 %Ci from 'community_louvain.m'
 fprintf('Module Z Score Complete \n');
 
-%save Adj Matrix 
+%save Adj Matrix
 Graph.AdjMat=net_mat;
 
 %save selected time
@@ -1007,9 +1024,9 @@ if threshold_choice=='t'
 end
 labelnode(p7,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
 if threshold_choice=='t'
-text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P(threshold))) ' (large dot)']);
-else 
-text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P)) ' (large dot)']);
+    text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P(threshold))) ' (large dot)']);
+else
+    text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P)) ' (large dot)']);
 end
 title(['Participant Coefficient Analysis Timestamp ' num2str(IndexTime)]);
 
@@ -1034,10 +1051,10 @@ if threshold_choice=='t'
 end
 labelnode(p8,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
 if threshold_choice=='t'
-text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ(threshold))) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ(threshold))) ' (large dot)']);
-else 
-text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ)) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
-end 
+    text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ(threshold))) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ(threshold))) ' (large dot)']);
+else
+    text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ)) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
+end
 title(['Module Degree z-Score Analysis Timestamp ' num2str(IndexTime)]);
 
 
@@ -1095,7 +1112,7 @@ title(['Communicability Analysis Timestamp ' num2str(IndexTime) ' (log10)']);
 Graph.CircuitRank = numedges(g) - (numnodes(g) - 1);
 if threshold_choice=='t'
     Graph.Indices=node_indices;
-end 
+end
 
 %% Save
 network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems

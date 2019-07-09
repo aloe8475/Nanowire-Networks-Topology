@@ -14,9 +14,9 @@ random(i).Graph=ranGraph;
 %Random Cluster
 [random(i).Ci,random(i).Q] = community_louvain(A,1);
 [random(i).GlobalClust,random(i).AvgLocalClust, random(i).Clust] = clustCoeff(A);
-%Participation Coefficient:
+%Participation Coefficient & Module z-Score
 random(i).P = participation_coef(A,random(i).Ci);
-
+random(i).MZ = module_degree_zscore(A, random(i).Ci);
 %Betweenness Centrality:
 [random(i).BC, random(i).normBC]=betweenness_bin(A);
 
@@ -41,9 +41,11 @@ random100.StdPath=std([random(:).AvgPath]);
 random100.AvgGlobalClust=mean([random(:).GlobalClust]);
 random100.StdGlobalClust=std([random(:).GlobalClust]);
 
-
 random100.AvgPCoeff=mean([random(:).P]);
 random100.StdPCoeff=std([random(:).P]);
+
+random100.AvgMZ = mean([random(:).MZ]);
+random100.StdMZ = std([random(:).MZ]);
 
 random100.AvgBC=mean([random(:).BC]);
 random100.StdBC=std([random(:).BC]);
@@ -70,8 +72,9 @@ B=ordered(j).Adj;
 [ordered(j).Ci,ordered(j).Q] = community_louvain(B,1);
 [ordered(j).GlobalClust,ordered(j).AvgLocalClust, ordered(j).Clust] = clustCoeff(B);
 
-%Participation Coefficient:
+%Participation Coefficient & Module z-Score
 ordered(j).P = participation_coef(B,ordered(j).Ci);
+ordered(i).MZ = module_degree_zscore(A, ordered(i).Ci);
 
 %Communicability:
 ordered(i).COMM = expm(B);
@@ -98,6 +101,9 @@ ordered100.StdGlobalClust=std([ordered(:).GlobalClust]);
 
 ordered100.AvgPCoeff=mean([ordered(:).P]);
 ordered100.StdPCoeff=std([ordered(:).P]);
+
+ordered100.AvgMZ=mean([ordered(:).MZ]);
+ordered100.StdMZ=std([ordered(:).MZ]);
 
 ordered100.AvgBC=mean([ordered(:).BC]);
 ordered100.StdBC=std([ordered(:).BC]);
