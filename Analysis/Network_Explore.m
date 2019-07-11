@@ -1002,7 +1002,7 @@ else
     p6.NodeCData=Graph.Ci;
 end
 labelnode(p6,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
-colormap hsv(20) %change number of colors here if there are more/less than 6 clusters
+colormap hsv(13) %change number of colors here if there are more/less than 6 clusters
 title(['Cluster Analysis ' num2str(IndexTime)]);
 
 %% Participant Coefficient Analysis:

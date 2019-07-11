@@ -62,7 +62,7 @@ save([savePath 'Random_Graphs_500nw.mat'],'random','random100');
 %% Ordered Graph Analysis
 for j = 1:100
 numConnections=2;
-numNodes=500;
+numNodes=498; %same as 500nw network
 
 G=WattsStrogatz(numNodes,numConnections,0); %create a ordered graph that is connected to its two nearest neighbours
 
