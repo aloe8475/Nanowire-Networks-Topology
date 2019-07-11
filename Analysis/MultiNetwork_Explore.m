@@ -35,6 +35,11 @@
     e1000=load([explore_location 'Adrian_Net_Sx20_NoW1000_0606-2019_113353__Sim_1_SourceElectrode_32_DrainElectrode_1000_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
     e2000=load([explore_location 'Adrian_Net_Sx20_NoW2000_0618-2019_125103__Sim_1_SourceElectrode_158_DrainElectrode_1820_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
 
+    %% Example AI Graph Analysis (Recurrent Neural Network)
+    
+    %Create Sample RNN:
+    AI.AdjMat=
+    
     %% Human Graph Analysis
    %Cluster Coeff & Path Length
     human.GlobalClust=0.53; %Taken from (Achard et al., 2006) 

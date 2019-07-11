@@ -34,7 +34,7 @@ function varargout = main_sims(varargin)
 
 %
 % Last Updated 08-04-2019
-% Last Modified by GUIDE v2.5 08-Apr-2019 16:23:43
+% Last Modified by GUIDE v2.5 11-Jul-2019 11:01:52
 
 % MAIN_SIMS MATLAB code for main_sims.fig
 
@@ -764,3 +764,62 @@ function NodeList_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in SaveScriptButton.
+% --- Executes on button press in SaveScriptButton.
+function SaveScriptButton_Callback(hObject, eventdata, handles)
+% hObject    handle to SaveScriptButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+NetList_Callback(handles.NetList, eventdata, handles);
+Network=handles.Networks{handles.NetList.Value};
+Network.Domains=ConnectedDomains(Network.Graph);
+PlotNetwork(Network,'domains');
+
+handles.SimulationSettings=callSIMULATIONSETTINGS(handles.SimulationSettings);
+if isempty(handles.SimulationSettings)
+    return;
+end
+
+NewSim.Settings=handles.SimulationSettings;
+
+[NewSim.Time,NewSim.Electrodes]=getELECTRODES(handles,NewSim.Settings,Network);
+if isempty(NewSim.Electrodes)
+    guidata(hObject,handles);
+    return;
+end
+
+NewSim.SelDomain=Network.Domains{NewSim.Electrodes.DomIndex(1)};
+NewSim.SelLayout=GetSelectedLayout(Network,NewSim.SelDomain);
+
+
+
+if ~isequal(0,handles.ResumeCheck.Value) && ~isequal(handles.SimList.String,'SimList')
+    IndexNet=handles.NetList.Value;
+    IndexSim=handles.SimList.Value;
+    SelSim=handles.Networks{IndexNet}.Simulations{IndexSim};
+    NewSim.LastW=SelSim.Data.Wmat{end};%%if you want to resume previous simulation
+else
+    NewSim.LastW=[];
+end
+
+NewSim.Name='partialSim';
+%% adding just simulation parameters and electrodes to the simulations list
+[Network.Simulations,handles.SimList.String,handles.SimList.Value]=...
+    AddDeleteDataList('add',Network.Simulations,NewSim);
+
+%% saving in selection folder
+Name=Network.Name;
+Name=strrep(Name,':','_');
+Name=strrep(Name,'/','_');
+Name=strcat(Name,'.mat');
+SelDir=uigetdir();
+if ~isequal(SelDir,0)
+    name=fullfile(SelDir,Name);
+    save(name,'Network','-v7.3');
+else
+    return;
+end
+
+guidata(hObject,handles);
