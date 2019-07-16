@@ -54,6 +54,7 @@
     human.MZHubs=median([2.5:0.5:10]);%[2.5 10] % within module degree probability less than 0.01 is analogous to having a z-score above 2.5 (Guimera and Amaral, 2005, Joyce et al., 2010)
     human.MZNonHubs=median([-2:0.5:2.5]);% (Guimera and Amaral, 2005, Joyce et al., 2010)
     human.AvgMZ=0.0001; %Bertolero, Yeo & D'Esposito - 2015
+    %Small world Prop
     
     %Complexity
     
@@ -116,10 +117,16 @@
     
     % participation coefficient (mean)
     % Avg & std PCoeff per Node (across 100 bootstraps) and across nodes:
-    random100.AvgAvgPCoeff=mean(mean([random(:).P],2));
-    random100.StdAvgPCoeff=std(mean([random(:).P],[],2));
-    ordered100.AvgAvgPCoeff=mean(mean([ordered(:).P],2));
-    ordered100.StdAvgPCoeff=std(mean([ordered(:).P],[],2));
+    random100.AvgAvgPCoeff=mean(mean([random(:).P]),2);
+    random100.StdAvgPCoeff=std(mean([random(:).P]),[],2);
+    ordered100.AvgAvgPCoeff=mean(mean([ordered(:).P]),2);
+    ordered100.StdAvgPCoeff=std(mean([ordered(:).P]),[],2);
+    
+    %Small World Prop
+    random100.AvgSmallWorldProp=mean([random(:).SmallWorldProp],2);
+    random100.StdSmallWorldProp=std([random(:).SmallWorldProp],[],2);
+    ordered100.AvgSmallWorldProp=mean([ordered(:).SmallWorldProp],2);
+    ordered100.StdSmallWorldProp=std([ordered(:).SmallWorldProp],[],2);
     
     % communicability
     
@@ -138,10 +145,11 @@
     AgNW.CircuitRank=[e100.Explore.GraphTheory.CircuitRank e500.Explore.GraphTheory.CircuitRank e1000.Explore.GraphTheory.CircuitRank e2000.Explore.GraphTheory.CircuitRank];
     AgNW.GlobalClust=[e100.Explore.GraphTheory.GlobalClust, e500.Explore.GraphTheory.GlobalClust, e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
     AgNW.AvgPath=[e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
+    AgNW.SmallWorldProp=[e100.Explore.GraphTheory.SmallWorldProp, e500.Explore.GraphTheory.SmallWorldProp, e1000.Explore.GraphTheory.SmallWorldProp e2000.Explore.GraphTheory.SmallWorldProp];
 
     %% Plot:
     % Small World Analysis
-    x=[random100.AvgGlobalClust human.GlobalClust ordered100.AvgGlobalClust e100.Explore.GraphTheory.GlobalClust, e500.Explore.GraphTheory.GlobalClust, e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
+    x=[random100.AvgGlobalClust human.GlobalClust ordered100.AvgGlobalClust e100.Explore.GraphTheory.GlobalClust e500.Explore.GraphTheory.GlobalClust e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
     y=[random100.AvgPath human.AvgPath ordered100.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
     f=figure;
     p=gscatter(x,y);
@@ -168,10 +176,11 @@
     hold on
     e=errorbar(x(1), logy(1),random100.StdPath);
     e2=errorbar(x(1), logy(1),random100.StdGlobalClust);
-    errorbar(x(3), y(3),ordered100.StdPath);
-    errorbar(x(3), y(3),ordered100.StdGlobalClust);
+    errorbar(x(3), logy(3),ordered100.StdPath);
+    errorbar(x(3), logy(3),ordered100.StdGlobalClust);
     % xlim([0.05 0.6])
     % ylim([2 16])
+    ylim([0,max(logy)]);
     text(x,logy,{'500node Random Nw','Human Nw','500node Ordered Nw','100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
     xlabel('Global Clustering Coefficient');
     ylabel('Log10 Global Mean Path Length');
@@ -179,6 +188,18 @@
     p1(:,1).MarkerEdgeColor='r';
     p1.LineWidth=1.5;
 
+    %Small World Prop
+    x=[random100.AvgSmallWorldProp ordered100.AvgSmallWorldProp AgNW.SmallWorldProp];
+    ff=figure;
+    pp=bar(x);
+    hold on
+    e=errorbar(x(1), random100.StdSmallWorldProp);
+    e2=errorbar(x(2),ordered100.StdSmallWorldProp);
+    % xlim([0.05 0.6])
+    % ylim([2 16])
+    xticklabels({'500node Random Nw','500node Ordered Nw','100nw','500nw','1000nw','2000nw'});
+    ylabel('Small World Prop');
+    
     %Circuit Rank:
     circuitRank=[random(1).CircuitRank ordered(1).CircuitRank AgNW.CircuitRank];
     f2=figure;
