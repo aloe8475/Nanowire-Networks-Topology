@@ -1,5 +1,18 @@
-function [random, ordered, random100, ordered100]=createRandom_Ordered_Graphs(explore)
-savePath='D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis\Network Explore Functions\';
+function [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(explore)
+
+computer=getenv('computername');
+    switch computer
+        case 'W4PT80T2' %if on desktop at uni - Alon
+            savePath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Network Explore Functions\';
+        case '' %if on linux
+            savePath='/suphys/aloe8475/Documents/CODE/Analysis/Network Explore Functions/';
+        case 'LAPTOP-S1BV3HR7'
+            savePath='D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis\Network Explore Functions\';
+            %case '' %--- Add other computer paths (e.g. Mike)
+    end
+
+Parameters.seed=RandStream.create('mrg32k3a','Seed',42); % set random seed generator
+RandStream.setGlobalStream(Parameters.seed);
 
 %% Random Graph Analysis:
 %Create random graph with same number of vertices as 'explore' network, and the
@@ -74,13 +87,13 @@ B=ordered(j).Adj;
 
 %Participation Coefficient & Module z-Score
 ordered(j).P = participation_coef(B,ordered(j).Ci);
-ordered(i).MZ = module_degree_zscore(A, ordered(i).Ci);
+ordered(j).MZ = module_degree_zscore(B, ordered(j).Ci);
 
 %Communicability:
-ordered(i).COMM = expm(B);
+ordered(j).COMM = expm(B);
 
 %Betweenness Centrality:
-[ordered(i).BC, ordered(i).normBC]=betweenness_bin(B);
+[ordered(j).BC, ordered(j).normBC]=betweenness_bin(B);
 
 %Random Path Length
 ordered(j).Path = path_length(B);
@@ -88,7 +101,7 @@ ordered(j).AvgPath=mean(ordered(j).Path);
 ordered(j).Graph=G;
 %Circuit Rank
 ordered(j).CircuitRank=numedges(G) - (numnodes(G) - 1);
-ordered(i).SmallWorldProp=small_world_propensity(B);
+ordered(j).SmallWorldProp=small_world_propensity(B);
 clear G B
 fprintf([num2str(j) '\n'])
 end 

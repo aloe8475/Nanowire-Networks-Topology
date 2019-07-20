@@ -22,10 +22,15 @@
     switch computer
         case 'W4PT80T2' %if on desktop at uni - Alon
             explore_location='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\';
+          savePath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Network Explore Functions\';           
         case '' %if on linux
             explore_location='/suphys/aloe8475/Documents/CODE/Data/Explore Analysis/';
+                        savePath='/suphys/aloe8475/Documents/CODE/Analysis/Network Explore Functions/';
+
         case 'LAPTOP-S1BV3HR7'
             explore_location='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Explore Analysis\';
+                        savePath='D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis\Network Explore Functions\';
+
             %case '' %--- Add other computer paths (e.g. Mike)
     end
 
@@ -67,7 +72,7 @@
     %% Random and Ordered Graph Analysis
 
     createNewRand=lower(input('Would you like to create new Random and Ordered graphs? (Note this will take 4+ Hours) \n','s'));
-    loadPath=explore_location;
+    loadPath=savePath;
     if createNewRand=='n'
         if exist([loadPath 'Ordered_Graphs_500nw.mat'], 'file') == 2 && exist([loadPath 'Random_Graphs_500nw.mat'],'file') == 2 %2 because .mat file
             load([loadPath 'Ordered_Graphs_500nw.mat']);
@@ -76,7 +81,7 @@
         else
             fprintf('Ordered and Random Graphs have not been created yet \n');
             fprintf('Creating New Graphs \n');
-            [random, ordered, random100, ordered100]=createRandom_Ordered_Graphs(e500);
+            [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(e500);
         end
     else
         if exist([loadPath 'Ordered_Graphs_500nw.mat'], 'file') == 2 && exist([loadPath 'Random_Graphs_500nw.mat'],'file') == 2 %2 because .mat file
@@ -87,12 +92,12 @@
                 load([loadPath 'Random_Graphs_500nw.mat']);
             else
                 fprintf('Creating New Graphs \n');
-                [random, ordered, random100, ordered100]=createRandom_Ordered_Graphs(e500);
+                [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(e500);
                 fprintf('New Graphs Created \n');
             end
         else
             fprintf('Creating New Graphs \n');
-            [random, ordered, random100, ordered100]=createRandom_Ordered_Graphs(e500);
+            [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(e500);
             fprintf('New Graphs Created \n');
         end
     end
@@ -121,7 +126,11 @@
     random100.StdAvgPCoeff=std(mean([random(:).P]),[],2);
     ordered100.AvgAvgPCoeff=mean(mean([ordered(:).P]),2);
     ordered100.StdAvgPCoeff=std(mean([ordered(:).P]),[],2);
-    
+    %Module z-Score
+    random100.AvgAvgMZ=mean(mean([random(:).MZ]),2);
+    random100.StdAvgMZ=std(mean([random(:).MZ]),[],2);
+    ordered100.AvgAvgMZ=mean(mean([ordered(:).MZ]),2);
+    ordered100.StdAvgMZ=std(mean([ordered(:).MZ]),[],2);
     %Small World Prop
     random100.AvgSmallWorldProp=mean([random(:).SmallWorldProp],2);
     random100.StdSmallWorldProp=std([random(:).SmallWorldProp],[],2);
