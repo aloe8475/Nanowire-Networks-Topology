@@ -168,8 +168,13 @@
     %Circuit Rank
     AgNW.CircuitRank=[e100.Explore.GraphTheory.CircuitRank e500.Explore.GraphTheory.CircuitRank e1000.Explore.GraphTheory.CircuitRank e2000.Explore.GraphTheory.CircuitRank];
     AgNW.GlobalClust=[e100.Explore.GraphTheory.GlobalClust, e500.Explore.GraphTheory.GlobalClust, e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
+    %Path
     AgNW.AvgPath=[e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
+    %Small World Prop
     AgNW.SmallWorldProp=[e100.Explore.GraphTheory.SmallWorldProp, e500.Explore.GraphTheory.SmallWorldProp, e1000.Explore.GraphTheory.SmallWorldProp e2000.Explore.GraphTheory.SmallWorldProp];
+    %Communicability
+    AgNW.AvgCOMM=[mean(mean(e100.Explore.GraphTheory.COMM)) mean(mean(e500.Explore.GraphTheory.COMM)) mean(mean(e1000.Explore.GraphTheory.COMM)) mean(mean(e2000.Explore.GraphTheory.COMM))];
+    AgNW.StdCOMM=[std(mean(e100.Explore.GraphTheory.COMM)) std(mean(e500.Explore.GraphTheory.COMM)) std(mean(e1000.Explore.GraphTheory.COMM)) std(mean(e2000.Explore.GraphTheory.COMM))];
 
     %% Plot:
     % Small World Analysis
@@ -267,9 +272,19 @@
     p4=bar(MZ);
     xticklabels({'500node Random Nw', '500node Ordered Nw', '500nw'});
     ylabel('Module z-Score');
-
-%     
+     
     %Communicability
+    f6=figure;
+    COMM=[random100.AvgCOMM(1) ordered100.AvgCOMM(1) AgNW.AvgCOMM];
+    stdCOMM=[0 0 AgNW.StdCOMM];
+    pp=bar(log10(COMM));
+    hold on
+    e=errorbar(log10(COMM), log10(stdCOMM));
+    e.LineStyle='none';
+    % xlim([0.05 0.6])
+    % ylim([2 16])
+    xticklabels({'500node Random Nw','500node Ordered Nw','100nw','500nw','1000nw','2000nw'});
+    ylabel('Log10 Communicability');
     
     %Complexity
     
