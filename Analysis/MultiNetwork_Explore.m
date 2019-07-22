@@ -53,12 +53,14 @@
     human.GlobalClust=0.53; %Taken from (Achard et al., 2006) 
     human.AvgPath=2.49; %Taken from (Achard et al., 2006)
     %Participation Coefficient & Module z-Score
-    human.PLocalHubs=0.2; %High PCoeff - approximates from (Power et al., 2013)
+    human.PLocalHubs=0.2; %High PCoeff - approximates from (Power et al., 2013) %High PCoeff = Hubs / Central areas (Power et al., 2013)
     human.PConnectorHubs=0.9; %Low PCoeff
     human.AvgP=0.502; %Bertolero, Yeo & D'Esposito - 2015
     human.MZHubs=median([2.5:0.5:10]);%[2.5 10] % within module degree probability less than 0.01 is analogous to having a z-score above 2.5 (Guimera and Amaral, 2005, Joyce et al., 2010)
     human.MZNonHubs=median([-2:0.5:2.5]);% (Guimera and Amaral, 2005, Joyce et al., 2010)
     human.AvgMZ=0.0001; %Bertolero, Yeo & D'Esposito - 2015
+    
+
     %Small world Prop
     
     %Complexity
@@ -121,12 +123,25 @@
     ordered100.AvgEdges=mean([ordered(:).numEdges]);
     
     % participation coefficient (mean)
-    % Avg & std PCoeff per Node (across 100 bootstraps) and across nodes:
+    
+   % avg and std pcoeff across 100 bootraps per node:
+    random100.AvgPCoeff=mean([random(:).P],2);
+    ordered100.AvgPCoeff=mean([ordered(:).P],2);
+    random100.StdPCoeff=std([random(:).P],[],2);
+    ordered100.StdPCoeff=std([ordered(:).P],[],2);
+    % Avg & std PCoeff (across 100 bootstraps) and across nodes:
     random100.AvgAvgPCoeff=mean(mean([random(:).P]),2);
     random100.StdAvgPCoeff=std(mean([random(:).P]),[],2);
     ordered100.AvgAvgPCoeff=mean(mean([ordered(:).P]),2);
     ordered100.StdAvgPCoeff=std(mean([ordered(:).P]),[],2);
     %Module z-Score
+     % avg and std mz across 100 bootraps per node:
+    random100.AvgMZ=mean([random(:).MZ],2);
+    ordered100.AvgMZ=mean([ordered(:).MZ],2);
+    random100.StdMZ=std([random(:).MZ],[],2);
+    ordered100.StdMZ=std([ordered(:).MZ],[],2);
+    
+    %avg and std mz across 100 bootstraps and across nodes:
     random100.AvgAvgMZ=mean(mean([random(:).MZ]),2);
     random100.StdAvgMZ=std(mean([random(:).MZ]),[],2);
     ordered100.AvgAvgMZ=mean(mean([ordered(:).MZ]),2);
@@ -228,10 +243,10 @@
     %Average Participation Coefficient & Module z-Score
     f3=figure;
     %High PCoeff = Hubs / Central areas (Power et al., 2013)
-    PCoeff=[random100.AvgAvgPCoeff human.PLocalHubs human.PLocalHubs human.PConnectorHubs human.PConnectorHubs ordered100.AvgAvgPCoeff mean(e100.Explore.GraphTheory.P), mean(e500.Explore.GraphTheory.P), mean(e1000.Explore.GraphTheory.P) mean(e2000.Explore.GraphTheory.P)];
-    MZ=[random100.AvgAvgMZ human.MZHubs human.MZNonHubs human.MZHubs human.MZNonHubs ordered100.AvgAvgMZ mean(e100.Explore.GraphTheory.MZ), mean(e500.Explore.GraphTheory.MZ), mean(e1000.Explore.GraphTheory.MZ) mean(e2000.Explore.GraphTheory.MZ)];
+    PCoeff=[random100.AvgAvgPCoeff human.AvgP human.PLocalHubs human.PLocalHubs human.PConnectorHubs human.PConnectorHubs ordered100.AvgAvgPCoeff mean(e100.Explore.GraphTheory.P), mean(e500.Explore.GraphTheory.P), mean(e1000.Explore.GraphTheory.P) mean(e2000.Explore.GraphTheory.P)];
+    MZ=[random100.AvgAvgMZ human.AvgMZ human.MZHubs human.MZNonHubs human.MZHubs human.MZNonHubs ordered100.AvgAvgMZ mean(e100.Explore.GraphTheory.MZ), mean(e500.Explore.GraphTheory.MZ), mean(e1000.Explore.GraphTheory.MZ) mean(e2000.Explore.GraphTheory.MZ)];
     p3=gscatter(PCoeff,MZ);
-    text(PCoeff,MZ,{'500node Random Nw', 'Human Connector Local Provincial Hub','Human Local Peripheral Node','Human Connector Hub','Human Satellite Connector', '500node Ordered Nw', '100nw', '500nw', '1000nw','2000nw'});
+    text(PCoeff,MZ,{'500node Random Nw', 'Human Average', 'Human Connector Local Provincial Hub','Human Local Peripheral Node','Human Connector Hub','Human Satellite Connector', '500node Ordered Nw', '100nw', '500nw', '1000nw','2000nw'});
     xlabel('Average Participant Coefficient Coefficient');
     ylabel('Average Module z-Score');
     p3.MarkerEdgeColor='b';
@@ -239,18 +254,21 @@
     p3.LineWidth=1.5;
     
     %500 Node Participation Coefficient & Module z-Score
-    f4=figure;
-    %High PCoeff = Hubs / Central areas (Power et al., 2013)
-    PCoeff=[random100.AvgPCoeff ordered100.AvgPCoeff, e500.Explore.GraphTheory.P];
-    MZ=[random100.AvgMZ  ordered100.AvgMZ, e500.Explore.GraphTheory.MZ];
-    p3=gscatter(PCoeff,MZ);
-    text(PCoeff,MZ,{'500node Random Nw', '500node Ordered Nw', '500nw'});
-    xlabel('Participant Coefficient Coefficient');
-    ylabel('Module z-Score');
-    p3.MarkerEdgeColor='b';
-    p3(:,1).MarkerEdgeColor='r';
-    p3.LineWidth=1.5;
+    %Plot Graph:
     
+    adjacency([e500.Explore.GraphView.Nodes e500.Explore.GraphView.Edges])
+    f4=figure;
+    PCoeff=[random100.AvgPCoeff ordered100.AvgPCoeff, e500.Explore.GraphTheory.P];
+    p3=bar(PCoeff);
+    xticklabels({'500node Random Nw', '500node Ordered Nw', '500nw'});
+    ylabel('Participant Coefficient Coefficient');
+    f5=figure;
+    MZ=[random100.AvgMZ  ordered100.AvgMZ, e500.Explore.GraphTheory.MZ];
+    p4=bar(MZ);
+    xticklabels({'500node Random Nw', '500node Ordered Nw', '500nw'});
+    ylabel('Module z-Score');
+
+%     
     %Communicability
     
     %Complexity

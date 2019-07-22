@@ -110,4 +110,6 @@ Explore.GraphView.resistance=Sim.Data.Rmat{IndexTime};
 Explore.GraphView.Nodes=G.Nodes;
 Explore.GraphView.Edges=G.Edges;
 Explore.GraphView.ElectrodePosition=Sim.Electrodes.PosIndex;
+Explore.GraphView.AdjMat=Adj;
+Explore.GraphView.Graph=G;
 end
