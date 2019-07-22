@@ -1,4 +1,4 @@
-function [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(explore)
+function [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(network,sizeNetwork)
 
 computer=getenv('computername');
     switch computer
@@ -15,12 +15,12 @@ Parameters.seed=RandStream.create('mrg32k3a','Seed',42); % set random seed gener
 RandStream.setGlobalStream(Parameters.seed);
 
 %% Random Graph Analysis:
-%Create random graph with same number of vertices as 'explore' network, and the
-%avg degree of 'explore' network.
+%Create random graph with same number of vertices as network, and the
+%avg degree of network.
 dbstop if error
 
 for i = 1:100
-A=createRandRegGraph(height(explore.Explore.GraphView.Nodes),round(full(mean(explore.Explore.GraphTheory.DEG))));
+A=createRandRegGraph(height(network.Explore.GraphView.Nodes),round(full(mean(network.Explore.GraphTheory.DEG))));
 random(i).Adj=A;
 ranGraph=graph(A);
 random(i).Graph=ranGraph;
@@ -69,7 +69,7 @@ random100.StdSmallWorldProp=std([random(:).SmallWorldProp]);
 random100.AvgCOMM=mean([random(:).COMM]);
 random100.StdCOMM=std([random(:).COMM]);
 
-save([savePath 'Random_Graphs_500nw.mat'],'random','random100');
+save([savePath 'Random_Graphs_' num2str(sizeNetwork) 'nw.mat'],'random','random100');
 
 
 %% Ordered Graph Analysis
@@ -127,5 +127,5 @@ ordered100.StdSmallWorldProp=std([ordered(:).SmallWorldProp]);
 ordered100.AvgCOMM=mean([ordered(:).COMM]);
 ordered100.StdCOMM=std([ordered(:).COMM]);
 
-save([savePath 'Ordered_Graphs_500nw.mat'],'ordered','ordered100');
+save([savePath 'Ordered_Graphs_'num2str(sizeNetwork) 'nw.mat'],'ordered','ordered100');
 end 

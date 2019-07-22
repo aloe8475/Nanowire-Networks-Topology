@@ -834,11 +834,10 @@ Graph.CharPath=charpath(Graph.Distance);
 Graph.AvgPath=mean(Graph.Path);
 fprintf('Path Length Complete \n');
 
-
 %Connectivity Magnitude Measure of the network:
-%Average number of connections divided by maximum number of possible
-%connections 
-Graph.ConnectivityMagnitude=Graph.AvgPath/(length(net_mat)*length(net_mat)); %Kozachkov, L., Lundqvist, M., Slotine, J.-J., & Miller, E. K. (2019). How neural circuits achieve and use stable dynamics.
+%Average number of connections divided by maximum number of possible connections 
+% In the human brain it is a ratio of ~10^-17 neural connections to possible connections - Kozachkov et al. (2019). How neural circuits achieve and use stable dynamics
+Graph.ConnectivityMagnitude=Graph.AvgPath/(length(net_mat)*length(net_mat)); 
 
 %Small World Propensity:
 Graph.SmallWorldProp=small_world_propensity(net_mat);

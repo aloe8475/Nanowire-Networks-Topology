@@ -18,11 +18,12 @@
     clear all
     close all
 
+    currentLocation=pwd;
     computer=getenv('computername');
     switch computer
         case 'W4PT80T2' %if on desktop at uni - Alon
             explore_location='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\';
-          savePath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Network Explore Functions\';           
+          savePath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Network Explore Functions\';   
         case '' %if on linux
             explore_location='/suphys/aloe8475/Documents/CODE/Data/Explore Analysis/';
                         savePath='/suphys/aloe8475/Documents/CODE/Analysis/Network Explore Functions/';
@@ -33,6 +34,7 @@
 
             %case '' %--- Add other computer paths (e.g. Mike)
     end
+          cd(explore_location);
 
     %Load three explore analyses:
     e100=load([explore_location 'Adrian_Net_Sx20_NoW100_0325-2019_112338__Sim_1_SourceElectrode_6_DrainElectrode_76_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
@@ -40,15 +42,59 @@
     e1000=load([explore_location 'Adrian_Net_Sx20_NoW1000_0606-2019_113353__Sim_1_SourceElectrode_32_DrainElectrode_1000_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
     e2000=load([explore_location 'Adrian_Net_Sx20_NoW2000_0618-2019_125103__Sim_1_SourceElectrode_158_DrainElectrode_1820_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
 
+    
+    %Run Functions:
+    cElegans=cElegansFun();
+    human=humanFun();
+    [random100, ordered100, random, ordered]=randomOrdered(savePath,currentLocation,e100,e500,e1000,e2000);
+    AgNW=AgNWFun(e100, e500, e1000, e2000);
+    
+    %Plot graphs
+    plotAll(random100, ordered100,random,ordered, human, e100, e500, e1000, e2000, AgNW);
+    
+    %% TO DO 
+     
+    %500 Node Communicability Graph:
+    random(1).COMM; %communicability does not change across 100 bootstraps, so we can just use #1
+    ordered(1).COMM;
+    e100.Explore.GraphTheory.COMM;
+    e500.Explore.GraphTheory.COMM;
+    e1000.Explore.GraphTheory.COMM;
+    e2000.Explore.GraphTheory.COMM;
+
+    
+    %500 Node Participation Coefficient & Module z-Score
+    %Plot Graph:
+    
+% %   adjacency([e500.Explore.GraphView.Nodes e500.Explore.GraphView.Edges])
+%     f4=figure;
+%     PCoeff=[random100.AvgPCoeff ordered100.AvgPCoeff, e500.Explore.GraphTheory.P];
+%     p3=bar(PCoeff);
+%     xticklabels({'500node Random Nw', '500node Ordered Nw', '500nw'});
+%     ylabel('Participant Coefficient Coefficient');
+%     f5=figure;
+%     MZ=[random100.AvgMZ  ordered100.AvgMZ, e500.Explore.GraphTheory.MZ];
+%     p4=bar(MZ);
+%     xticklabels({'500node Random Nw', '500node Ordered Nw', '500nw'});
+%     ylabel('Module z-Score');
+%      
+    
+    % Complexity
+    
     %% Example AI Graph Analysis (Recurrent Neural Network)
-    
-    %Create Sample RNN: - NEED TO TALK TO MAC ABOUT THIS
-    %AI.AdjMat=zeros([500 500]);
-    
+%     function AI()
+%     %Create Sample RNN: - NEED TO TALK TO MAC ABOUT THIS
+%     %AI.AdjMat=zeros([500 500]);
+%     end 
     %% C-Elegans:
-    cElegans.AvgMZ=0.62;% - Guimera & Nunes, 2005
-    
+    function cElegans=cElegansFun()
+%     cElegans.AvgMZ=0.62;% - Guimera & Nunes, 2005
+    cd('../Organic Networks Connectomes/')
+    cElegans=load('celegans277neurons.mat');
+    end 
+        
     %% Human Graph Analysis
+    function human=humanFun()
    %Cluster Coeff & Path Length
     human.GlobalClust=0.53; %Taken from (Achard et al., 2006) 
     human.AvgPath=2.49; %Taken from (Achard et al., 2006)
@@ -56,6 +102,7 @@
     human.PLocalHubs=0.2; %High PCoeff - approximates from (Power et al., 2013) %High PCoeff = Hubs / Central areas (Power et al., 2013)
     human.PConnectorHubs=0.9; %Low PCoeff
     human.AvgP=0.502; %Bertolero, Yeo & D'Esposito - 2015
+    % LOOK INTO THIS 22/07/19 - Doesn't look right:
     human.MZHubs=median([2.5:0.5:10]);%[2.5 10] % within module degree probability less than 0.01 is analogous to having a z-score above 2.5 (Guimera and Amaral, 2005, Joyce et al., 2010)
     human.MZNonHubs=median([-2:0.5:2.5]);% (Guimera and Amaral, 2005, Joyce et al., 2010)
     human.AvgMZ=0.0001; %Bertolero, Yeo & D'Esposito - 2015
@@ -70,28 +117,30 @@
     %Betweenness Centrality
     
     %Circuit Rank
-
+    end 
     %% Random and Ordered Graph Analysis
-
+    function [random100, ordered100, random, ordered]=randomOrdered(savePath,currentLocation,e100,e500,e1000,e2000)
+    cd(currentLocation)
+    sizeNetwork=input('What Size Network would you like to create/load? 100, 500, 1000 or 2000? \n');
     createNewRand=lower(input('Would you like to create new Random and Ordered graphs? (Note this will take 4+ Hours) \n','s'));
     loadPath=savePath;
     if createNewRand=='n'
-        if exist([loadPath 'Ordered_Graphs_500nw.mat'], 'file') == 2 && exist([loadPath 'Random_Graphs_500nw.mat'],'file') == 2 %2 because .mat file
-            load([loadPath 'Ordered_Graphs_500nw.mat']);
-            load([loadPath 'Random_Graphs_500nw.mat']);
-            fprintf('Loading Ordered and Random Graphs (500nodes)');
+        if exist([loadPath 'Ordered_Graphs_' num2str(sizeNetwork) 'nw.mat'], 'file') == 2 && exist([loadPath 'Random_Graphs_' num2str(sizeNetwork) 'nw.mat'],'file') == 2 %2 because .mat file
+            load([loadPath 'Ordered_Graphs_' num2str(sizeNetwork) 'nw.mat']);
+            load([loadPath 'Random_Graphs_' num2str(sizeNetwork) 'nw.mat']);
+            fprintf(['Loading Ordered and Random Graphs (' num2str(sizeNetwork) 'nodes)']);
         else
             fprintf('Ordered and Random Graphs have not been created yet \n');
             fprintf('Creating New Graphs \n');
             [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(e500);
         end
     else
-        if exist([loadPath 'Ordered_Graphs_500nw.mat'], 'file') == 2 && exist([loadPath 'Random_Graphs_500nw.mat'],'file') == 2 %2 because .mat file
-            overwrite=lower(input('Graphs (500nodes) have already been created, would you like to overwrite? \n','s'));
+        if exist([loadPath 'Ordered_Graphs_' num2str(sizeNetwork) 'nw.mat'], 'file') == 2 && exist([loadPath 'Random_Graphs_' num2str(sizeNetwork) 'nw.mat'],'file') == 2 %2 because .mat file
+            overwrite=lower(input(['Graphs (' num2str(sizeNetwork) 'nodes) have already been created, would you like to overwrite? \n'],'s'));
             if overwrite =='n'
-                fprintf('Loading Ordered and Random Graphs (500nodes) \n');
-                load([loadPath 'Ordered_Graphs_500nw.mat']);
-                load([loadPath 'Random_Graphs_500nw.mat']);
+                fprintf(['Loading Ordered and Random Graphs (' num2str(sizeNetwork) 'nodes) \n']);
+                load([loadPath 'Ordered_Graphs_' num2str(sizeNetwork) 'nw.mat']);
+                load([loadPath 'Random_Graphs_' num2str(sizeNetwork) 'nw.mat']);
             else
                 fprintf('Creating New Graphs \n');
                 [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(e500);
@@ -163,7 +212,9 @@
 %     random100.StdNormBC=std([random(:).normBC]);
 %     ordered100.AvgNormBC=mean([ordered(:).normBC]);
 %     ordered100.StdNormBC=std([ordered(:).normBC]);
-   
+    end 
+    
+    function AgNW=AgNWFun(e100, e500, e1000, e2000)
     %% AgNW
     %Circuit Rank
     AgNW.CircuitRank=[e100.Explore.GraphTheory.CircuitRank e500.Explore.GraphTheory.CircuitRank e1000.Explore.GraphTheory.CircuitRank e2000.Explore.GraphTheory.CircuitRank];
@@ -175,8 +226,12 @@
     %Communicability
     AgNW.AvgCOMM=[mean(mean(e100.Explore.GraphTheory.COMM)) mean(mean(e500.Explore.GraphTheory.COMM)) mean(mean(e1000.Explore.GraphTheory.COMM)) mean(mean(e2000.Explore.GraphTheory.COMM))];
     AgNW.StdCOMM=[std(mean(e100.Explore.GraphTheory.COMM)) std(mean(e500.Explore.GraphTheory.COMM)) std(mean(e1000.Explore.GraphTheory.COMM)) std(mean(e2000.Explore.GraphTheory.COMM))];
-
+    %Betweenness Centrality
+    AgNW.AvgBC=[mean(e100.Explore.GraphTheory.BC) mean(e500.Explore.GraphTheory.BC)  mean(e1000.Explore.GraphTheory.BC) mean(e2000.Explore.GraphTheory.BC)]; 
+    AgNW.StdBC=[std(e100.Explore.GraphTheory.BC) std(e500.Explore.GraphTheory.BC)  std(e1000.Explore.GraphTheory.BC) std(e2000.Explore.GraphTheory.BC)]; 
+    end 
     %% Plot:
+    function plotAll(random100, ordered100, random, ordered,human, e100, e500, e1000, e2000, AgNW)
     % Small World Analysis
     x=[random100.AvgGlobalClust human.GlobalClust ordered100.AvgGlobalClust e100.Explore.GraphTheory.GlobalClust e500.Explore.GraphTheory.GlobalClust e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
     y=[random100.AvgPath human.AvgPath ordered100.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
@@ -190,8 +245,8 @@
     % xlim([0.05 0.6])
     % ylim([2 16])
     text(x,y,{'500node Random Nw','Human Nw','500node Ordered Nw','100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
-    xlabel('Global Clustering Coefficient');
-    ylabel('Global Mean Path Length');
+    ylabel('Global Clustering Coefficient');
+    xlabel('Global Mean Path Length');
     p.MarkerEdgeColor='b';
     p(:,1).MarkerEdgeColor='r';
     p.LineWidth=1.5;
@@ -200,17 +255,18 @@
     f1=figure;
     logx=log10(x);
     logy=log10(y);
-    p1=gscatter(x,logy);
+    p1=gscatter(logx,y);
     hold on
     hold on
-    e=errorbar(x(1), logy(1),random100.StdPath);
-    e2=errorbar(x(1), logy(1),random100.StdGlobalClust);
-    errorbar(x(3), logy(3),ordered100.StdPath);
-    errorbar(x(3), logy(3),ordered100.StdGlobalClust);
+    e=errorbar(logx(1), y(1),random100.StdPath);
+    e2=errorbar(logx(1), y(1),random100.StdGlobalClust);
+    errorbar(logx(3), y(3),ordered100.StdPath);
+    errorbar(logx(3), y(3),ordered100.StdGlobalClust);
     % xlim([0.05 0.6])
     % ylim([2 16])
-    ylim([0,max(logy)]);
-    text(x,logy,{'500node Random Nw','Human Nw','500node Ordered Nw','100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
+%     ylim([0,max(y)]);
+%     xlim([0,max(logx)]);
+    text(logx,y,{'500node Random Nw','Human Nw','500node Ordered Nw','100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
     xlabel('Global Clustering Coefficient');
     ylabel('Log10 Global Mean Path Length');
     p1.MarkerEdgeColor='b';
@@ -257,41 +313,120 @@
     p3.MarkerEdgeColor='b';
     p3(:,1).MarkerEdgeColor='r';
     p3.LineWidth=1.5;
+
+    %Plot Guimera & Amaral rectangles:
+    guimera(e500,random100, ordered100); %change network here
     
-    %500 Node Participation Coefficient & Module z-Score
-    %Plot Graph:
-    
-    adjacency([e500.Explore.GraphView.Nodes e500.Explore.GraphView.Edges])
-    f4=figure;
-    PCoeff=[random100.AvgPCoeff ordered100.AvgPCoeff, e500.Explore.GraphTheory.P];
-    p3=bar(PCoeff);
-    xticklabels({'500node Random Nw', '500node Ordered Nw', '500nw'});
-    ylabel('Participant Coefficient Coefficient');
-    f5=figure;
-    MZ=[random100.AvgMZ  ordered100.AvgMZ, e500.Explore.GraphTheory.MZ];
-    p4=bar(MZ);
-    xticklabels({'500node Random Nw', '500node Ordered Nw', '500nw'});
-    ylabel('Module z-Score');
-     
     %Communicability
     f6=figure;
     COMM=[random100.AvgCOMM(1) ordered100.AvgCOMM(1) AgNW.AvgCOMM];
     stdCOMM=[0 0 AgNW.StdCOMM];
-    pp=bar(log10(COMM));
+    p6=bar(log10(COMM));
     hold on
-    e=errorbar(log10(COMM), log10(stdCOMM));
+    e=errorbar(log10(COMM), log10(stdCOMM)); %use log10 otherwise communicability is much too large to visualise
     e.LineStyle='none';
     % xlim([0.05 0.6])
     % ylim([2 16])
     xticklabels({'500node Random Nw','500node Ordered Nw','100nw','500nw','1000nw','2000nw'});
     ylabel('Log10 Communicability');
-    
-    %Complexity
-    
+   
     %Betweenness Centrality
+    f7=figure;
+    BC=[random100.AvgBC ordered100.AvgBC AgNW.AvgBC];
+    stdBC=[random100.StdBC ordered100.StdBC AgNW.StdBC];
+    p7=bar(BC);
+    hold on
+    e=errorbar(BC, stdBC);
+    e.LineStyle='none';
+    % xlim([0.05 0.6])
+    % ylim([2 16])
+    xticklabels({'500node Random Nw','500node Ordered Nw','100nw','500nw','1000nw','2000nw'});
+    ylabel('Betweenness Centrality'); 
+    end     
     
+    %% FUNCTIONS
+        function guimera(network, random100, ordered100)
+        f4=figure;
+    % Set up rectangles:
+    xR1=[0 0.025 0.025 0];
+    xR2=[0.025 0.625 0.625 0.025];
+    xR3=[0.625 0.8 0.8 0.625];
+    xR4=[0.8 1 1 0.8];
+    xR5=[0 0.36 0.36 0];
+    xR6=[0.36 0.75 0.75 0.36];
+    xR7=[0.75 1 1 0.75];
+    yR1234=[-3 -3 2.5 2.5];
+    yR567=[2.5 2.5 8 8];
+    
+    R1=patch(xR1,yR1234,'black','LineStyle','none','FaceAlpha',0.2);
+    hold on
+    R2=patch(xR2,yR1234,'red','LineStyle','none','FaceAlpha',0.2);
+    R3=patch(xR3,yR1234,'green','LineStyle','none','FaceAlpha',0.2);
+    R4=patch(xR4,yR1234,'blue','LineStyle','none','FaceAlpha',0.2);
+    R5=patch(xR5,yR567,'yellow','LineStyle','none','FaceAlpha',0.2);
+    R6=patch(xR6,yR567,[255 204 153]./255,'LineStyle','none','FaceAlpha',0.2);
+    R7=patch(xR7,yR567,[0.7 0.7 0.7],'LineStyle','none','FaceAlpha',0.2);
 
-    %% OLD CODE
+    % Plot Guimera & Amaral Participant Coefficient & Module z-Score:
+    
+    PCoeff=[network.Explore.GraphTheory.P];
+    MZ=[network.Explore.GraphTheory.MZ];
+    PCoeffRandom=random100.AvgPCoeff;
+    PCoeffOrdered= ordered100.AvgPCoeff;
+    MZRandom=random100.AvgMZ;
+    MZOrdered=ordered100.AvgMZ;
+    
+    for i = 1:length(PCoeff)
+        if MZ(i)<2.5 && PCoeff(i)>=0 && PCoeff(i)<0.025
+            RegionsMap(i)=1;
+        elseif MZ(i)<2.5 && PCoeff(i)>=0.025 && PCoeff(i)<=0.625
+            RegionsMap(i)=2;
+        elseif MZ(i)<2. && PCoeff(i) >0.625 && PCoeff(i) <=0.8
+            RegionsMap(i)=3;
+        elseif MZ(i)<2.5 && PCoeff(i) >0.8
+            RegionsMap(i)=4;
+        elseif MZ(i)>=2.5 && PCoeff(i)>=0 && PCoeff(i)<=0.36
+            RegionsMap(i)=5;
+        elseif MZ(i)>=2.5 && PCoeff(i)>0.36 && PCoeff(i)<=0.75
+            RegionsMap(i)=6;
+        elseif MZ(i)>=2.5 && PCoeff(i) >0.75
+            RegionsMap(i)=7;
+        end
+    end
+    
+    hold on;
+    for i = 1:length(PCoeff)
+        switch RegionsMap(i)
+            case 1
+                r1=scatter(PCoeff(i),MZ(i),'black','filled');
+                r1.MarkerEdgeColor='black';
+            case 2
+                r2=scatter(PCoeff(i),MZ(i),'red','filled');
+                r2.MarkerEdgeColor='black';
+            case 3
+                r3=scatter(PCoeff(i),MZ(i),'green','filled');
+                r3.MarkerEdgeColor='black';
+            case 4
+                r4=scatter(PCoeff(i),MZ(i),'blue','filled');
+                r4.MarkerEdgeColor='black';
+            case 5
+                r5=scatter(PCoeff(i),MZ(i),'yellow','filled');
+                r5.MarkerEdgeColor='black';
+            case 6
+                r6=scatter(PCoeff(i),MZ(i),[255 204 153]./255,'filled');
+                r6.MarkerEdgeColor='black';
+            case 7
+                r7=scatter(PCoeff(i),MZ(i),[0.7 0.7 0.7],'filled');
+                r7.MarkerEdgeColor='black';
+        end
+    end
+    ylim([-3 8]);
+    xlabel('Participant Coefficient')
+    ylabel('Within-Module Degree z-Score');
+        end
+ 
+        
+        %% OLD CODE
     %% Load three networks
     % n100=load('Net_Sx_20_NoW100_03_25-2019_11_23_38_.mat');
     % n500=load('Net_Sx_20_NoW500_03_30-2019_11_16_59_.mat');
