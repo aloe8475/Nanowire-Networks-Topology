@@ -11,6 +11,8 @@
     % Version: 1.1
 
     % Changelog:
+    % 22/07/2019 - Added Guimera and Amaral (2005) colored rectangular
+    % distribution of participant coefficient and module z score
     % 26/06/2019 - Added Participant coefficient, Small World Propensity and
     % Betweenness centrality measures.
     %-------------------------------------------------------------------------
