@@ -127,5 +127,5 @@ ordered100.StdSmallWorldProp=std([ordered(:).SmallWorldProp]);
 ordered100.AvgCOMM=mean([ordered(:).COMM]);
 ordered100.StdCOMM=std([ordered(:).COMM]);
 
-save([savePath 'Ordered_Graphs_'num2str(sizeNetwork) 'nw.mat'],'ordered','ordered100');
+save([savePath 'Ordered_Graphs_' num2str(sizeNetwork) 'nw.mat'],'ordered','ordered100');
 end 

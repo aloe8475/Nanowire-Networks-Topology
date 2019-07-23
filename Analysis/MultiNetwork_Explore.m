@@ -43,7 +43,7 @@
     e2000=load([explore_location 'Adrian_Net_Sx20_NoW2000_0618-2019_125103__Sim_1_SourceElectrode_158_DrainElectrode_1820_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
 
     
-    %Run Functions:
+    %% Run Functions:
     cElegans=cElegansFun();
     human=humanFun();
     [random100, ordered100, random, ordered]=randomOrdered(savePath,currentLocation,e100,e500,e1000,e2000);
@@ -124,6 +124,16 @@
     sizeNetwork=input('What Size Network would you like to create/load? 100, 500, 1000 or 2000? \n');
     createNewRand=lower(input('Would you like to create new Random and Ordered graphs? (Note this will take 4+ Hours) \n','s'));
     loadPath=savePath;
+    switch sizeNetwork
+        case 100
+            network=e100;
+        case 500
+            network=e500;
+        case 1000
+            network =e1000;
+        case 2000
+            network =e2000;
+    end 
     if createNewRand=='n'
         if exist([loadPath 'Ordered_Graphs_' num2str(sizeNetwork) 'nw.mat'], 'file') == 2 && exist([loadPath 'Random_Graphs_' num2str(sizeNetwork) 'nw.mat'],'file') == 2 %2 because .mat file
             load([loadPath 'Ordered_Graphs_' num2str(sizeNetwork) 'nw.mat']);
@@ -132,7 +142,7 @@
         else
             fprintf('Ordered and Random Graphs have not been created yet \n');
             fprintf('Creating New Graphs \n');
-            [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(e500);
+            [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(network,sizeNetwork);
         end
     else
         if exist([loadPath 'Ordered_Graphs_' num2str(sizeNetwork) 'nw.mat'], 'file') == 2 && exist([loadPath 'Random_Graphs_' num2str(sizeNetwork) 'nw.mat'],'file') == 2 %2 because .mat file
@@ -143,12 +153,12 @@
                 load([loadPath 'Random_Graphs_' num2str(sizeNetwork) 'nw.mat']);
             else
                 fprintf('Creating New Graphs \n');
-                [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(e500);
+                [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(network,sizeNetwork);
                 fprintf('New Graphs Created \n');
             end
         else
             fprintf('Creating New Graphs \n');
-            [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(e500);
+            [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(network,sizeNetwork);
             fprintf('New Graphs Created \n');
         end
     end
