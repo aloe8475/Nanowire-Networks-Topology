@@ -20,7 +20,11 @@ RandStream.setGlobalStream(Parameters.seed);
 dbstop if error
 
 for i = 1:100
-A=createRandRegGraph(height(network.Explore.GraphView.Nodes),round(full(mean(network.Explore.GraphTheory.DEG))));
+    numEdges=round(full(mean(network.Explore.GraphTheory.DEG)));
+    if rem(numEdges, 2)~=0
+        numEdges=numEdges+1; %we need to do this because createRandRegGraph only allows for even values
+    end 
+A=createRandRegGraph(height(network.Explore.GraphView.Nodes),numEdges);
 random(i).Adj=A;
 ranGraph=graph(A);
 random(i).Graph=ranGraph;
@@ -127,5 +131,5 @@ ordered100.StdSmallWorldProp=std([ordered(:).SmallWorldProp]);
 ordered100.AvgCOMM=mean([ordered(:).COMM]);
 ordered100.StdCOMM=std([ordered(:).COMM]);
 
-save([savePath 'Ordered_Graphs_'num2str(sizeNetwork) 'nw.mat'],'ordered','ordered100');
+save([savePath 'Ordered_Graphs_' num2str(sizeNetwork) 'nw.mat'],'ordered','ordered100');
 end 

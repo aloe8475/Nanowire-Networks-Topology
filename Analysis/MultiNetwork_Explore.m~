@@ -52,7 +52,7 @@
     AgNW=AgNWFun(e100, e500, e1000, e2000);
     
     %Plot graphs
-    plotAll(random100, ordered100,random,ordered, human, e100, e500, e1000, e2000, AgNW,network);
+    plotAll(random100, ordered100,random,ordered, human, e100, e500, e1000, e2000, AgNW);
     
     %% TO DO 
      
@@ -144,7 +144,7 @@
         else
             fprintf('Ordered and Random Graphs have not been created yet \n');
             fprintf('Creating New Graphs \n');
-            [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(network,sizeNetwork);
+            [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(network);
         end
     else
         if exist([loadPath 'Ordered_Graphs_' num2str(sizeNetwork) 'nw.mat'], 'file') == 2 && exist([loadPath 'Random_Graphs_' num2str(sizeNetwork) 'nw.mat'],'file') == 2 %2 because .mat file
@@ -155,12 +155,12 @@
                 load([loadPath 'Random_Graphs_' num2str(sizeNetwork) 'nw.mat']);
             else
                 fprintf('Creating New Graphs \n');
-                [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(network,sizeNetwork);
+                [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(network);
                 fprintf('New Graphs Created \n');
             end
         else
             fprintf('Creating New Graphs \n');
-            [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(network,sizeNetwork);
+            [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(network);
             fprintf('New Graphs Created \n');
         end
     end
@@ -243,7 +243,7 @@
     AgNW.StdBC=[std(e100.Explore.GraphTheory.BC) std(e500.Explore.GraphTheory.BC)  std(e1000.Explore.GraphTheory.BC) std(e2000.Explore.GraphTheory.BC)]; 
     end 
     %% Plot:
-    function plotAll(random100, ordered100, random, ordered,human, e100, e500, e1000, e2000, AgNW,network)
+    function plotAll(random100, ordered100, random, ordered,human, e100, e500, e1000, e2000, AgNW)
     % Small World Analysis
     x=[random100.AvgGlobalClust human.GlobalClust ordered100.AvgGlobalClust e100.Explore.GraphTheory.GlobalClust e500.Explore.GraphTheory.GlobalClust e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
     y=[random100.AvgPath human.AvgPath ordered100.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
@@ -327,7 +327,7 @@
     p3.LineWidth=1.5;
 
     %Plot Guimera & Amaral rectangles:
-    guimera(network,random100, ordered100); %change network here
+    guimera(e500,random100, ordered100); %change network here
     
     %Communicability
     f6=figure;
