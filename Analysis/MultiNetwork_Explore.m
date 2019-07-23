@@ -44,7 +44,7 @@
 
     
     %% Run Functions:
-    cElegans=cElegansFun();
+%     cElegans=cElegansFun();
     human=humanFun();
     [random100, ordered100, random, ordered]=randomOrdered(savePath,currentLocation,e100,e500,e1000,e2000);
     AgNW=AgNWFun(e100, e500, e1000, e2000);
@@ -103,7 +103,7 @@
     human.PConnectorHubs=0.9; %Low PCoeff
     human.AvgP=0.502; %Bertolero, Yeo & D'Esposito - 2015
     % LOOK INTO THIS 22/07/19 - Doesn't look right:
-    human.MZHubs=median([2.5:0.5:10]);%[2.5 10] % within module degree probability less than 0.01 is analogous to having a z-score above 2.5 (Guimera and Amaral, 2005, Joyce et al., 2010)
+    human.MZHubs=2.6;%[2.5 10] % within module degree probability less than 0.01 is analogous to having a z-score above 2.5 (Guimera and Amaral, 2005, Joyce et al., 2010)
     human.MZNonHubs=median([-2:0.5:2.5]);% (Guimera and Amaral, 2005, Joyce et al., 2010)
     human.AvgMZ=0.0001; %Bertolero, Yeo & D'Esposito - 2015
     
