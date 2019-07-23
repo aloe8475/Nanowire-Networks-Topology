@@ -50,7 +50,7 @@
     AgNW=AgNWFun(e100, e500, e1000, e2000);
     
     %Plot graphs
-    plotAll(random100, ordered100,random,ordered, human, e100, e500, e1000, e2000, AgNW);
+    plotAll(random100, ordered100,random,ordered, human, e100, e500, e1000, e2000, AgNW, network);
     
     %% TO DO 
      
@@ -241,7 +241,7 @@
     AgNW.StdBC=[std(e100.Explore.GraphTheory.BC) std(e500.Explore.GraphTheory.BC)  std(e1000.Explore.GraphTheory.BC) std(e2000.Explore.GraphTheory.BC)]; 
     end 
     %% Plot:
-    function plotAll(random100, ordered100, random, ordered,human, e100, e500, e1000, e2000, AgNW)
+    function plotAll(random100, ordered100, random, ordered,human, e100, e500, e1000, e2000, AgNW,network)
     % Small World Analysis
     x=[random100.AvgGlobalClust human.GlobalClust ordered100.AvgGlobalClust e100.Explore.GraphTheory.GlobalClust e500.Explore.GraphTheory.GlobalClust e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
     y=[random100.AvgPath human.AvgPath ordered100.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
@@ -325,7 +325,7 @@
     p3.LineWidth=1.5;
 
     %Plot Guimera & Amaral rectangles:
-    guimera(e500,random100, ordered100); %change network here
+    guimera(network,random100, ordered100); %change network here
     
     %Communicability
     f6=figure;
