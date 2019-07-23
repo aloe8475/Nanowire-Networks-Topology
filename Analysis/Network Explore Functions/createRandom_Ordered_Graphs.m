@@ -75,7 +75,7 @@ save([savePath 'Random_Graphs_' num2str(sizeNetwork) 'nw.mat'],'random','random1
 %% Ordered Graph Analysis
 for j = 1:100
 numConnections=2;
-numNodes=498; %same as 500nw network
+numNodes=height(network.Explore.GraphView.Nodes); %same as 500nw network
 
 G=WattsStrogatz(numNodes,numConnections,0); %create a ordered graph that is connected to its two nearest neighbours
 

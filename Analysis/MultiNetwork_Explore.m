@@ -17,7 +17,7 @@
 % Betweenness centrality measures.
 %-------------------------------------------------------------------------
 
-clear all
+
 close all
 
 currentLocation=pwd;
@@ -38,12 +38,15 @@ switch computer
 end
 cd(explore_location);
 
-%Load three explore analyses:
-e100=load([explore_location 'Adrian_Net_Sx20_NoW100_0325-2019_112338__Sim_1_SourceElectrode_6_DrainElectrode_76_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
-e500=load([explore_location 'Adrian_Net_Sx20_NoW500_0330-2019_111659__Sim_1_SourceElectrode_18_DrainElectrode_430_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
-e1000=load([explore_location 'Adrian_Net_Sx20_NoW1000_0606-2019_113353__Sim_1_SourceElectrode_32_DrainElectrode_1000_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
-e2000=load([explore_location 'Adrian_Net_Sx20_NoW2000_0618-2019_125103__Sim_1_SourceElectrode_158_DrainElectrode_1820_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
-
+loadData=lower(input('Would you like to load the network data? \n','s'));
+if loadData=='y'
+    %Load three explore analyses:
+    clear e100 e500 e1000 e2000
+    e100=load([explore_location 'Adrian_Net_Sx20_NoW100_0325-2019_112338__Sim_1_SourceElectrode_6_DrainElectrode_76_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
+    e500=load([explore_location 'Adrian_Net_Sx20_NoW500_0330-2019_111659__Sim_1_SourceElectrode_18_DrainElectrode_430_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
+    e1000=load([explore_location 'Adrian_Net_Sx20_NoW1000_0606-2019_113353__Sim_1_SourceElectrode_32_DrainElectrode_1000_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
+    e2000=load([explore_location 'Adrian_Net_Sx20_NoW2000_0618-2019_125103__Sim_1_SourceElectrode_158_DrainElectrode_1820_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
+end
 
 %% Run Functions:
 %     cElegans=cElegansFun();
@@ -493,6 +496,7 @@ end
 ylim([-3 8]);
 xlabel('Participant Coefficient')
 ylabel('Within-Module Degree z-Score');
+title([num2str(Net(plotNet).sizeNetwork) 'nw Network']);
 end
 
 
