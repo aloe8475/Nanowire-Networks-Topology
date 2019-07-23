@@ -20,7 +20,12 @@ RandStream.setGlobalStream(Parameters.seed);
 dbstop if error
 
 for i = 1:100
-A=createRandRegGraph(height(network.Explore.GraphView.Nodes),round(full(mean(network.Explore.GraphTheory.DEG))));
+    temp=round(full(mean(network.Explore.GraphTheory.DEG)));
+    if mod(temp,2)~=0
+        temp=temp+1; 
+    end 
+A=createRandRegGraph(height(network.Explore.GraphView.Nodes),temp);%this only works with an even number of edges*nodes, so we need to make it even above
+
 random(i).Adj=A;
 ranGraph=graph(A);
 random(i).Graph=ranGraph;
