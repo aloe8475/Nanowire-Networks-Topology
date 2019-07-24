@@ -19,7 +19,7 @@ switch computer
     case '' %if on linux
         currentPath='/suphys/aloe8475/Documents/CODE/Analysis';
     case 'LAPTOP-S1BV3HR7'
-        currentPath='D:\alon_\Research\POSTGRAD\PhD\CODE\Analysis';
+        currentPath='D:\alon_\Research\PhD\CODE\Analysis';
         %case '' %--- Add other computer paths (e.g. Mike)
 end
 cd(currentPath);
@@ -173,7 +173,7 @@ end
 cd(currentPath);
 % elseif strcmp(network_load,'z')
 %Get network - Zdenka:
-% D:\alon_\Research\POSTGRAD\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
+% D:\alon_\Research\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
 %     network=Load_Zdenka_Code();
 %     cd(currentPath);
 % end
@@ -197,7 +197,7 @@ function Explore = explore_simulation(Sim,network,network_load,simNum,currentPat
 % Full Graph = all degrees, all resistences
 
 [NodeList.String,NodeList.UserData]=GetNodeList(Sim);
-NodeList.Value=1;
+NodeList.Value=1:height(Sim.Electrodes);
 
 %% Timeseries View
 %Plot Current

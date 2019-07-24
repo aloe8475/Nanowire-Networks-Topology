@@ -11,7 +11,7 @@ switch computer
     case ''
         dataPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks';
     case 'LAPTOP-S1BV3HR7'
-        dataPath='D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
+        dataPath='D:\alon_\Research\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
 end
 cd(dataPath)
 waitfor(msgbox('Select the Network saved data'));

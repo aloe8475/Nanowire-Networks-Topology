@@ -422,7 +422,7 @@ switch computer
     case ''
         currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks';
     case 'LAPTOP-S1BV3HR7'
-        currentPath='D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
+        currentPath='D:\alon_\Research\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
 end
 cd(currentPath);
 [FileName,PathName] = uigetfile('*.mat','Select the Network saved data');
@@ -460,7 +460,7 @@ switch computer
     case ''
         currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks/Simulations Only';
     case 'LAPTOP-S1BV3HR7'
-        currentPath='D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
+        currentPath='D:\alon_\Research\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
 end
 cd(currentPath);
 [FileName,PathName] = uigetfile('*.mat','Select the Simulation saved data');
@@ -514,7 +514,7 @@ switch computer
     case ''
         currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks/Simulations Only';
     case 'LAPTOP-S1BV3HR7'
-        currentPath='D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
+        currentPath='D:\alon_\Research\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
 end
 IndNet=handles.NetList.Value; %need for the index
 SelNet=handles.Networks{IndNet}; %need for the name
@@ -559,7 +559,7 @@ switch computer
     case ''
         currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks';
     case 'LAPTOP-S1BV3HR7'
-        currentPath='D:\alon_\Research\POSTGRAD\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
+        currentPath='D:\alon_\Research\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
 end
 cd(currentPath);
 SelDir=uigetdir();

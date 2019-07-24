@@ -31,8 +31,8 @@ switch computer
         savePath='/suphys/aloe8475/Documents/CODE/Data/Explore Analysis/Multi-Network Data/';
         
     case 'LAPTOP-S1BV3HR7'
-        explore_location='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Explore Analysis\';
-        savePath='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Explore Analysis\Multi-Network Data\';
+        explore_location='D:\alon_\Research\PhD\CODE\Data\Explore Analysis\';
+        savePath='D:\alon_\Research\PhD\CODE\Data\Explore Analysis\Multi-Network Data\';
         
         %case '' %--- Add other computer paths (e.g. Mike)
 end
@@ -420,7 +420,7 @@ xticklabels({[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],[num2str(Net(p
 ylabel('Betweenness Centrality');
 
 %% SAVE GRAPHS 
-fig_dir='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Figures\Explore Analysis\Cross-Network Explore\Graph Theory\';
+fig_dir='D:\alon_\Research\PhD\CODE\Data\Figures\Explore Analysis\Cross-Network Explore\Graph Theory\';
 print(f5,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Guimera Participant Coefficient vs Module z-Score ' num2str(Net(plotNet).sizeNetwork) 'nw network.pdf']);
 print(f6,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Communicability ' num2str(Net(plotNet).sizeNetwork) 'nw network.pdf']);
 
