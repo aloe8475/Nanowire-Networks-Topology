@@ -30,6 +30,7 @@ $RECYCLE.BIN/
 *.avi
 *.wav
 *.mp4
+*.ai
 
 # Microsoft Files
 *.ppt
@@ -42,6 +43,7 @@ $RECYCLE.BIN/
 # Other Files
 *.rar
 *.zip
+
 
 # Directories 
 /Adrian's Code/NETWORK_sims_2/Saved Networks/Simulations Only/OLD/
