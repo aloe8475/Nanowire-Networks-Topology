@@ -212,6 +212,9 @@ fprintf('Graphs Loaded... \n Creating Plots... \n');
 %% Random & Ordered
 %Number of Nodes
 for z=1:length(Net)
+    while isempty(Net(z).sizeNetwork) %if we only load 500, 1000 or 2000, we need to increase our counter to skip over the empty arrays. 
+        z=z+1;
+    end 
     for i =1:100
         Net(z).random(i).numNodes=height(Net(z).random(i).Graph.Nodes);
         Net(z).ordered(i).numNodes=height(Net(z).ordered(i).Graph.Nodes);
@@ -288,8 +291,8 @@ end
 %% Plot:
 function plotAll(Net, random, ordered, human, e100, e500, e1000, e2000, AgNW,network)
 % Small World Analysis
-f=figure;
-while 1
+% f=figure;
+% while 1
     plotNet=input('Which Network size would you like to plot? \n');
     switch plotNet
         case 100
@@ -301,68 +304,68 @@ while 1
         case 2000
             plotNet=4;
     end
-    y=[Net(plotNet).random100.AvgGlobalClust human.GlobalClust Net(plotNet).ordered100.AvgGlobalClust e100.Explore.GraphTheory.GlobalClust e500.Explore.GraphTheory.GlobalClust e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
-    x=[Net(plotNet).random100.AvgPath human.AvgPath Net(plotNet).ordered100.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
-    p=gscatter(x,y);
-    hold on
-    e=errorbar(x(1), y(1),Net(plotNet).random100.StdPath);
-    e2=errorbar(x(1), y(1),Net(plotNet).random100.StdGlobalClust,'horizontal');
-    errorbar(x(3), y(3),Net(plotNet).ordered100.StdPath);
-    errorbar(x(3), y(3),Net(plotNet).ordered100.StdGlobalClust,'horizontal');
-    % xlim([0.05 0.6])
-    % ylim([2 16])
-    text(x,y,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],'Human Nw',[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
-    ylabel('Global Clustering Coefficient');
-    xlabel('Global Mean Path Length');
-    p.MarkerEdgeColor='b';
-    p(:,1).MarkerEdgeColor='r';
-    p.LineWidth=1.5;
-    
-    plot2=lower(input('Would you like to plot another network size? \n','s'));
-    if plot2=='n'
-        break;
-    end
-end
+%     y=[Net(plotNet).random100.AvgGlobalClust human.GlobalClust Net(plotNet).ordered100.AvgGlobalClust e100.Explore.GraphTheory.GlobalClust e500.Explore.GraphTheory.GlobalClust e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
+%     x=[Net(plotNet).random100.AvgPath human.AvgPath Net(plotNet).ordered100.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
+%     p=gscatter(x,y);
+%     hold on
+%     e=errorbar(x(1), y(1),Net(plotNet).random100.StdPath);
+%     e2=errorbar(x(1), y(1),Net(plotNet).random100.StdGlobalClust,'horizontal');
+%     errorbar(x(3), y(3),Net(plotNet).ordered100.StdPath);
+%     errorbar(x(3), y(3),Net(plotNet).ordered100.StdGlobalClust,'horizontal');
+%     % xlim([0.05 0.6])
+%     % ylim([2 16])
+%     text(x,y,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],'Human Nw',[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
+%     ylabel('Global Clustering Coefficient');
+%     xlabel('Global Mean Path Length');
+%     p.MarkerEdgeColor='b';
+%     p(:,1).MarkerEdgeColor='r';
+%     p.LineWidth=1.5;
+%     
+%     plot2=lower(input('Would you like to plot another network size? \n','s'));
+%     if plot2=='n'
+%         break;
+%     end
+% end
 
-%Small World Log
-f1=figure;
-logx=log10(x);
-logy=log10(y);
-p1=gscatter(logx,y);
-hold on
-hold on
-e=errorbar(logx(1), y(1),Net(plotNet).random100.StdPath);
-e2=errorbar(logx(1), y(1),Net(plotNet).random100.StdGlobalClust);
-errorbar(logx(3), y(3),Net(plotNet).ordered100.StdPath);
-errorbar(logx(3), y(3),Net(plotNet).ordered100.StdGlobalClust);
-% xlim([0.05 0.6])
-% ylim([2 16])
-%     ylim([0,max(y)]);
-%     xlim([0,max(logx)]);
-text(logx,y,{'500node Random Nw','Human Nw','500node Ordered Nw','100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
-ylabel('Global Clustering Coefficient');
-xlabel('Log10 Global Mean Path Length');
-p1.MarkerEdgeColor='b';
-p1(:,1).MarkerEdgeColor='r';
-p1.LineWidth=1.5;
+% %Small World Log
+% f1=figure;
+% logx=log10(x);
+% logy=log10(y);
+% p1=gscatter(logx,y);
+% hold on
+% hold on
+% e=errorbar(logx(1), y(1),Net(plotNet).random100.StdPath);
+% e2=errorbar(logx(1), y(1),Net(plotNet).random100.StdGlobalClust);
+% errorbar(logx(3), y(3),Net(plotNet).ordered100.StdPath);
+% errorbar(logx(3), y(3),Net(plotNet).ordered100.StdGlobalClust);
+% % xlim([0.05 0.6])
+% % ylim([2 16])
+% %     ylim([0,max(y)]);
+% %     xlim([0,max(logx)]);
+% text(logx,y,{'500node Random Nw','Human Nw','500node Ordered Nw','100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
+% ylabel('Global Clustering Coefficient');
+% xlabel('Log10 Global Mean Path Length');
+% p1.MarkerEdgeColor='b';
+% p1(:,1).MarkerEdgeColor='r';
+% p1.LineWidth=1.5;
 
 %Small World Prop
 x=[Net(plotNet).random100.AvgSmallWorldProp Net(plotNet).ordered100.AvgSmallWorldProp AgNW.SmallWorldProp];
-ff=figure;
-pp=bar(x);
+f2=figure;
+p2=bar(x);
 hold on
 e=errorbar(x(1), Net(plotNet).random100.StdSmallWorldProp);
 e2=errorbar(x(2),Net(plotNet).ordered100.StdSmallWorldProp);
 % xlim([0.05 0.6])
 % ylim([2 16])
-xticklabels({'500node Random Nw','500node Ordered Nw','100nw','500nw','1000nw','2000nw'});
+xticklabels({[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'});
 ylabel('Small World Prop');
 
 %Circuit Rank:
 circuitRank=[Net(plotNet).random(1).CircuitRank Net(plotNet).ordered(1).CircuitRank AgNW.CircuitRank];
-f2=figure;
-p2=bar(circuitRank);
-xticklabels({'500node Random Nw', '500node Ordered Nw', '100nw', '500nw', '1000nw','2000nw'});
+f3=figure;
+p3=bar(circuitRank);
+xticklabels({[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'], '100nw', '500nw', '1000nw','2000nw'});
 ylabel('Circuit Rank');
 
 
@@ -375,20 +378,20 @@ for i=1:length(p2)  % iterate over number of bar objects
 end
 
 %Average Participation Coefficient & Module z-Score
-f3=figure;
+f4=figure;
 %High PCoeff = Hubs / Central areas (Power et al., 2013)
 PCoeff=[Net(plotNet).random100.AvgAvgPCoeff human.AvgP human.PLocalHubs human.PLocalHubs human.PConnectorHubs human.PConnectorHubs Net(plotNet).ordered100.AvgAvgPCoeff mean(e100.Explore.GraphTheory.P), mean(e500.Explore.GraphTheory.P), mean(e1000.Explore.GraphTheory.P) mean(e2000.Explore.GraphTheory.P)];
 MZ=[Net(plotNet).random100.AvgAvgMZ human.AvgMZ human.MZHubs human.MZNonHubs human.MZHubs human.MZNonHubs Net(plotNet).ordered100.AvgAvgMZ mean(e100.Explore.GraphTheory.MZ), mean(e500.Explore.GraphTheory.MZ), mean(e1000.Explore.GraphTheory.MZ) mean(e2000.Explore.GraphTheory.MZ)];
-p3=gscatter(PCoeff,MZ);
-text(PCoeff,MZ,{'500node Random Nw', 'Human Average', 'Human Connector Local Provincial Hub','Human Local Peripheral Node','Human Connector Hub','Human Satellite Connector', '500node Ordered Nw', '100nw Avg', '500nw Avg', '1000nw Avg','2000nw Avg'});
+p4=gscatter(PCoeff,MZ);
+text(PCoeff,MZ,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'], 'Human Average', 'Human Connector Local Provincial Hub','Human Local Peripheral Node','Human Connector Hub','Human Satellite Connector', [num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'], '100nw Avg', '500nw Avg', '1000nw Avg','2000nw Avg'});
 xlabel('Average Participant Coefficient Coefficient');
 ylabel('Average Module z-Score');
-p3.MarkerEdgeColor='b';
-p3(:,1).MarkerEdgeColor='r';
-p3.LineWidth=1.5;
+p4.MarkerEdgeColor='b';
+p4(:,1).MarkerEdgeColor='r';
+p4.LineWidth=1.5;
 
 %Plot Guimera & Amaral rectangles:
-guimera(network,Net,plotNet); %change network here
+f5=guimera(network,Net,plotNet); %change network here
 
 %Communicability
 f6=figure;
@@ -400,7 +403,7 @@ e=errorbar(log10(COMM), log10(stdCOMM)); %use log10 otherwise communicability is
 e.LineStyle='none';
 % xlim([0.05 0.6])
 % ylim([2 16])
-xticklabels({'500node Random Nw','500node Ordered Nw','100nw','500nw','1000nw','2000nw'});
+xticklabels({[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'});
 ylabel('Log10 Communicability');
 
 %Betweenness Centrality
@@ -413,12 +416,18 @@ e=errorbar(BC, stdBC);
 e.LineStyle='none';
 % xlim([0.05 0.6])
 % ylim([2 16])
-xticklabels({'500node Random Nw','500node Ordered Nw','100nw','500nw','1000nw','2000nw'});
+xticklabels({[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'});
 ylabel('Betweenness Centrality');
+
+%% SAVE GRAPHS 
+fig_dir='D:\alon_\Research\POSTGRAD\PhD\CODE\Data\Figures\Explore Analysis\Cross-Network Explore\Graph Theory\';
+print(f5,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Guimera Participant Coefficient vs Module z-Score ' num2str(Net(plotNet).sizeNetwork) 'nw network.pdf']);
+print(f6,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Communicability ' num2str(Net(plotNet).sizeNetwork) 'nw network.pdf']);
+
 end
 
 %% FUNCTIONS
-function guimera(network, Net,plotNet)
+function f4=guimera(network, Net,plotNet)
 f4=figure;
 % Set up rectangles:
 xR1=[0 0.025 0.025 0];
@@ -498,6 +507,9 @@ xlabel('Participant Coefficient')
 ylabel('Within-Module Degree z-Score');
 title([num2str(Net(plotNet).sizeNetwork) 'nw Network']);
 end
+
+
+
 
 
 %% OLD CODE
