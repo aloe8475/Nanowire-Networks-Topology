@@ -31,6 +31,7 @@ $RECYCLE.BIN/
 *.wav
 *.mp4
 *.ai
+*.lv
 
 # Microsoft Files
 *.ppt
