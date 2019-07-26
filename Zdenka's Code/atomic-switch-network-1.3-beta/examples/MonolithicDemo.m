@@ -26,7 +26,8 @@ SimulationOptions.ContactNodes = [9, 10]; % only really required for preSet, oth
 Connectivity.WhichMatrix       = 'nanoWires';    % 'nanoWires' \ 'randAdjMat'
 switch Connectivity.WhichMatrix
     case 'nanoWires'
-        Connectivity.filename = '2016-09-08-155153_asn_nw_00100_nj_00261_seed_042_avl_100.00_disp_10.00.mat';
+            Connectivity.filename='AdriantoZdenka100nw.mat';
+%         Connectivity.filename = '2016-09-08-155153_asn_nw_00100_nj_00261_seed_042_avl_100.00_disp_10.00.mat';
 %         Connectivity.filename = '2016-09-08-155044_asn_nw_00700_nj_14533_seed_042_avl_100.00_disp_10.00.mat';
     case 'randAdjMat'
         Connectivity.NumberOfNodes = 30;

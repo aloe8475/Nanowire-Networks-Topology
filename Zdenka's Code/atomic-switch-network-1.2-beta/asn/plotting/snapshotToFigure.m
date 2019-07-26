@@ -109,8 +109,9 @@ function snapshotFigure = snapshotToFigure(snapshot, contacts, connectivity, wha
         junctionSize = 50;
         
         % calculate power consumption:
-        power = 1e9*(snapshot.Voltage(1:end-1)).^2./(snapshot.Resistance(1:end-1)); % Joule heating is V^2/R.
-        
+%         power = 1e9*(snapshot.Voltage(1:end-1)).^2./(snapshot.Resistance(1:end-1)); % Joule heating is V^2/R.
+        power = 1e9*(snapshot.Voltage(1:end)).^2./(snapshot.Resistance(1:end)); % Joule heating is V^2/R.
+
         % if possible, give different marker to open switches, otherwise
         % just plot all the switches in the same manner:
         if isfield(snapshot, 'OnOrOff')
@@ -290,10 +291,16 @@ function snapshotFigure = snapshotToFigure(snapshot, contacts, connectivity, wha
     end
     
     %% title, axes labels and limits:
-    title(sprintf('t=%.2f (sec)', snapshot.Timestamp));
+%     title(sprintf('t=%.2f (sec)', snapshot.Timestamp));
     xlabel('x (\mum)');
     ylabel('y (\mum)');
-    shoulder = 800;
-    axis([-shoulder,connectivity.GridSize(1)+shoulder,-shoulder,connectivity.GridSize(2)+shoulder]);
+%     shoulder = 800;
+%     axis([-shoulder,connectivity.GridSize(1)+shoulder,-shoulder,connectivity.GridSize(2)+shoulder]);
+    [maxa maxb]=max(connectivity.WireEnds);
+    [mina minb]=min(connectivity.WireEnds);
+    [maxmaxa maxmaxb]=max(maxa);
+    [minmina minminb]=min(mina);
+
+    axis([connectivity.WireEnds(minb(minminb),minminb)-2, connectivity.WireEnds(maxb(maxmaxb),maxmaxb)+5,connectivity.WireEnds(minb(minminb),minminb)-2,connectivity.WireEnds(maxb(maxmaxb),maxmaxb)+5]);
     axis square;
 end
