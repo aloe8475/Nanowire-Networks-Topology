@@ -74,7 +74,7 @@ random100.StdSmallWorldProp=std([random(:).SmallWorldProp]);
 random100.AvgCOMM=mean([random(:).COMM]);
 random100.StdCOMM=std([random(:).COMM]);
 
-save([savePath 'Random_Graphs_' num2str(sizeNetwork) 'nw.mat'],'random','random100');
+save([savePath 'Random_Graphs_' num2str(sizeNetwork) 'nw.mat'],'random','random100','-v7.3');
 
 
 %% Ordered Graph Analysis
@@ -132,5 +132,5 @@ ordered100.StdSmallWorldProp=std([ordered(:).SmallWorldProp]);
 ordered100.AvgCOMM=mean([ordered(:).COMM]);
 ordered100.StdCOMM=std([ordered(:).COMM]);
 
-save([savePath 'Ordered_Graphs_' num2str(sizeNetwork) 'nw.mat'],'ordered','ordered100');
+save([savePath 'Ordered_Graphs_' num2str(sizeNetwork) 'nw.mat'],'ordered','ordered100','-v7.3');
 end 

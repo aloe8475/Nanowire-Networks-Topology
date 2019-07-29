@@ -41,15 +41,17 @@ cd(explore_location);
 loadData=lower(input('Would you like to load the network data? \n','s'));
 if loadData=='y'
     %Load three explore analyses:
+    fprintf('Loading Data... \n');
     clear e100 e500 e1000 e2000
     e100=load([explore_location 'Adrian_Net_Sx20_NoW100_0325-2019_112338__Sim_1_SourceElectrode_6_DrainElectrode_76_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
     e500=load([explore_location 'Adrian_Net_Sx20_NoW500_0330-2019_111659__Sim_1_SourceElectrode_18_DrainElectrode_430_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
     e1000=load([explore_location 'Adrian_Net_Sx20_NoW1000_0606-2019_113353__Sim_1_SourceElectrode_32_DrainElectrode_1000_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
     e2000=load([explore_location 'Adrian_Net_Sx20_NoW2000_0618-2019_125103__Sim_1_SourceElectrode_158_DrainElectrode_1820_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
+    fprintf('Data Loaded \n');
 end
 
+
 %% Run Functions:
-%     cElegans=cElegansFun();
 human=humanFun();
 [Net, random, ordered,network]=randomOrdered(savePath,currentLocation,e100,e500,e1000,e2000);
 AgNW=AgNWFun(e100, e500, e1000, e2000);
@@ -90,10 +92,58 @@ plotAll(Net,random,ordered, human, e100, e500, e1000, e2000, AgNW, network)%% TO
 %     %AI.AdjMat=zeros([500 500]);
 %     end
 %% C-Elegans:
-function cElegans=cElegansFun()
-%     cElegans.AvgMZ=0.62;% - Guimera & Nunes, 2005
-cd('../Organic Networks Connectomes/')
+function elegans=cElegansFun()
+
+%Kaiser M, Hilgetag CC (2006) Non-Optimal Component Placement, but Short Processing Paths, due to Long-Distance Projections in Neural Systems. PLoS Computational Biology 7:e95
+% Kötter R (2004) Online retrieval, processing, and visualization of primate connectivity data from the CoCoMac database. Neuroinformatics 2: 127-144.
+% Choe Y, McCormick BH, Koh W (2004) Network connectivity analysis on the temporally augmented C. elegans web: A pilot study. Society of Neuroscience Abstracts 30:921.9.
+
+fprintf('Loading cElegans Data \n');
+cd('../../Data/Organic Networks Connectomes/')
 cElegans=load('celegans277neurons.mat');
+
+%Elegans Matrix (Taken from above sources):
+A=cElegans.celegans277matrix;
+B=A+A'; %creating undirected matrix from directed matrix.
+[elegans.Ci,elegans.Q] = community_louvain(B,1);
+%Clustering Coefficient
+[elegans.GlobalClust,elegans.AvgLocalClust, elegans.Clust] = clustCoeff(B);
+
+%Participation Coefficient & Module z-Score
+elegans.P = participation_coef(B,elegans.Ci);
+elegans.MZ = module_degree_zscore(B, elegans.Ci);
+% Avg + Std PC + MZ:
+elegans.avgP=mean(elegans.P);
+elegans.stdP=std(elegans.P);
+elegans.avgMZ=mean(elegans.MZ);
+elegans.stdMZ=std(elegans.MZ);
+
+%Communicability:
+elegans.COMM = expm(B);
+%Avg COMM
+elegans.avgCOMM=mean(elegans.COMM);
+elegans.stdCOMM=std(elegans.COMM);
+
+
+%Betweenness Centrality:
+[elegans.BC, elegans.normBC]=betweenness_bin(B);
+%Avg:
+elegans.avgBC=mean(elegans.BC);
+elegans.stdBC=std(elegans.BC);
+
+%Random Path Length
+elegans.Path = path_length(B);
+elegans.AvgPath=mean(elegans.Path);
+G_up=graph(B,'upper');
+G_low=graph(B,'lower');
+G=graph(B);
+
+elegans.Graph=G;
+%Circuit Rank
+elegans.CircuitRank=numedges(G) - (numnodes(G) - 1);
+elegans.SmallWorldProp=small_world_propensity(B);
+
+
 end
 
 %% Human Graph Analysis
@@ -160,6 +210,7 @@ while 1
             [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(network,Net(i).sizeNetwork);
         end
     else
+        cElegans=cElegansFun();
         if exist([loadPath 'Ordered_Graphs_' num2str(Net(i).sizeNetwork) 'nw.mat'], 'file') == 2 && exist([loadPath 'Random_Graphs_' num2str(Net(i).sizeNetwork) 'nw.mat'],'file') == 2 %2 because .mat file
             overwrite=lower(input(['Graphs (' num2str(Net(i).sizeNetwork) 'nodes) have already been created, would you like to overwrite? \n'],'s'));
             if overwrite =='n'
@@ -291,8 +342,8 @@ end
 %% Plot:
 function plotAll(Net, random, ordered, human, e100, e500, e1000, e2000, AgNW,network)
 % Small World Analysis
-% f=figure;
-% while 1
+f=figure;
+while 1
     plotNet=input('Which Network size would you like to plot? \n');
     switch plotNet
         case 100
@@ -304,28 +355,28 @@ function plotAll(Net, random, ordered, human, e100, e500, e1000, e2000, AgNW,net
         case 2000
             plotNet=4;
     end
-%     y=[Net(plotNet).random100.AvgGlobalClust human.GlobalClust Net(plotNet).ordered100.AvgGlobalClust e100.Explore.GraphTheory.GlobalClust e500.Explore.GraphTheory.GlobalClust e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
-%     x=[Net(plotNet).random100.AvgPath human.AvgPath Net(plotNet).ordered100.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
-%     p=gscatter(x,y);
-%     hold on
-%     e=errorbar(x(1), y(1),Net(plotNet).random100.StdPath);
-%     e2=errorbar(x(1), y(1),Net(plotNet).random100.StdGlobalClust,'horizontal');
-%     errorbar(x(3), y(3),Net(plotNet).ordered100.StdPath);
-%     errorbar(x(3), y(3),Net(plotNet).ordered100.StdGlobalClust,'horizontal');
-%     % xlim([0.05 0.6])
-%     % ylim([2 16])
-%     text(x,y,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],'Human Nw',[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
-%     ylabel('Global Clustering Coefficient');
-%     xlabel('Global Mean Path Length');
-%     p.MarkerEdgeColor='b';
-%     p(:,1).MarkerEdgeColor='r';
-%     p.LineWidth=1.5;
-%     
-%     plot2=lower(input('Would you like to plot another network size? \n','s'));
-%     if plot2=='n'
-%         break;
-%     end
-% end
+    y=[Net(plotNet).random100.AvgGlobalClust cElegans.GlobalClust human.GlobalClust Net(plotNet).ordered100.AvgGlobalClust e100.Explore.GraphTheory.GlobalClust e500.Explore.GraphTheory.GlobalClust e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
+    x=[Net(plotNet).random100.AvgPath cElegans.AvgPath human.AvgPath Net(plotNet).ordered100.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
+    p=gscatter(x,y);
+    hold on
+    e=errorbar(x(1), y(1),Net(plotNet).random100.StdPath);
+    e2=errorbar(x(1), y(1),Net(plotNet).random100.StdGlobalClust,'horizontal');
+    errorbar(x(3), y(3),Net(plotNet).ordered100.StdPath);
+    errorbar(x(3), y(3),Net(plotNet).ordered100.StdGlobalClust,'horizontal');
+    % xlim([0.05 0.6])
+    % ylim([2 16])
+    text(x,y,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],'C. Elegans Nw', 'Human Nw',[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
+    ylabel('Global Clustering Coefficient');
+    xlabel('Global Mean Path Length');
+    p.MarkerEdgeColor='b';
+    p(:,1).MarkerEdgeColor='r';
+    p.LineWidth=1.5;
+    
+    plot2=lower(input('Would you like to plot another network size? \n','s'));
+    if plot2=='n'
+        break;
+    end
+end
 
 % %Small World Log
 % f1=figure;
@@ -350,7 +401,7 @@ function plotAll(Net, random, ordered, human, e100, e500, e1000, e2000, AgNW,net
 % p1.LineWidth=1.5;
 
 %Small World Prop
-x=[Net(plotNet).random100.AvgSmallWorldProp Net(plotNet).ordered100.AvgSmallWorldProp AgNW.SmallWorldProp];
+x=[Net(plotNet).random100.AvgSmallWorldProp Net(plotNet).ordered100.AvgSmallWorldProp cElegans.SmallWorldProp AgNW.SmallWorldProp];
 f2=figure;
 p2=bar(x);
 hold on
@@ -358,7 +409,7 @@ e=errorbar(x(1), Net(plotNet).random100.StdSmallWorldProp);
 e2=errorbar(x(2),Net(plotNet).ordered100.StdSmallWorldProp);
 % xlim([0.05 0.6])
 % ylim([2 16])
-xticklabels({[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'});
+xticklabels({[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'C. Elegans Nw','100nw','500nw','1000nw','2000nw'});
 ylabel('Small World Prop');
 
 %Circuit Rank:
@@ -380,10 +431,10 @@ end
 %Average Participation Coefficient & Module z-Score
 f4=figure;
 %High PCoeff = Hubs / Central areas (Power et al., 2013)
-PCoeff=[Net(plotNet).random100.AvgAvgPCoeff human.AvgP human.PLocalHubs human.PLocalHubs human.PConnectorHubs human.PConnectorHubs Net(plotNet).ordered100.AvgAvgPCoeff mean(e100.Explore.GraphTheory.P), mean(e500.Explore.GraphTheory.P), mean(e1000.Explore.GraphTheory.P) mean(e2000.Explore.GraphTheory.P)];
-MZ=[Net(plotNet).random100.AvgAvgMZ human.AvgMZ human.MZHubs human.MZNonHubs human.MZHubs human.MZNonHubs Net(plotNet).ordered100.AvgAvgMZ mean(e100.Explore.GraphTheory.MZ), mean(e500.Explore.GraphTheory.MZ), mean(e1000.Explore.GraphTheory.MZ) mean(e2000.Explore.GraphTheory.MZ)];
+PCoeff=[Net(plotNet).random100.AvgAvgPCoeff cElegans.avgP human.AvgP human.PLocalHubs human.PLocalHubs human.PConnectorHubs human.PConnectorHubs Net(plotNet).ordered100.AvgAvgPCoeff mean(e100.Explore.GraphTheory.P), mean(e500.Explore.GraphTheory.P), mean(e1000.Explore.GraphTheory.P) mean(e2000.Explore.GraphTheory.P)];
+MZ=[Net(plotNet).random100.AvgAvgMZ cElegans.avgMZ human.AvgMZ human.MZHubs human.MZNonHubs human.MZHubs human.MZNonHubs Net(plotNet).ordered100.AvgAvgMZ mean(e100.Explore.GraphTheory.MZ), mean(e500.Explore.GraphTheory.MZ), mean(e1000.Explore.GraphTheory.MZ) mean(e2000.Explore.GraphTheory.MZ)];
 p4=gscatter(PCoeff,MZ);
-text(PCoeff,MZ,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'], 'Human Average', 'Human Connector Local Provincial Hub','Human Local Peripheral Node','Human Connector Hub','Human Satellite Connector', [num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'], '100nw Avg', '500nw Avg', '1000nw Avg','2000nw Avg'});
+text(PCoeff,MZ,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],'C. Elegans Nw', 'Human Average', 'Human Connector Local Provincial Hub','Human Local Peripheral Node','Human Connector Hub','Human Satellite Connector', [num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'], '100nw Avg', '500nw Avg', '1000nw Avg','2000nw Avg'});
 xlabel('Average Participant Coefficient Coefficient');
 ylabel('Average Module z-Score');
 p4.MarkerEdgeColor='b';
@@ -393,35 +444,35 @@ p4.LineWidth=1.5;
 %Plot Guimera & Amaral rectangles:
 f5=guimera(network,Net,plotNet); %change network here
 
-%Communicability
-f6=figure;
-COMM=[Net(plotNet).random100.AvgCOMM(1) Net(plotNet).ordered100.AvgCOMM(1) AgNW.AvgCOMM];
-stdCOMM=[0 0 AgNW.StdCOMM];
-p6=bar(log10(COMM));
-hold on
-e=errorbar(log10(COMM), log10(stdCOMM)); %use log10 otherwise communicability is much too large to visualise
-e.LineStyle='none';
-% xlim([0.05 0.6])
-% ylim([2 16])
-xticklabels({[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'});
-ylabel('Log10 Communicability');
+% %Communicability
+% f6=figure;
+% COMM=[Net(plotNet).random100.AvgCOMM(1) Net(plotNet).ordered100.AvgCOMM(1) AgNW.AvgCOMM];
+% stdCOMM=[0 0 AgNW.StdCOMM];
+% p6=bar(log10(COMM));
+% hold on
+% e=errorbar(log10(COMM), log10(stdCOMM)); %use log10 otherwise communicability is much too large to visualise
+% e.LineStyle='none';
+% % xlim([0.05 0.6])
+% % ylim([2 16])
+% xticklabels({[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'});
+% ylabel('Log10 Communicability');
 
 %Betweenness Centrality
 f7=figure;
-BC=[Net(plotNet).random100.AvgBC Net(plotNet).ordered100.AvgBC AgNW.AvgBC];
-stdBC=[Net(plotNet).random100.StdBC Net(plotNet).ordered100.StdBC AgNW.StdBC];
+BC=[Net(plotNet).random100.AvgBC Net(plotNet).ordered100.AvgBC cElegans.AvgBC AgNW.AvgBC];
+stdBC=[Net(plotNet).random100.StdBC Net(plotNet).ordered100.StdBC cElegans.stdBC AgNW.StdBC];
 p7=bar(BC);
 hold on
 e=errorbar(BC, stdBC);
 e.LineStyle='none';
 % xlim([0.05 0.6])
 % ylim([2 16])
-xticklabels({[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'});
+xticklabels({[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'C. Elegans Nw','100nw','500nw','1000nw','2000nw'});
 ylabel('Betweenness Centrality');
 
 %% SAVE GRAPHS 
 fig_dir='D:\alon_\Research\PhD\CODE\Data\Figures\Explore Analysis\Cross-Network Explore\Graph Theory\';
-print(f5,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Guimera Participant Coefficient vs Module z-Score ' num2str(Net(plotNet).sizeNetwork) 'nw network.pdf']);
+print(f5,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Guimera PC vs Module z-Score ' num2str(Net(plotNet).sizeNetwork) 'nw network.pdf']);
 print(f6,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Communicability ' num2str(Net(plotNet).sizeNetwork) 'nw network.pdf']);
 
 end
