@@ -52,12 +52,16 @@ end
 
 
 %% Run Functions:
+cElegans=cElegansFun();
 human=humanFun();
 [Net, random, ordered,network]=randomOrdered(savePath,currentLocation,e100,e500,e1000,e2000);
 AgNW=AgNWFun(e100, e500, e1000, e2000);
 
 %Plot graphs
-plotAll(Net,random,ordered, human, e100, e500, e1000, e2000, AgNW, network)%% TO DO
+plotAll(Net,random,ordered, human, e100, e500, e1000, e2000, AgNW, network,cElegans)
+
+
+%% TO DO
 
 %500 Node Communicability Graph:
 % Net(1).random(1).COMM; %communicability does not change across 100 bootstraps, so we can just use #1
@@ -210,7 +214,6 @@ while 1
             [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(network,Net(i).sizeNetwork);
         end
     else
-        cElegans=cElegansFun();
         if exist([loadPath 'Ordered_Graphs_' num2str(Net(i).sizeNetwork) 'nw.mat'], 'file') == 2 && exist([loadPath 'Random_Graphs_' num2str(Net(i).sizeNetwork) 'nw.mat'],'file') == 2 %2 because .mat file
             overwrite=lower(input(['Graphs (' num2str(Net(i).sizeNetwork) 'nodes) have already been created, would you like to overwrite? \n'],'s'));
             if overwrite =='n'
@@ -340,7 +343,7 @@ AgNW.AvgBC=[mean(e100.Explore.GraphTheory.BC) mean(e500.Explore.GraphTheory.BC) 
 AgNW.StdBC=[std(e100.Explore.GraphTheory.BC) std(e500.Explore.GraphTheory.BC)  std(e1000.Explore.GraphTheory.BC) std(e2000.Explore.GraphTheory.BC)];
 end
 %% Plot:
-function plotAll(Net, random, ordered, human, e100, e500, e1000, e2000, AgNW,network)
+function plotAll(Net, random, ordered, human, e100, e500, e1000, e2000, AgNW,network,cElegans)
 % Small World Analysis
 f=figure;
 while 1
