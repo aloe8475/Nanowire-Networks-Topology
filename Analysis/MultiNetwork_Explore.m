@@ -102,9 +102,15 @@ function elegans=cElegansFun()
 % Kötter R (2004) Online retrieval, processing, and visualization of primate connectivity data from the CoCoMac database. Neuroinformatics 2: 127-144.
 % Choe Y, McCormick BH, Koh W (2004) Network connectivity analysis on the temporally augmented C. elegans web: A pilot study. Society of Neuroscience Abstracts 30:921.9.
 
-fprintf('Loading cElegans Data \n');
 cd('../../Data/Organic Networks Connectomes/')
 cElegans=load('celegans277neurons.mat');
+    fprintf('Loading cElegans Data \n');
+
+if exist('cElegansGraphTheory.mat','file')
+    load('cElegansGraphTheory.mat','elegans');
+else
+   
+fprintf('No cElegans Data found, creating cElegans Data \n');
 
 %Elegans Matrix (Taken from above sources):
 A=cElegans.celegans277matrix;
@@ -147,7 +153,8 @@ elegans.Graph=G;
 elegans.CircuitRank=numedges(G) - (numnodes(G) - 1);
 elegans.SmallWorldProp=small_world_propensity(B);
 
-
+save('cElegansGraphTheory.mat','elegans');
+end 
 end
 
 %% Human Graph Analysis
@@ -180,7 +187,7 @@ function [Net, random, ordered,network]=randomOrdered(savePath,currentLocation,e
 cd(currentLocation)
 i=1;
 while 1
-    sizeNetwork=input('What Size Network would you like to create/load? 100, 500, 1000 or 2000? \n');
+    sizeNetwork=input('What Size Random/Ordered Networks would you like to create/load? 100, 500, 1000 or 2000? \n');
     createNewRand=lower(input('Would you like to create new Random and Ordered graphs? (Note this will take 4+ Hours) \n','s'));
     loadPath=savePath;
     % save the data for each network & save the network size in a different
@@ -205,9 +212,9 @@ while 1
     end
     if createNewRand=='n'
         if exist([loadPath 'Ordered_Graphs_' num2str(Net(i).sizeNetwork) 'nw.mat'], 'file') == 2 && exist([loadPath 'Random_Graphs_' num2str(Net(i).sizeNetwork) 'nw.mat'],'file') == 2 %2 because .mat file
+            fprintf(['Loading Ordered and Random Graphs (' num2str(Net(i).sizeNetwork) 'nodes)... \n \n']);
             load([loadPath 'Ordered_Graphs_' num2str(Net(i).sizeNetwork) 'nw.mat']);
             load([loadPath 'Random_Graphs_' num2str(Net(i).sizeNetwork) 'nw.mat']);
-            fprintf(['Loading Ordered and Random Graphs (' num2str(Net(i).sizeNetwork) 'nodes)... \n \n']);
         else
             fprintf('Ordered and Random Graphs have not been created yet \n');
             fprintf('Creating New Graphs \n');
@@ -347,7 +354,7 @@ function plotAll(Net, random, ordered, human, e100, e500, e1000, e2000, AgNW,net
 % Small World Analysis
 f=figure;
 while 1
-    plotNet=input('Which Network size would you like to plot? \n');
+    plotNet=input('Which Network size would you like to plot? 100, 500, 1000, or 2000? \n');
     switch plotNet
         case 100
             plotNet=1;
@@ -381,6 +388,8 @@ while 1
     end
 end
 
+fprintf('Figure 1 Complete \n');
+
 % %Small World Log
 % f1=figure;
 % logx=log10(x);
@@ -404,48 +413,72 @@ end
 % p1.LineWidth=1.5;
 
 %Small World Prop
-x=[Net(plotNet).random100.AvgSmallWorldProp Net(plotNet).ordered100.AvgSmallWorldProp cElegans.SmallWorldProp AgNW.SmallWorldProp];
 f2=figure;
+for i = 1:plotNet
+x=[Net(i).random100.AvgSmallWorldProp Net(i).ordered100.AvgSmallWorldProp cElegans.SmallWorldProp AgNW.SmallWorldProp];
 p2=bar(x);
 hold on
-e=errorbar(x(1), Net(plotNet).random100.StdSmallWorldProp);
-e2=errorbar(x(2),Net(plotNet).ordered100.StdSmallWorldProp);
+e=errorbar(x(1), Net(i).random100.StdSmallWorldProp);
+e2=errorbar(x(2),Net(i).ordered100.StdSmallWorldProp);
 % xlim([0.05 0.6])
 % ylim([2 16])
-xticklabels({[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'C. Elegans Nw','100nw','500nw','1000nw','2000nw'});
+xticklabels({[num2str(Net(i).sizeNetwork) 'node Random Nw'],[num2str(Net(i).sizeNetwork) 'node Ordered Nw'],'C. Elegans Nw','100nw','500nw','1000nw','2000nw'});
 ylabel('Small World Prop');
+hold on 
+end 
 
-%Circuit Rank:
-circuitRank=[Net(plotNet).random(1).CircuitRank Net(plotNet).ordered(1).CircuitRank AgNW.CircuitRank];
+fprintf('Figure 2 Complete \n');
+
+
 f3=figure;
+circuitRankRandom=[];
+circuitRankOrdered=[];
+for i = 1:plotNet
+%Circuit Rank:
+circuitRankRandom=[circuitRankRandom Net(i).random(1).CircuitRank];
+circuitRankOrdered=[circuitRankOrdered Net(i).ordered(1).CircuitRank];
+randomLabel{i}=[num2str(Net(i).sizeNetwork) ' Random Nw'];
+orderedLabel{i}=[num2str(Net(i).sizeNetwork) ' Ordered Nw'];
+end 
+
+circuitRank=[circuitRankRandom circuitRankOrdered AgNW.CircuitRank];
 p3=bar(circuitRank);
-xticklabels({[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'], '100nw', '500nw', '1000nw','2000nw'});
+xticklabels([randomLabel orderedLabel {'100nw', '500nw', '1000nw','2000nw'}]);
 ylabel('Circuit Rank');
-
-
-
 hAx=gca;            % get a variable for the current axes handle
 hT=[];              % placeholder for text object handles
 for i=1:length(p2)  % iterate over number of bar objects
     hT=[hT text(p2(i).XData+p2(i).XOffset,p2(i).YData,num2str(p2(i).YData.'), ...
         'VerticalAlignment','bottom','horizontalalign','center')];
 end
-
+hold on 
 %Average Participation Coefficient & Module z-Score
+fprintf('Figure 3 Complete \n');
+
 f4=figure;
+for i=1:plotNet
 %High PCoeff = Hubs / Central areas (Power et al., 2013)
-PCoeff=[Net(plotNet).random100.AvgAvgPCoeff cElegans.avgP human.AvgP human.PLocalHubs human.PLocalHubs human.PConnectorHubs human.PConnectorHubs Net(plotNet).ordered100.AvgAvgPCoeff mean(e100.Explore.GraphTheory.P), mean(e500.Explore.GraphTheory.P), mean(e1000.Explore.GraphTheory.P) mean(e2000.Explore.GraphTheory.P)];
-MZ=[Net(plotNet).random100.AvgAvgMZ cElegans.avgMZ human.AvgMZ human.MZHubs human.MZNonHubs human.MZHubs human.MZNonHubs Net(plotNet).ordered100.AvgAvgMZ mean(e100.Explore.GraphTheory.MZ), mean(e500.Explore.GraphTheory.MZ), mean(e1000.Explore.GraphTheory.MZ) mean(e2000.Explore.GraphTheory.MZ)];
+PCoeff=[Net(i).random100.AvgAvgPCoeff cElegans.avgP human.AvgP human.PLocalHubs human.PLocalHubs human.PConnectorHubs human.PConnectorHubs Net(i).ordered100.AvgAvgPCoeff mean(e100.Explore.GraphTheory.P), mean(e500.Explore.GraphTheory.P), mean(e1000.Explore.GraphTheory.P) mean(e2000.Explore.GraphTheory.P)];
+MZ=[Net(i).random100.AvgAvgMZ cElegans.avgMZ human.AvgMZ human.MZHubs human.MZNonHubs human.MZHubs human.MZNonHubs Net(i).ordered100.AvgAvgMZ mean(e100.Explore.GraphTheory.MZ), mean(e500.Explore.GraphTheory.MZ), mean(e1000.Explore.GraphTheory.MZ) mean(e2000.Explore.GraphTheory.MZ)];
 p4=gscatter(PCoeff,MZ);
-text(PCoeff,MZ,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],'C. Elegans Nw', 'Human Average', 'Human Connector Local Provincial Hub','Human Local Peripheral Node','Human Connector Hub','Human Satellite Connector', [num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'], '100nw Avg', '500nw Avg', '1000nw Avg','2000nw Avg'});
+text(PCoeff,MZ,{[num2str(Net(i).sizeNetwork) ' Random Nw'],'C. Elegans Nw', 'Human Average', 'Human Connector Local Provincial Hub','Human Local Peripheral Node','Human Connector Hub','Human Satellite Connector', [num2str(Net(i).sizeNetwork) ' Ordered Nw'], '100nw Avg', '500nw Avg', '1000nw Avg','2000nw Avg'},'NorthWest');
 xlabel('Average Participant Coefficient Coefficient');
 ylabel('Average Module z-Score');
 p4.MarkerEdgeColor='b';
 p4(:,1).MarkerEdgeColor='r';
 p4.LineWidth=1.5;
+hold on 
+end 
+
+fprintf('Figure 4 Complete \n');
 
 %Plot Guimera & Amaral rectangles:
-f5=guimera(network,Net,plotNet); %change network here
+f5=figure;
+for i=1:plotNet
+guimera(network,Net,plotNet); %change network here
+end 
+
+fprintf('Figure 5 Complete \n');
 
 % %Communicability
 % f6=figure;
@@ -462,16 +495,22 @@ f5=guimera(network,Net,plotNet); %change network here
 
 %Betweenness Centrality
 f7=figure;
-BC=[Net(plotNet).random100.AvgBC Net(plotNet).ordered100.AvgBC cElegans.AvgBC AgNW.AvgBC];
-stdBC=[Net(plotNet).random100.StdBC Net(plotNet).ordered100.StdBC cElegans.stdBC AgNW.StdBC];
+for i=1:plotNet
+BC=[Net(i).random100.AvgBC Net(i).ordered100.AvgBC cElegans.avgBC AgNW.AvgBC];
+stdBC=[Net(i).random100.StdBC Net(i).ordered100.StdBC cElegans.stdBC AgNW.StdBC];
 p7=bar(BC);
 hold on
 e=errorbar(BC, stdBC);
 e.LineStyle='none';
 % xlim([0.05 0.6])
 % ylim([2 16])
-xticklabels({[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'C. Elegans Nw','100nw','500nw','1000nw','2000nw'});
+xticklabels({[num2str(Net(i).sizeNetwork) 'node Random Nw'],[num2str(Net(i).sizeNetwork) 'node Ordered Nw'],'C. Elegans Nw','100nw','500nw','1000nw','2000nw'});
 ylabel('Betweenness Centrality');
+hold on 
+end 
+ 
+fprintf('Figure 6 Complete \n');
+
 
 %% SAVE GRAPHS 
 fig_dir='D:\alon_\Research\PhD\CODE\Data\Figures\Explore Analysis\Cross-Network Explore\Graph Theory\';
@@ -481,8 +520,7 @@ print(f6,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Communicability ' num2
 end
 
 %% FUNCTIONS
-function f4=guimera(network, Net,plotNet)
-f4=figure;
+function guimera(network, Net,plotNet)
 % Set up rectangles:
 xR1=[0 0.025 0.025 0];
 xR2=[0.025 0.625 0.625 0.025];
@@ -560,6 +598,7 @@ ylim([-3 8]);
 xlabel('Participant Coefficient')
 ylabel('Within-Module Degree z-Score');
 title([num2str(Net(plotNet).sizeNetwork) 'nw Network']);
+hold on 
 end
 
 
