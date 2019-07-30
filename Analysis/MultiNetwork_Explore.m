@@ -26,13 +26,17 @@ switch computer
     case 'W4PT80T2' %if on desktop at uni - Alon
         explore_location='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\';
         savePath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\Multi-Network Data\';
+        fig_dir='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Figures\Explore Analysis\Cross-Network Explore\Graph Theory\';
+
     case '' %if on linux
         explore_location='/suphys/aloe8475/Documents/CODE/Data/Explore Analysis/';
         savePath='/suphys/aloe8475/Documents/CODE/Data/Explore Analysis/Multi-Network Data/';
-        
+        fig_dir='/suphys/aloe8475/Documents/CODE/Data/Figures/Explore Analysis/Cross-Network Explore/Graph Theory/';
+
     case 'LAPTOP-S1BV3HR7'
         explore_location='D:\alon_\Research\PhD\CODE\Data\Explore Analysis\';
         savePath='D:\alon_\Research\PhD\CODE\Data\Explore Analysis\Multi-Network Data\';
+        fig_dir='D:\alon_\Research\PhD\CODE\Data\Figures\Explore Analysis\Cross-Network Explore\Graph Theory\';
         
         %case '' %--- Add other computer paths (e.g. Mike)
 end
@@ -58,7 +62,7 @@ human=humanFun();
 AgNW=AgNWFun(e100, e500, e1000, e2000);
 
 %Plot graphs
-plotAll(Net,random,ordered, human, e100, e500, e1000, e2000, AgNW, network,cElegans)
+plotAll(Net,random,ordered, human, e100, e500, e1000, e2000, AgNW, network,cElegans,fig_dir)
 
 
 %% TO DO
@@ -350,7 +354,7 @@ AgNW.AvgBC=[mean(e100.Explore.GraphTheory.BC) mean(e500.Explore.GraphTheory.BC) 
 AgNW.StdBC=[std(e100.Explore.GraphTheory.BC) std(e500.Explore.GraphTheory.BC)  std(e1000.Explore.GraphTheory.BC) std(e2000.Explore.GraphTheory.BC)];
 end
 %% Plot:
-function plotAll(Net, random, ordered, human, e100, e500, e1000, e2000, AgNW,network,cElegans)
+function plotAll(Net, random, ordered, human, e100, e500, e1000, e2000, AgNW,network,cElegans,fig_dir)
 % Small World Analysis
 f=figure;
 while 1
@@ -473,9 +477,11 @@ end
 fprintf('Figure 4 Complete \n');
 
 %Plot Guimera & Amaral rectangles:
-f5=figure;
 for i=1:plotNet
+f5(i)=figure;
 guimera(network,Net,plotNet); %change network here
+fprintf(['Figure 5 part ' num2str(i) ' Complete \n']);
+
 end 
 
 fprintf('Figure 5 Complete \n');
@@ -492,6 +498,7 @@ fprintf('Figure 5 Complete \n');
 % % ylim([2 16])
 % xticklabels({[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'});
 % ylabel('Log10 Communicability');
+fprintf('Figure 6 Complete \n');
 
 %Betweenness Centrality
 f7=figure;
@@ -509,13 +516,19 @@ ylabel('Betweenness Centrality');
 hold on 
 end 
  
-fprintf('Figure 6 Complete \n');
+fprintf('Figure 7 Complete \n');
 
 
 %% SAVE GRAPHS 
-fig_dir='D:\alon_\Research\PhD\CODE\Data\Figures\Explore Analysis\Cross-Network Explore\Graph Theory\';
-print(f5,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Guimera PC vs Module z-Score ' num2str(Net(plotNet).sizeNetwork) 'nw network.pdf']);
-print(f6,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Communicability ' num2str(Net(plotNet).sizeNetwork) 'nw network.pdf']);
+print(f,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Clustering Coefficient vs Path Length all networks.pdf']);
+print(f2,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Small World Prop all networks.pdf']);
+print(f3,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Circuit Rank all networks.pdf']);
+print(f4,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Participant Coefficient vs Module z-Score all networks.pdf']);
+for i = 1:length(f5)
+print(f5(i),'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Guimera PC vs Module z-Score ' num2str(Net(i).sizeNetwork) 'nw network.pdf']);
+end 
+% print(f6,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Communicability all networks.pdf']);
+print(f7,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Betweenness Centrality all networks.pdf']);
 
 end
 
