@@ -460,19 +460,33 @@ hold on
 fprintf('Figure 3 Complete \n');
 
 f4=figure;
-for i=1:plotNet
-%High PCoeff = Hubs / Central areas (Power et al., 2013)
-PCoeff=[Net(i).random100.AvgAvgPCoeff cElegans.avgP human.AvgP human.PLocalHubs human.PLocalHubs human.PConnectorHubs human.PConnectorHubs Net(i).ordered100.AvgAvgPCoeff mean(e100.Explore.GraphTheory.P), mean(e500.Explore.GraphTheory.P), mean(e1000.Explore.GraphTheory.P) mean(e2000.Explore.GraphTheory.P)];
-MZ=[Net(i).random100.AvgAvgMZ cElegans.avgMZ human.AvgMZ human.MZHubs human.MZNonHubs human.MZHubs human.MZNonHubs Net(i).ordered100.AvgAvgMZ mean(e100.Explore.GraphTheory.MZ), mean(e500.Explore.GraphTheory.MZ), mean(e1000.Explore.GraphTheory.MZ) mean(e2000.Explore.GraphTheory.MZ)];
+
+PRandom=[];
+POrdered=[];
+MZRandom=[];
+MZOrdered=[];
+for i = 1:plotNet
+%Circuit Rank:
+PRandom=[PRandom Net(i).random100.AvgAvgPCoeff];
+POrdered=[POrdered Net(i).ordered100.AvgAvgPCoeff];
+MZRandom=[MZRandom Net(i).random100.AvgAvgMZ];
+MZOrdered=[MZOrdered Net(i).ordered100.AvgAvgMZ];
+randomLabel{i}=[num2str(Net(i).sizeNetwork) ' Random Nw'];
+orderedLabel{i}=[num2str(Net(i).sizeNetwork) ' Ordered Nw'];
+end 
+
+PCoeff=[PRandom POrdered cElegans.avgP human.AvgP human.PLocalHubs human.PLocalHubs human.PConnectorHubs human.PConnectorHubs  mean(e100.Explore.GraphTheory.P), mean(e500.Explore.GraphTheory.P), mean(e1000.Explore.GraphTheory.P) mean(e2000.Explore.GraphTheory.P)];
+MZ=[MZRandom MZOrdered cElegans.avgMZ human.AvgMZ human.MZHubs human.MZNonHubs human.MZHubs human.MZNonHubs  mean(e100.Explore.GraphTheory.MZ), mean(e500.Explore.GraphTheory.MZ), mean(e1000.Explore.GraphTheory.MZ) mean(e2000.Explore.GraphTheory.MZ)];
+
 p4=gscatter(PCoeff,MZ);
-text(PCoeff,MZ,{[num2str(Net(i).sizeNetwork) ' Random Nw'],'C. Elegans Nw', 'Human Average', 'Human Connector Local Provincial Hub','Human Local Peripheral Node','Human Connector Hub','Human Satellite Connector', [num2str(Net(i).sizeNetwork) ' Ordered Nw'], '100nw Avg', '500nw Avg', '1000nw Avg','2000nw Avg'},'NorthWest');
+%High PCoeff = Hubs / Central areas (Power et al., 2013)
+text(PCoeff,MZ,{randomLabel{:}, orderedLabel{:}, 'C. Elegans Nw', 'Human Average', 'Human Connector Local Provincial Hub','Human Local Peripheral Node','Human Connector Hub','Human Satellite Connector', '100nw Avg', '500nw Avg', '1000nw Avg','2000nw Avg'},'NorthWest');
 xlabel('Average Participant Coefficient Coefficient');
 ylabel('Average Module z-Score');
 p4.MarkerEdgeColor='b';
 p4(:,1).MarkerEdgeColor='r';
 p4.LineWidth=1.5;
 hold on 
-end 
 
 fprintf('Figure 4 Complete \n');
 
@@ -501,10 +515,24 @@ fprintf('Figure 5 Complete \n');
 fprintf('Figure 6 Complete \n');
 
 %Betweenness Centrality
+
 f7=figure;
-for i=1:plotNet
-BC=[Net(i).random100.AvgBC Net(i).ordered100.AvgBC cElegans.avgBC AgNW.AvgBC];
-stdBC=[Net(i).random100.StdBC Net(i).ordered100.StdBC cElegans.stdBC AgNW.StdBC];
+BCRandom=[];
+BCOrdered=[];
+BCRandomstd=[];
+BCOrderedstd=[];
+for i = 1:plotNet
+%Circuit Rank:
+BCRandom=[BCRandom Net(i).random100.AvgBC];
+BCOrdered=[POrdered Net(i).ordered100.AvgBC];
+BCRandomstd=[BCRandomstd Net(i).random100.StdBC];
+BCOrderedstd=[BCOrderedstd Net(i).ordered100.StdBC];
+randomLabel{i}=[num2str(Net(i).sizeNetwork) ' Random Nw'];
+orderedLabel{i}=[num2str(Net(i).sizeNetwork) ' Ordered Nw'];
+end 
+
+BC=[BCRandom BCOrdered cElegans.avgBC AgNW.AvgBC];
+stdBC=[BCRandomstd BCOrderedstd cElegans.stdBC AgNW.StdBC];
 p7=bar(BC);
 hold on
 e=errorbar(BC, stdBC);
@@ -514,7 +542,7 @@ e.LineStyle='none';
 xticklabels({[num2str(Net(i).sizeNetwork) 'node Random Nw'],[num2str(Net(i).sizeNetwork) 'node Ordered Nw'],'C. Elegans Nw','100nw','500nw','1000nw','2000nw'});
 ylabel('Betweenness Centrality');
 hold on 
-end 
+ 
  
 fprintf('Figure 7 Complete \n');
 
