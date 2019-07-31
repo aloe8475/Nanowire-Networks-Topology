@@ -56,6 +56,7 @@ end
 
 
 %% Run Functions:
+AI(e500);
 cElegans=cElegansFun();
 human=humanFun();
 [Net, random, ordered,network]=randomOrdered(savePath,currentLocation,e100,e500,e1000,e2000);
@@ -67,38 +68,73 @@ plotAll(Net,random,ordered, human, e100, e500, e1000, e2000, AgNW, network,cEleg
 
 %% TO DO
 
-%500 Node Communicability Graph:
-% Net(1).random(1).COMM; %communicability does not change across 100 bootstraps, so we can just use #1
-% Net(1).ordered(1).COMM;
-% e100.Explore.GraphTheory.COMM;
-% e500.Explore.GraphTheory.COMM;
-% e1000.Explore.GraphTheory.COMM;
-% e2000.Explore.GraphTheory.COMM;
-
-
-%500 Node Participation Coefficient & Module z-Score
-%Plot Graph:
-
-% %   adjacency([e500.Explore.GraphView.Nodes e500.Explore.GraphView.Edges])
-%     f4=figure;
-%     PCoeff=[random100.AvgPCoeff ordered100.AvgPCoeff, e500.Explore.GraphTheory.P];
-%     p3=bar(PCoeff);
-%     xticklabels({'500node Random Nw', '500node Ordered Nw', '500nw'});
-%     ylabel('Participant Coefficient Coefficient');
-%     f5=figure;
-%     MZ=[random100.AvgMZ  ordered100.AvgMZ, e500.Explore.GraphTheory.MZ];
-%     p4=bar(MZ);
-%     xticklabels({'500node Random Nw', '500node Ordered Nw', '500nw'});
-%     ylabel('Module z-Score');
-%
-
-% Complexity
-
 %% Example AI Graph Analysis (Recurrent Neural Network)
 %     function AI()
 %     %Create Sample RNN: - NEED TO TALK TO MAC ABOUT THIS
 %     %AI.AdjMat=zeros([500 500]);
 %     end
+
+function AI(network)
+
+s=rng(2);
+temp=mnrnd(498,[0.02 0.21 0.25 0.25 0.25  0.02])
+temp2=[];
+for i =1:length(temp)
+    temp2(i)=sum(temp(1:i));
+end 
+temp2 = [1 temp2];
+B=zeros(498,498);
+C=1;
+for i = 1:length(temp)-1
+    for j = temp2(i):temp2(i+1)
+        for k = temp2(i+1):temp2(i+2)
+            B(j,k)=1;
+        end
+    end 
+end 
+
+B=B+B';
+
+[ANN.Ci,ANN.Q] = community_louvain(B,1);
+%Clustering Coefficient
+[ANN.GlobalClust,ANN.AvgLocalClust, ANN.Clust] = clustCoeff(B);
+
+%Participation Coefficient & Module z-Score
+ANN.P = participation_coef(B,ANN.Ci);
+ANN.MZ = module_degree_zscore(B, ANN.Ci);
+% Avg + Std PC + MZ:
+ANN.avgP=mean(ANN.P);
+ANN.stdP=std(ANN.P);
+ANN.avgMZ=mean(ANN.MZ);
+ANN.stdMZ=std(ANN.MZ);
+
+%Communicability:
+ANN.COMM = expm(B);
+%Avg COMM
+ANN.avgCOMM=mean(ANN.COMM);
+ANN.stdCOMM=std(ANN.COMM);
+
+
+%Betweenness Centrality:
+[ANN.BC, ANN.normBC]=betweenness_bin(B);
+%Avg:
+ANN.avgBC=mean(ANN.BC);
+ANN.stdBC=std(ANN.BC);
+
+%ANN Path Length
+ANN.Path = path_length(B);
+ANN.AvgPath=mean(ANN.Path);
+G_up=graph(B,'upper');
+G_low=graph(B,'lower');
+G=graph(B);
+
+ANN.Graph=G;
+%Circuit Rank
+ANN.CircuitRank=numedges(G) - (numnodes(G) - 1);
+ANN.SmallWorldProp=small_world_propensity(B);
+
+
+end 
 %% C-Elegans:
 function elegans=cElegansFun()
 

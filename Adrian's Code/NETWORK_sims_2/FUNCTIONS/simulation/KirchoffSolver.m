@@ -14,22 +14,21 @@ end
 idx=find(OpenFlag==0);
 
 %% fill extended matrix with electrodes
-imat=Sim.Gmat;
-imat=imat-diag(sum(imat,2));
+imat=Sim.Gmat; %conductance matrix
+imat=imat-diag(sum(imat,2)); %removing nanowires 'junctions' with themselves
 ifix=sparse(length(imat),1);
 
 for i=1:length(idx)
-    ifix(end+1)=Electrodes.Value{idx(i)}(TimeInd);
-    imat(end+1,Electrodes.PosIndex(idx(i)))=1;
-    imat(Electrodes.PosIndex(idx(i)),end+1)=1;
+    ifix(end+1)=Electrodes.Value{idx(i)}(TimeInd); %voltage of the sources
+    imat(end+1,Electrodes.PosIndex(idx(i)))=1; %setting all wires touching electrodes to 1
+    imat(Electrodes.PosIndex(idx(i)),end+1)=1; %add extra column for all the electrodes
 end
-
 
 %%solve
 
 vsols=imat\ifix;
 
-% retrieve currents
+% retrieve currents + voltages:
 
 [rows,cols,~]=find(Sim.AdjMat);
 Curr=Sim.Gmat;
@@ -56,8 +55,6 @@ end
 simout.Currents=Curr;
 simout.Voltages=vsols(1:end-length(idx));
 simout.VoltDif=voltdif;
-
-
 
 
 end
