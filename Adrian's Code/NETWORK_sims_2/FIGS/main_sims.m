@@ -547,7 +547,7 @@ SelNet=handles.Networks{IndNet};
 % Will have to figure out how to load these another time (see commented out
 % code above).
 
-Name=SelNet.Name;
+Name=[SelNet.Name '_Length_' num2str(SelNet.NetworkSettings.Length) '_Disp_' num2str(SelNet.NetworkSettings.Disp)];
 Name=strrep(Name,':','_');
 Name=strrep(Name,'/','_');
 Name=strcat(Name,'.mat');
