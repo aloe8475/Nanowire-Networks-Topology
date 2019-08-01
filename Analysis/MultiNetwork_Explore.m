@@ -56,14 +56,14 @@ end
 
 
 %% Run Functions:
-AI(e500);
+ANN=AI(e500);
 cElegans=cElegansFun();
 human=humanFun();
 [Net, random, ordered,network]=randomOrdered(savePath,currentLocation,e100,e500,e1000,e2000);
 AgNW=AgNWFun(e100, e500, e1000, e2000);
 
 %Plot graphs
-plotAll(Net,random,ordered, human, e100, e500, e1000, e2000, AgNW, network,cElegans,fig_dir)
+plotAll(Net,random,ordered, human, e100, e500, e1000, e2000, AgNW, network,cElegans,ANN,fig_dir)
 
 
 %% TO DO
@@ -74,10 +74,18 @@ plotAll(Net,random,ordered, human, e100, e500, e1000, e2000, AgNW, network,cEleg
 %     %AI.AdjMat=zeros([500 500]);
 %     end
 
-function AI(network)
+function ANN=AI(network)
+cd('../../Data/Inorganic Networks Connectomes/')
+    fprintf('Loading Artificial Neural Network Data \n');
 
+if exist('ANNGraphTheory.mat','file')
+    load('ANNGraphTheory.mat','ANN');
+else
+   
+fprintf('No ANN Data found, creating ANN Data \n');
 s=rng(2);
-temp=mnrnd(498,[0.02 0.21 0.25 0.25 0.25  0.02])
+
+temp=mnrnd(498,[0.02 0.21 0.25 0.25 0.25  0.02]);
 temp2=[];
 for i =1:length(temp)
     temp2(i)=sum(temp(1:i));
@@ -133,7 +141,8 @@ ANN.Graph=G;
 ANN.CircuitRank=numedges(G) - (numnodes(G) - 1);
 ANN.SmallWorldProp=small_world_propensity(B);
 
-
+save('ANNGraphTheory.mat','ANN');
+end 
 end 
 %% C-Elegans:
 function elegans=cElegansFun()
@@ -390,7 +399,7 @@ AgNW.AvgBC=[mean(e100.Explore.GraphTheory.BC) mean(e500.Explore.GraphTheory.BC) 
 AgNW.StdBC=[std(e100.Explore.GraphTheory.BC) std(e500.Explore.GraphTheory.BC)  std(e1000.Explore.GraphTheory.BC) std(e2000.Explore.GraphTheory.BC)];
 end
 %% Plot:
-function plotAll(Net, random, ordered, human, e100, e500, e1000, e2000, AgNW,network,cElegans,fig_dir)
+function plotAll(Net, random, ordered, human, e100, e500, e1000, e2000, AgNW,network,cElegans,ANN,fig_dir)
 % Small World Analysis
 f=figure;
 while 1
@@ -405,8 +414,8 @@ while 1
         case 2000
             plotNet=4;
     end
-    y=[Net(plotNet).random100.AvgGlobalClust cElegans.GlobalClust human.GlobalClust Net(plotNet).ordered100.AvgGlobalClust e100.Explore.GraphTheory.GlobalClust e500.Explore.GraphTheory.GlobalClust e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
-    x=[Net(plotNet).random100.AvgPath cElegans.AvgPath human.AvgPath Net(plotNet).ordered100.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
+    y=[Net(plotNet).random100.AvgGlobalClust ANN.GlobalClust cElegans.GlobalClust human.GlobalClust Net(plotNet).ordered100.AvgGlobalClust e100.Explore.GraphTheory.GlobalClust e500.Explore.GraphTheory.GlobalClust e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
+    x=[Net(plotNet).random100.AvgPath ANN.AvgPath cElegans.AvgPath human.AvgPath Net(plotNet).ordered100.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
     p=gscatter(x,y);
     hold on
     e=errorbar(x(1), y(1),Net(plotNet).random100.StdPath);
@@ -415,7 +424,7 @@ while 1
     errorbar(x(3), y(3),Net(plotNet).ordered100.StdGlobalClust,'horizontal');
     % xlim([0.05 0.6])
     % ylim([2 16])
-    text(x,y,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],'C. Elegans Nw', 'Human Nw',[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
+    text(x,y,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],'500node Artificial Neural Nw','C. Elegans Nw', 'Human Nw',[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
     ylabel('Global Clustering Coefficient');
     xlabel('Global Mean Path Length');
     p.MarkerEdgeColor='b';
@@ -455,14 +464,14 @@ fprintf('Figure 1 Complete \n');
 %Small World Prop
 f2=figure;
 for i = 1:plotNet
-x=[Net(i).random100.AvgSmallWorldProp Net(i).ordered100.AvgSmallWorldProp cElegans.SmallWorldProp AgNW.SmallWorldProp];
+x=[Net(i).random100.AvgSmallWorldProp Net(i).ordered100.AvgSmallWorldProp  ANN.SmallWorldProp cElegans.SmallWorldProp AgNW.SmallWorldProp];
 p2=bar(x);
 hold on
 e=errorbar(x(1), Net(i).random100.StdSmallWorldProp);
 e2=errorbar(x(2),Net(i).ordered100.StdSmallWorldProp);
 % xlim([0.05 0.6])
 % ylim([2 16])
-xticklabels({[num2str(Net(i).sizeNetwork) 'node Random Nw'],[num2str(Net(i).sizeNetwork) 'node Ordered Nw'],'C. Elegans Nw','100nw','500nw','1000nw','2000nw'});
+xticklabels({[num2str(Net(i).sizeNetwork) 'node Random Nw'],[num2str(Net(i).sizeNetwork) 'node Ordered Nw'],'500node Artificial Neural Nw','C. Elegans Nw','100nw','500nw','1000nw','2000nw'});
 ylabel('Small World Prop');
 hold on 
 end 
@@ -481,9 +490,9 @@ randomLabel{i}=[num2str(Net(i).sizeNetwork) ' Random Nw'];
 orderedLabel{i}=[num2str(Net(i).sizeNetwork) ' Ordered Nw'];
 end 
 
-circuitRank=[circuitRankRandom circuitRankOrdered AgNW.CircuitRank];
+circuitRank=[circuitRankRandom circuitRankOrdered ANN.CircuitRank AgNW.CircuitRank];
 p3=bar(circuitRank);
-xticklabels([randomLabel orderedLabel {'100nw', '500nw', '1000nw','2000nw'}]);
+xticklabels([randomLabel orderedLabel {'500node Artificial Neural Nw','100nw', '500nw', '1000nw','2000nw'}]);
 ylabel('Circuit Rank');
 hAx=gca;            % get a variable for the current axes handle
 hT=[];              % placeholder for text object handles
@@ -505,18 +514,27 @@ for i = 1:plotNet
 %Circuit Rank:
 PRandom=[PRandom Net(i).random100.AvgAvgPCoeff];
 POrdered=[POrdered Net(i).ordered100.AvgAvgPCoeff];
+stdPRandom=[stdPRandom Net(i).random100.StdAvgP];
+stdPOrdered=[stdPOrdered Net(i).ordered100.StdAvgP];
 MZRandom=[MZRandom Net(i).random100.AvgAvgMZ];
 MZOrdered=[MZOrdered Net(i).ordered100.AvgAvgMZ];
+stdMZRandom=[stdMZRandom Net(i).random100.StdAvgMZ];
+stdMZOrdered=[stdMZOrdered Net(i).ordered100.StdAvgMZ];
 randomLabel{i}=[num2str(Net(i).sizeNetwork) ' Random Nw'];
 orderedLabel{i}=[num2str(Net(i).sizeNetwork) ' Ordered Nw'];
 end 
 
-PCoeff=[PRandom POrdered cElegans.avgP human.AvgP human.PLocalHubs human.PLocalHubs human.PConnectorHubs human.PConnectorHubs  mean(e100.Explore.GraphTheory.P), mean(e500.Explore.GraphTheory.P), mean(e1000.Explore.GraphTheory.P) mean(e2000.Explore.GraphTheory.P)];
-MZ=[MZRandom MZOrdered cElegans.avgMZ human.AvgMZ human.MZHubs human.MZNonHubs human.MZHubs human.MZNonHubs  mean(e100.Explore.GraphTheory.MZ), mean(e500.Explore.GraphTheory.MZ), mean(e1000.Explore.GraphTheory.MZ) mean(e2000.Explore.GraphTheory.MZ)];
+PCoeff=[PRandom POrdered  ANN.avgP cElegans.avgP human.AvgP human.PLocalHubs human.PLocalHubs human.PConnectorHubs human.PConnectorHubs  mean(e100.Explore.GraphTheory.P), mean(e500.Explore.GraphTheory.P), mean(e1000.Explore.GraphTheory.P) mean(e2000.Explore.GraphTheory.P)];
+stdPCoeff=[PRandom POrdered  ANN.avgP cElegans.avgP human.AvgP human.PLocalHubs human.PLocalHubs human.PConnectorHubs human.PConnectorHubs  mean(e100.Explore.GraphTheory.P), mean(e500.Explore.GraphTheory.P), mean(e1000.Explore.GraphTheory.P) mean(e2000.Explore.GraphTheory.P)];
+stdMZ=[stdMZRandom stdMZOrdered ANN.stdMZ cElegans.stdMZ,[],[],[],[],[], std(e100.Explore.GraphTheory.MZ), std(e500.Explore.GraphTheory.MZ), std(e1000.Explore.GraphTheory.MZ) std(e2000.Explore.GraphTheory.MZ)];
+MZ=[MZRandom MZOrdered ANN.avgMZ cElegans.avgMZ human.AvgMZ human.MZHubs human.MZNonHubs human.MZHubs human.MZNonHubs  mean(e100.Explore.GraphTheory.MZ), mean(e500.Explore.GraphTheory.MZ), mean(e1000.Explore.GraphTheory.MZ) mean(e2000.Explore.GraphTheory.MZ)];
 
 p4=gscatter(PCoeff,MZ);
+e=errorbar(MZ, stdMZ);
+e2=errorbar(PCoeff,stdPCoeff);
+
 %High PCoeff = Hubs / Central areas (Power et al., 2013)
-text(PCoeff,MZ,{randomLabel{:}, orderedLabel{:}, 'C. Elegans Nw', 'Human Average', 'Human Connector Local Provincial Hub','Human Local Peripheral Node','Human Connector Hub','Human Satellite Connector', '100nw Avg', '500nw Avg', '1000nw Avg','2000nw Avg'},'NorthWest');
+text(PCoeff,MZ,{randomLabel{:}, orderedLabel{:}, '500node Artificial Neural Nw', 'C. Elegans Nw', 'Human Average', 'Human Connector Local Provincial Hub','Human Local Peripheral Node','Human Connector Hub','Human Satellite Connector', '100nw Avg', '500nw Avg', '1000nw Avg','2000nw Avg'},'NorthWest');
 xlabel('Average Participant Coefficient Coefficient');
 ylabel('Average Module z-Score');
 p4.MarkerEdgeColor='b';
@@ -567,15 +585,15 @@ randomLabel{i}=[num2str(Net(i).sizeNetwork) ' Random Nw'];
 orderedLabel{i}=[num2str(Net(i).sizeNetwork) ' Ordered Nw'];
 end 
 
-BC=[BCRandom BCOrdered cElegans.avgBC AgNW.AvgBC];
-stdBC=[BCRandomstd BCOrderedstd cElegans.stdBC AgNW.StdBC];
+BC=[BCRandom BCOrdered ANN.avgBC cElegans.avgBC AgNW.AvgBC];
+stdBC=[BCRandomstd BCOrderedstd ANN.stdBC cElegans.stdBC AgNW.StdBC];
 p7=bar(BC);
 hold on
 e=errorbar(BC, stdBC);
 e.LineStyle='none';
 % xlim([0.05 0.6])
 % ylim([2 16])
-xticklabels({[num2str(Net(i).sizeNetwork) 'node Random Nw'],[num2str(Net(i).sizeNetwork) 'node Ordered Nw'],'C. Elegans Nw','100nw','500nw','1000nw','2000nw'});
+xticklabels({[num2str(Net(i).sizeNetwork) 'node Random Nw'],[num2str(Net(i).sizeNetwork) 'node Ordered Nw'],'500node Artificial Neural Nw','C. Elegans Nw','100nw','500nw','1000nw','2000nw'});
 ylabel('Betweenness Centrality');
 hold on 
  
