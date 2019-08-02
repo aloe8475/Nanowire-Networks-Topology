@@ -19,14 +19,19 @@ SimulationOptions.TimeVector = (SimulationOptions.dt:SimulationOptions.dt:Simula
 SimulationOptions.NumberOfIterations = length(SimulationOptions.TimeVector);  
 
 %% Simulation recording options:
-SimulationOptions.ContactMode  = 'farthest';    % 'farthest' \ 'specifiedDistance' \ 'random' (the only one relevant for 'randAdjMat' (no spatial meaning)) \ 'preSet'
-SimulationOptions.ContactNodes = [9, 10]; % only really required for preSet, other modes will overwrite this
+% SimulationOptions.ContactMode  = 'farthest';    % 'farthest' \ 'specifiedDistance' \ 'random' (the only one relevant for 'randAdjMat' (no spatial meaning)) \ 'preSet'
+% SimulationOptions.ContactNodes = [9, 10]; % only really required for preSet, other modes will overwrite this
+% For Multiple Electrodes:
+SimulationOptions.NumElectrodes = input('How many electrodes would you like to use? \n');
+SimulationOptions.ContactMode  = 'preSet';    
+SimulationOptions.ContactNodes = [22, 73, 1, 50]; % Set which electrodes to put sources and drains (source, drain, source, drain)
+SimulationOptions.isSource = [1,0,1,0]; % Set which electrodes are sources and which are drains. 
 
 %% Generate Connectivity:
 Connectivity.WhichMatrix       = 'nanoWires';    % 'nanoWires' \ 'randAdjMat'
 switch Connectivity.WhichMatrix
     case 'nanoWires'
-            Connectivity.filename='AdriantoZdenka100nw.mat';
+          Connectivity.filename='AdriantoZdenka100nw.mat';
 %         Connectivity.filename = '2016-09-08-155153_asn_nw_00100_nj_00261_seed_042_avl_100.00_disp_10.00.mat';
 %         Connectivity.filename = '2016-09-08-155044_asn_nw_00700_nj_14533_seed_042_avl_100.00_disp_10.00.mat';
     case 'randAdjMat'
@@ -41,9 +46,10 @@ if strcmp(SimulationOptions.ContactMode, 'specifiedDistance')
 end
 SimulationOptions = selectContacts(Connectivity, SimulationOptions);
 
+
 %% Initialize dynamic components:
 Components.ComponentType       = 'atomicSwitch'; % 'atomicSwitch' \ 'memristor' \ 'resistor'
-Components = initializeComponents(Connectivity.NumberOfEdges,Components);
+Components = initializeComponentsAdrian(Connectivity.NumberOfNodes,Components,SimulationOptions);
 
 %% Initialize stimulus:
 Stimulus.BiasType              = 'DCandWait';           % 'DC' \ 'AC' \ 'DCandWait' \ 'Ramp'
@@ -61,10 +67,22 @@ switch Stimulus.BiasType
         Stimulus.AmplitudeMin = 0;    % (Volt)
         Stimulus.AmplitudeMax = 5;    % (Volt)
 end
-Stimulus = getStimulus(Stimulus, SimulationOptions);
+
+%SimulationOptions.isSource = [1,0,1,0]; % pass this in to getStimulus
+Stimulus = getStimulus(Stimulus, SimulationOptions); %NEED TO MODIFY TO GET ALL ELECTRODES
+
+% each column is the voltage of each electrode at each time
+Stimulus.Signal(:,2) = zeros(SimulationOptions.NumberOfIterations,1);
+Stimulus.Signal(:,3) = Stimulus.Signal(:,1);
+Stimulus.Signal(:,4) = zeros(SimulationOptions.NumberOfIterations,1);
+
+%n columns for n electrodes
 
 %% Get Equations:
-Equations = getEquations(Connectivity,SimulationOptions.ContactNodes);
+% Equations = getEquations(Connectivity,SimulationOptions.ContactNodes);
+Equations.AdjMat = Connectivity.weights;
+Equations.NumberOfEdges = Connectivity.NumberOfEdges;
+Equations.NumberOfNodes = Connectivity.NumberOfNodes;
 
 %% Initialize snapshot time stamps:
 if SimulationOptions.takingSnapshots
@@ -75,9 +93,9 @@ end
 
 %% Simulate:
 if SimulationOptions.takingSnapshots
-    [Output, SimulationOptions, snapshots] = simulateNetwork(Equations, Components, Stimulus, SimulationOptions, snapshotsIdx); % (Ohm)
+    [Output, SimulationOptions, snapshots] = simulateNetworkAdrian(Equations, Components, Stimulus, SimulationOptions, snapshotsIdx); % (Ohm)
 else % this discards the snaphots
-    [Output, SimulationOptions, snapshots] = simulateNetwork(Equations, Components, Stimulus, SimulationOptions); % (Ohm)
+    [Output, SimulationOptions, snapshots] = simulateNetworkAdrian(Equations, Components, Stimulus, SimulationOptions); % (Ohm)
 end
 
 %% Analysis and plot results:
