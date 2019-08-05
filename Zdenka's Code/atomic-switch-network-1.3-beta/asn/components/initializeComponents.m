@@ -53,7 +53,7 @@ function Components = initializeComponents(E,Components)
             Components.filamentState = zeros(E+1,1);        % (Volt*sec)
             Components.OnOrOff       = false(E+1,1);
             % parameters of filament formation\dissociation:
-            Components.setVoltage    =ones(E+1,1)*1e-2; %1e-2;    % (Volt) %% sawtooth: 0.3
+            Components.setVoltage    = ones(E+1,1)*1e-2; %1e-2;    % (Volt) %% sawtooth: 0.3
             Components.resetVoltage  = ones(E+1,1)*1e-3; %1e-3;    % (Volt) %% sawtooth: 0.01
             Components.criticalFlux  = ones(E+1,1)*1e-1; %1e-1;  % (Volt*sec)  %% sawtooth: 1e-4
             Components.maxFlux       = ones(E+1,1)*0.15; %1.5e-1 % (Volt*sec) %% sawtooth: 0.1

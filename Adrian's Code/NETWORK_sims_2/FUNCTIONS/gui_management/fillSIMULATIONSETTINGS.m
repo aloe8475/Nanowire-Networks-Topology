@@ -117,7 +117,7 @@ switch ini
         sim.SquareNW=0;
         
         sim.IniRes=5e6;
-        sim.Time=1;
+        sim.Time=4;%1;
         sim.Step=0.01;
         sim.Ron=5e3;
         sim.Roff=5e6;
@@ -133,7 +133,7 @@ switch ini
         sim.WForm=5e-9;
         sim.FactorZ=1;
         sim.WDissolve=1e-9;
-        sim.Model='HP';
+        sim.Model='Zdenka';%'HP';
         sim.Pow=0;
         
         

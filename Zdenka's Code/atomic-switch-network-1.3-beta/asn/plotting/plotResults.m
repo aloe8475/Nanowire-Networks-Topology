@@ -84,9 +84,6 @@ function plotResults(resistance,current,Stimulus)
             %set(gca,'Xtick',10.^(-20:1:20));
             grid on;
             
-            %resistance:
-            figure
-            plot(Stimulus.TimeAxis,resistance);
             % Plot spectrogram:
 %            figure('Name','Spectrogram');
 %            pspectrum(conductance,Stimulus.TimeAxis,'leakage',0.5,'TimeResolution',0.5,'OverlapPercent',60,'spectrogram');

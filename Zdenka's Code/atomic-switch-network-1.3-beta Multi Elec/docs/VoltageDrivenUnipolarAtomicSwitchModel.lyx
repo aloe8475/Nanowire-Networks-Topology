@@ -1,0 +1,355 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation skip
+\defskip smallskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Simplified model of a voltage driven unipolar atomic switch
+\end_layout
+
+\begin_layout Author
+Ido Marcus
+\end_layout
+
+\begin_layout Abstract
+\noindent
+Unipolar resistive switching was observed in Ag|PVP|Ag metal-insulator-metal
+ interfaces.
+ We suggest a simplified model that qualitatively captures the dynamics
+ of filament formation
+\backslash
+dissolution at the interface.
+ The model is intended to be used for simulation of electrical activity
+ in a network of such atomic switches.
+\end_layout
+
+\begin_layout Section
+Background
+\end_layout
+
+\begin_layout Standard
+(Yet to be written)
+\end_layout
+
+\begin_layout Section
+Model
+\end_layout
+
+\begin_layout Enumerate
+A switch has two possible resistance values:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+\begin_inset Formula $R_{\mbox{on}}$
+\end_inset
+
+ - in the presence of a conducing filament.
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Formula $R_{\mbox{off}}$
+\end_inset
+
+ - in the absence of a conducting filament.
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+A switch has two voltage scales:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+\begin_inset Formula $V_{\mbox{set}}$
+\end_inset
+
+ - above which cations migrate and gradually form a filament.
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+When 
+\begin_inset Formula $\left|V\right|>V_{\mbox{set}}$
+\end_inset
+
+, the direction of migration depends on polarity.
+\end_layout
+
+\begin_layout Enumerate
+The difference 
+\begin_inset Formula $\left|V\right|-V_{\mbox{set}}$
+\end_inset
+
+ determines the rate of migration.
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+\begin_inset Formula $V_{\mbox{reset}}$
+\end_inset
+
+ - under which the filament gradually dissolves.
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+When 
+\begin_inset Formula $\left|V\right|<V_{\mbox{reset}}$
+\end_inset
+
+, the filament dissolves regardless of polarity.
+\end_layout
+
+\begin_layout Enumerate
+The difference 
+\begin_inset Formula $V_{\mbox{reset}}-\left|V\right|$
+\end_inset
+
+ determines the rate of dissolution.
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Enumerate
+The current state of a switch is represented in a variable 
+\begin_inset Formula $\lambda$
+\end_inset
+
+ that has flux-linkage dimensions (
+\begin_inset Formula $\left[\lambda\right]=\mbox{voltage}\cdot\mbox{time}$
+\end_inset
+
+).
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+This reflects the notion that filaments form
+\backslash
+dissolve over time due to the presence
+\backslash
+absence of voltage.
+ 
+\end_layout
+
+\begin_layout Enumerate
+Positive values represent cation migration from terminal 
+\begin_inset Formula $A$
+\end_inset
+
+ towards terminal 
+\begin_inset Formula $B$
+\end_inset
+
+, and vise-versa.
+\end_layout
+
+\begin_layout Enumerate
+It can be thought of as a variable proportional to the current length of
+ the filament.
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+A switch has two flux-linkage scales:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+\begin_inset Formula $\lambda_{\mbox{crit}}$
+\end_inset
+
+ - 
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Switching events occur when 
+\begin_inset Formula $\left|\lambda\right|$
+\end_inset
+
+ passes 
+\begin_inset Formula $\lambda_{\mbox{crit}}$
+\end_inset
+
+.
+ 
+\begin_inset Formula 
+\[
+R=\begin{cases}
+R_{\mbox{on}} & \lambda>\lambda_{\mbox{crit}}\\
+R_{\mbox{off}} & \lambda<\lambda_{\mbox{crit}}
+\end{cases}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+A filament that detaches 
+\begin_inset Formula $\left(\lambda\left(t-dt\right)>\lambda_{\mbox{crit}}\,\mbox{and}\,\lambda\left(t+dt\right)<\lambda_{\mbox{crit}}\right)$
+\end_inset
+
+, shrinks quickly.
+ This reflects the instability of filament fragments in the absence voltage.
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+\begin_inset Formula $\lambda_{\mbox{strong}}$
+\end_inset
+
+ - quantifies the 
+\begin_inset Quotes eld
+\end_inset
+
+strongest
+\begin_inset Quotes erd
+\end_inset
+
+ possible filament and serves as an upper bound for 
+\begin_inset Formula $\left|\lambda\right|$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+PDE
+\end_layout
+
+\begin_layout Standard
+(Yet to be written)
+\end_layout
+
+\begin_layout Subsection
+Discrete version:
+\end_layout
+
+\begin_layout Standard
+Thus, 
+\begin_inset Formula $\lambda$
+\end_inset
+
+ is updated in the following way:
+\begin_inset Formula 
+\begin{eqnarray*}
+\lambda_{i} & \leftarrow & \begin{cases}
+\lambda_{i-1}+\left(\left|V_{i}\right|-V_{\mbox{set}}\right)\mbox{sgn}\left(V_{i}\right)\cdot\left(t_{i}-t_{i-1}\right) & \left|V_{i}\right|>V_{\mbox{set}}\\
+\lambda_{i-1} & V_{\mbox{set}}>\left|V_{i}\right|>V_{\mbox{reset}}\\
+\lambda_{i-1}-\left(V_{\mbox{reset}}-\left|V_{i}\right|\right)\mbox{sgn}\left(\lambda_{i-1}\right)\cdot\left(t_{i}-t_{i-1}\right) & V_{\mbox{reset}}>\left|V_{i}\right|
+\end{cases}\\
+\lambda_{i} & \leftarrow & \begin{cases}
+\min\left(\lambda_{i},\lambda_{\mbox{strong}}\right) & \lambda_{i}>0\\
+\max\left(\lambda_{i}-\lambda_{\mbox{strong}}\right) & \lambda_{i}<0
+\end{cases}\\
+\left(\lambda_{i}<\lambda_{\mbox{crit}}\right) & \wedge & \left(\lambda_{i-1}>\lambda_{\mbox{crit}}\right)\\
+ & \Downarrow\\
+\lambda_{i} & \leftarrow & \frac{\lambda_{i}}{\mbox{some constant}}
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Values
+\end_layout
+
+\begin_layout Standard
+Resistance values are based on literature.
+ Other values are loosely based on literature.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{eqnarray*}
+R_{\mbox{on}} & \sim & 10^{4}\Omega\\
+R_{\mbox{off}} & \sim & 10^{7}\Omega\\
+V_{\mbox{set}} & \sim & 10^{-2}\mbox{V}\\
+V_{\mbox{reset}} & \sim & 10^{-3}\mbox{V}\\
+\lambda_{\mbox{crit}} & \sim & 10^{-2}\mbox{V}\cdot\mbox{sec}\\
+\lambda_{\mbox{strong}} & \sim & 5\cdot10^{-2}\mbox{V}\cdot\mbox{sec}
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

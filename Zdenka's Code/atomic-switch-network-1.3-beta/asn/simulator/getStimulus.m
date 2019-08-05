@@ -88,13 +88,9 @@ function Stimulus = getStimulus(Stimulus, SimulationOptions)
             % Standard boxcar:
             %Stimulus.Signal = Stimulus.AmplitudeOn*ones(size(Stimulus.TimeAxis));
             % rectangular pulse train:
-            
-            Stimulus.Signal = max(Stimulus.AmplitudeOff,Stimulus.AmplitudeOn*square(1*pi*Stimulus.TimeAxis)); %change '1' to change the periodicity/frequency of the square wave
-            % 2 or Higher --> STP 
-            % Lower than 2 --> LTP
-            
+            Stimulus.Signal = max(Stimulus.AmplitudeOff,Stimulus.AmplitudeOn*square(1*pi*Stimulus.TimeAxis));
             % sawtooth (for I-V plots):
-%             Stimulus.Signal = Stimulus.AmplitudeOn*sawtooth(2*pi*1.0*(Stimulus.TimeAxis-0.75/10.0) , 0.5);
+            %Stimulus.Signal = Stimulus.AmplitudeOn*sawtooth(2*pi*1.0*(Stimulus.TimeAxis-0.75/10.0) , 0.5);
 %            % Walsh functions:
 %            Stimulus.Signal = max(Stimulus.AmplitudeOff,Stimulus.AmplitudeOn*sign(cos(8*pi*Stimulus.TimeAxis).*sin(2*pi*Stimulus.TimeAxis))); % Walsh9
 %            Stimulus.Signal = max(Stimulus.AmplitudeOff,Stimulus.AmplitudeOn*sign(cos(2*pi*Stimulus.TimeAxis).*cos(4*pi*Stimulus.TimeAxis)));
@@ -105,7 +101,7 @@ function Stimulus = getStimulus(Stimulus, SimulationOptions)
 %            Stimulus.Signal = Stimulus.AmplitudeOff*ones(size(Stimulus.TimeAxis));
 %            Stimulus.Signal(Stimulus.TimeAxis >= 5) = max( Stimulus.AmplitudeOff, exp( -1.5*((Stimulus.TimeAxis(Stimulus.TimeAxis >= 5)/5)- 1) )*Stimulus.AmplitudeOn );
             %
-            Stimulus.Signal(Stimulus.TimeAxis > Stimulus.OffTime) = Stimulus.AmplitudeOff; %this defines the point at which we turn off the input
+            Stimulus.Signal(Stimulus.TimeAxis > Stimulus.OffTime) = Stimulus.AmplitudeOff;
         case 'Ramp'
             Stimulus.Signal = linspace(Stimulus.AmplitudeMin, Stimulus.AmplitudeMax, length(Stimulus.TimeAxis))';
         case 'Custom'
