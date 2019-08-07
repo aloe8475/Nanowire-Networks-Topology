@@ -52,7 +52,7 @@ if load_data_question~='a'
         networkNum=input(['Which Network # do you want to select for Training? 1 - ' num2str(length(network)) '\n']);
         simNum=currentSimulation;%input(['Which Simulation # do you want to select for Training? 1 - '  num2str(network(networkNum).numTrainingSims) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
     else
-        networkNum=input(['Which Network # do you want to explore? 1 - ' num2str(length(network)) '\n']);
+        networkNum=1;%input(['Which Network # do you want to explore? 1 - ' num2str(length(network)) '\n']);
         simNum=currentSimulation;%input(['Which Simulation # do you want to explore? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
     end
 end
@@ -63,7 +63,7 @@ else
     currentSim=simulations(simNum);
 end
 
-fprintf(['Simulation: ' network(networkNum).Name currentSim.Name ' selected \n\n\n']);
+% fprintf(['Simulation: ' network(networkNum).Name currentSim.Name ' selected \n\n\n']);
 
 
 %% Analysis:
@@ -85,12 +85,12 @@ while i == 1
         i=i+1;
     elseif analysis_type=='e'
         %% Exploratary analysis of simulation
-        Explore{currentSimulation}=explore_simulation(currentSim,network,network_load,simNum,currentPath,currentSimulation,simulations);
+        [Explore{currentSimulation},threshold{currentSimulation}]=explore_simulation(currentSim,network,network_load,simNum,currentPath,currentSimulation,simulations);
         %% Saving Explore
         if currentSimulation==length(simulations)
         save_state=lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
         if save_state=='y'
-            save_explore(Explore{currentSimulation},network(networkNum),network_load,currentPath,simNum);
+            save_explore(Explore,network(networkNum),network_load,currentPath,simNum,threshold,simulations);
             i=i+1; %get out of while loop this loop finishes
         end
         end 
@@ -114,6 +114,7 @@ while i == 1
     % -------------------------------
     % -------------------------------
 end 
+progressBar(currentSimulation,length(simulations));
 end 
 
 %--------------------------------------------------------------------------
@@ -163,7 +164,7 @@ cd(currentPath);
 end
 
 %Exploring Functions:
-function Explore = explore_simulation(Sim,network,network_load,simNum,currentPath,currentSimulation,simulations)
+function [Explore,threshold] = explore_simulation(Sim,network,network_load,simNum,currentPath,currentSimulation,simulations)
 
 % IMPORTANT:
 % Threshold = Degree of greater than 1
@@ -232,18 +233,19 @@ end
 %     ylabel('Conductance');
 
 %Choose a time to Explore Simulation:
-IndexTime=100;%input(['What Timestamp do you want to analyse? 1-' num2str(size(Sim.Data,1)) '\n']); %CHOOSE TIMESTAMP
+IndexTime=size(Sim.Data.Currents,1); %choose the last timestamp 
+%input(['What Timestamp do you want to analyse? 1-' num2str(size(Sim.Data,1)) '\n']); %CHOOSE TIMESTAMP
 
 %% Network View
 % Function that plots network view of current and resistance
 [f2, f3, Adj, NumEl, Explore] = network_view(Sim,IndexTime, NodeList);
-fprintf('Network Analysis Complete \n');
+% fprintf('Network Analysis Complete \n');
 
 %% Overlay Graph Theory:
 % -----------------------------
 %Threshold
 [Graph, binarise_network]=graph_analysis(network,network_load,Sim,IndexTime);
-fprintf('Graph Analysis Complete \n');
+% fprintf('Graph Analysis Complete \n');
 %Threshold graph degree:
 if binarise_network=='y'
     threshold_network='t';
@@ -251,7 +253,7 @@ else
     threshold_network=lower(input('Do you want to plot the entire Graph or the Thresholded Graph (>1 Degree)? g - entire, t - threshold \n','s'));
 end
 if threshold_network=='t'
-    threshold=Graph.DEG>1; %greater than 1 degree threshold
+    threshold=Graph.DEG>0; %greater than 0 degree threshold
     Graph.networkThreshold=Graph.AdjMat(threshold,threshold); %applying degree threshold
     G=graph(Graph.networkThreshold);
     node_indices=find(threshold==1); %find nodes with threshold == 1
@@ -262,19 +264,19 @@ end
 %% Graph View
 % Function that plots graphical view of current, voltage and resistance
 if threshold_network=='t'
-    [f4, f5, f6, G, Adj, Adj2, Explore, highlightElec, new_electrodes] = graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold, drain_exist);
+    [f4, f5, f6, G, Adj, Adj2, Explore, highlightElec, new_electrodes] = graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold, drain_exist,node_indices);
 else
-    [f4, f5, f6, G, Adj, Explore, highlightElec, new_electrodes] = graph_view(Sim,IndexTime,Explore,G, threshold_network,drain_exist);
+    [f4, f5, f6, G, Adj, Explore, highlightElec, new_electrodes] = graph_view(Sim,IndexTime,Explore,G, threshold_network,drain_exist,node_indices);
 end
 %% Graph Theory View
 % Function that plots graph theory overlayed on graph view of currents
 if threshold_network=='t'
     [f7, f8, f9, f10, f11, f12,f13,f14, Explore,sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj,Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices,drain_exist);
-    fprintf('Graph Theory Complete \n');
+%     fprintf('Graph Theory Complete \n');
     
 else
     [f7, f8, f9, f10, f11, f12,f13,f14, Explore, sourceElec, drainElec]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore, Graph, highlightElec, new_electrodes,drain_exist);
-    fprintf('Graph Theory Complete \n');
+%     fprintf('Graph Theory Complete \n');
 end
 
 %Biograph view
@@ -408,16 +410,20 @@ if save_explore_plots=='y'
         print(f14,'-painters','-dpdf','-bestfit','-r600',[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_GraphView_ShortestPath_Overlay_Cluster_Timestamp' num2str(IndexTime) '.pdf']);        
            end
 end
+else
+    close all
 end
+
 end 
-function save_explore(Explore,network,network_load,currentPath,simNum)
+
+function save_explore(Explore,network,network_load,currentPath,simNum,threshold,Sim)
 cd(currentPath);
 save_directory='..\Data\Explore Analysis\';
 if strcmp(network_load,'z')%Zdenka Code:
     save([save_directory 'Zdenka_' num2str(network.number_of_wires) 'nw_Exploration_Analysis_' date],'Explore');
 elseif strcmp(network_load,'a') %adrian code
     network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
-    save([save_directory 'Adrian_' num2str(network.Name) '_Sim_' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Exploration_Analysis_ Timestamp_' num2str(Explore.IndexTime) '_' date],'Explore');
+    save([save_directory 'Adrian_' num2str(network.Name) '_Sim_' num2str(simNum) '_LastSim_SourceElectrode_' num2str(Explore{simNum}.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore{simNum}.GraphView.ElectrodePosition(2)) '_Exploration_Analysis_ Timestamp_' num2str(Explore{simNum}.IndexTime) '_' date],'Explore','threshold','network','Sim');
 end
 end
 
@@ -437,38 +443,40 @@ elseif strcmp(network_load,'a') %adrian code
         %what we are doing here is creating a matrix of 0 and 1 (high and
         %low resistence), so that we can plot ONLY those nodes/edges that
         %have low resistence and are relevant.
-        fprintf('Binarising... \n');
+%         fprintf('Binarising... \n');
         a= full(currentSim.Data.Rmat{IndexTime});
         a(a==5000)=1; %if resistance is low, we make it 1 (on)
         a(a==5000000)=0;  %if it is high we make it 0 (off)
         net_mat=a;
         Graph.binarised='Yes - Using Resistance';
-        fprintf('Binarisation Complete \n');
+%         fprintf('Binarisation Complete \n');
     else
         fprintf('Binarising... \n');
         net_mat=currentSim.SelLayout.AdjMat; %use standard adjacency matrix
         Graph.binarised='No';
-        fprintf('Binarisation Complete \n');
+%         fprintf('Binarisation Complete \n');
     end
     %    net_mat=full(simulations(simNum).Data.AdjMat{IndexTime}); %this gives an adj matrix for the network used for a chosen simulation at a specific timestamp
 end
+logicalAdj=logical(net_mat);
+Graph.BinarisedCurrents=currentSim.Data.Currents{IndexTime}(logicalAdj);
 
 %Global efficiency --> 1/characteristic path length, averaged over the whole network. An estimate of how integrated the network is.
 % & Distance Matrix
 %The distance matrix contains lengths of shortest paths between all pairs of nodes
 [Graph.Distance, Graph.GE] = efficiency_bin(net_mat,0);
-fprintf('Global Efficiency Complete \n');
+% fprintf('Global Efficiency Complete \n');
 
 %Topological features will allow us to understand whether it was good or
 %bad for classification.
 
 %Local efficiency --> 1/characteristic path length, at each node
 [localDistance, Graph.LE]= efficiency_bin(net_mat,1);
-fprintf('Local Efficiency Complete \n');
+% fprintf('Local Efficiency Complete \n');
 
 % Diameter
 Graph.Diameter=diameter(net_mat);
-fprintf('Diameter Complete \n');
+% fprintf('Diameter Complete \n');
 
 % Density
 %Network Density:
@@ -476,7 +484,7 @@ fprintf('Diameter Complete \n');
 % divided by the number of potential edges.
 % I.e., the percentage of possible connections that actually exist.
 Graph.Density=density_und(net_mat);
-fprintf('Density Complete \n');
+% fprintf('Density Complete \n');
 
 %Betweeness Centrality
 Graph.BC=betweenness_bin(net_mat);
@@ -495,7 +503,7 @@ Graph.BC=betweenness_bin(net_mat);
 
 %communicability --> an estimate of the ease with which each pair of nodes can connect in the network
 Graph.COMM = expm(net_mat);
-fprintf('Communicability Complete \n');
+% fprintf('Communicability Complete \n');
 
 %Clustering Coefficient
 [Graph.GlobalClust,Graph.AvgLocalClust, Graph.Clust] = clustCoeff(net_mat);
@@ -503,7 +511,7 @@ fprintf('Communicability Complete \n');
 % Graph.GlobalC1ust = number of triangle loops / number of connected triples
 % Graph.AvgLocalClust = the average local clustering, where Ci = (number of triangles connected to i) / (number of triples centered on i)
 % Graph.Clust = a 1xN vector of clustering coefficients per node (where mean(C) = C2)
-fprintf('Clustering Coefficient Complete \n');
+% fprintf('Clustering Coefficient Complete \n');
 
 
 % Graph.Distance=distance_bin(net_mat);
@@ -514,7 +522,7 @@ Graph.Path = path_length(net_mat);
 Graph.CharPath=charpath(Graph.Distance);
 %Average Path Length
 Graph.AvgPath=mean(Graph.Path);
-fprintf('Path Length Complete \n');
+% fprintf('Path Length Complete \n');
 
 %Connectivity Magnitude Measure of the network:
 %Average number of connections divided by maximum number of possible connections 
@@ -523,34 +531,34 @@ Graph.ConnectivityMagnitude=Graph.AvgPath/(length(net_mat)*length(net_mat));
 
 %Small World Propensity:
 Graph.SmallWorldProp=small_world_propensity(net_mat);
-fprintf('Small World Propensity Complete \n');
+% fprintf('Small World Propensity Complete \n');
 
 %modularity --> an estimate of how segregated the network is
 [Graph.Ci,Graph.Q] = community_louvain(net_mat,1);
 %The Ci term is the module assignment for each node
 %The Q term is the 'quality' of the partition --> how modular the network is.
 % -- this should tell us how well we can classify
-fprintf('Ci & Q Complete \n');
+% fprintf('Ci & Q Complete \n');
 
 %Modularity:
 Graph.Modularity=modularity_und(full(net_mat));
 %The optimal community structure is a subdivision of the network into nonoverlapping groups of nodes in a way that maximizes the number of within-group edges, and minimizes the number of between-group edges.
 %The modularity is a statistic that quantifies the degree to which the network may be subdivided into such clearly delineated groups
-fprintf('Modularity Complete \n');
+% fprintf('Modularity Complete \n');
 
 %degree --> a count of how many edges are connected to each node
 Graph.DEG = degrees_und(net_mat);
-fprintf('Degree Complete \n');
+% fprintf('Degree Complete \n');
 
 %participation coefficient --> an estimate of how integrative a node is
 Graph.P = participation_coef(net_mat,Graph.Ci);
 %Ci from 'community_louvain.m'
-fprintf('Participation Coefficient Complete \n');
+% fprintf('Participation Coefficient Complete \n');
 
 %module degree z-score --> an estimate of how segregated a node is
 Graph.MZ = module_degree_zscore(net_mat,Graph.Ci);
 %Ci from 'community_louvain.m'
-fprintf('Module Z Score Complete \n');
+% fprintf('Module Z Score Complete \n');
 
 %save Adj Matrix
 Graph.AdjMat=net_mat;

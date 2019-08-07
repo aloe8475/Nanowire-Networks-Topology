@@ -1,7 +1,7 @@
 %% Graph View
 % This function plots graph parameters such as current, voltage and
 % resistance for the chosen Sim at the given timestamp (IndexTime)
-function [f3, f4, f5, G, Adj, Adj2, Explore,  highlightElec, new_electrodes]= graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold, drain_exist)
+function [f3, f4, f5, G, Adj, Adj2, Explore,  highlightElec, new_electrodes]= graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold, drain_exist,node_indices)
 if threshold_network~='t'
     return
     fprintf('Error in graph_view_threshold - you should not be seeing this');
@@ -9,7 +9,7 @@ end
 %Plot Graph
 f3=figure;
 currAx=gca;
-p=plot(currAx,G);
+p=plot(currAx,G); %G = binarised graph
 % set(currAx,'Color',[0.35 0.35 0.35]); %change background
 set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
 p.NodeColor='red';
@@ -19,14 +19,18 @@ p.NodeLabel={};
 %% Plot Currents
 p.MarkerSize=1.5;
 p.LineWidth=1.5;
-Adj=(Sim.Data.AdjMat{IndexTime});%we need to keep a copy of the original Adj matrix (unthresholded) to find all the currents
-Adj2=Adj(threshold,threshold);
+Adj=(Sim.Data.AdjMat{IndexTime});%we need to keep a copy of the original Adj matrix (unthresholded) to find all the currents - this is the NON BINARISED Adj matrix
+Adj2=Adj(threshold,threshold); %this is a different adj mat (unbinarised) compared to Graph.AdjMat (binarised by resistance)
 if ~drain_exist %if no drains
     currs=log10(abs(Sim.Data.Currents{IndexTime}));
 else
-    currs=abs(Sim.Data.Currents{IndexTime});
+    currs=abs(Sim.Data.Currents{IndexTime}); %Graph.BinarisedCurrents);
+
 end
-currs=currs(threshold,threshold);
+
+%% What we are doing here is finding the adj matrix, and finding the edges that have current flowing through them.
+%Find currents
+currs=currs(threshold,threshold); %currs(node_indices);%
 [j,i,~]=find(tril(Adj2));
 cc=zeros(1,length(j));
 for k=1:length(j)
@@ -37,12 +41,14 @@ end
 [j,i,~]=find(tril(Adj2));
 cc2=zeros(1,length(j));
 
+%Find edges in Adj matrix that have current in them
 for k=1:length(j)
     cc2(k)=Graph.networkThreshold(i(k),j(k));
 end
-
-%Find Graph.COMM in network
+% remove edges in adj matrix that don't have current
 cc3=cc(logical(cc2));
+
+
 clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
 p.EdgeCData=cc3;
 colormap(currAx,gcurrmap);%gcurrmap

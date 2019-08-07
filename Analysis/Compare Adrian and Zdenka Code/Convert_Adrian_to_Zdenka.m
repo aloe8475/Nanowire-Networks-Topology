@@ -4,7 +4,7 @@ clear all
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2' %if on desktop at uni - Alon
-                Sim='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only\Explore\100nw_03_25_2019\Subgraph Communicability\Net_Sx_20_NoW100_03_25-2019_11_23_38_Zdenka_Square_9SimsOnly_4_Sec_2Electrodes_Vmax_0.75_24-Jul-2019.mat'
+                Sim='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only\Explore\100nw_03_25_2019 - size 20 length6 disp0\Net_Sx_20_NoW100_03_25-2019_11_23_38_Zdenka_Square_9SimsOnly_4_Sec_2Electrodes_Vmax_0.75_24-Jul-2019.mat'
                 Net='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Net_Sx_20_NoW100_03_25-2019_11_23_38_.mat';
      
     case '' %if on linux
