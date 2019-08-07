@@ -8,7 +8,7 @@ function snapshotFigure = snapshotToFigure(snapshot, contacts, connectivity, wha
 % ARGUMENTS: 
 % snapshot - A struct containing the voltage, resistance, etc. of the 
 %            electrical components in the network, at a particular 
-%            timestamp.
+%            timestam
 % contact - the indices of the two wires that serve as contacts.
 % connectivity - A structure with the adjacency matrix as well as the
 %                spatial information of the wires (location, orientation
@@ -30,7 +30,7 @@ function snapshotFigure = snapshotToFigure(snapshot, contacts, connectivity, wha
 %                                   [10^axesLimits.DissipationCbar(1),
 %                                   10^axesLimits.DissipationCbar(2)]     
 %                                   (in pW).
-%                .CurrentArrowSacling - a common factor that scales all the
+%                .CurrentArrowScaling - a common factor that scales all the
 %                                       current arrows.
 %                .VoltageCbar - limits of the voltage colorbar. for
 %                               (positive DC bias that should be [0,Vext].
@@ -173,8 +173,8 @@ function snapshotFigure = snapshotToFigure(snapshot, contacts, connectivity, wha
         numSectionsDone = 0;
         
         % Calculate currents:
-        currents = 1e6*(snapshot.Voltage(1:end-1))./(snapshot.Resistance(1:end-1)); % (nA)
-        
+        currents = 1e6*(snapshot.Voltage(1:end))./(snapshot.Resistance(1:end)); % (nA)
+        currents=full(currents);
         % Calculate wire angles ([-pi/2,pi/2]):
                 % first [0,pi]
         wireAngles = mod(atan2(connectivity.WireEnds(:,4)-connectivity.WireEnds(:,2), connectivity.WireEnds(:,3)-connectivity.WireEnds(:,1)),pi);
@@ -208,7 +208,7 @@ function snapshotFigure = snapshotToFigure(snapshot, contacts, connectivity, wha
                 % from wires with lower index to wires with higher index, 
                 % and that in the field EdgeList the upper row always 
                 % contains lower indices. 
-            wireCurrents = cumsum(currents(relevantEdges(1:end-1)).*direction(1:end-1)'); 
+            wireCurrents = cumsum(currents(relevantEdges(1:end)).*direction(1:end)'); 
                 % The first element in wireCurrents is the current in the
                 % section between relevantEdge(1) and relevantEdge(2). We
                 % assume that between relevantEdge(1) and the closest wire
@@ -223,8 +223,8 @@ function snapshotFigure = snapshotToFigure(snapshot, contacts, connectivity, wha
             % Accumulate for a quiver (vector field) plot:
             first = numSectionsDone + 1;
             last = first + length(wireCurrents) - 1;
-            sectionCenterX(first:last)  = mean([connectivity.EdgePosition(relevantEdges(1:end-1),1), connectivity.EdgePosition(relevantEdges(2:end),1)],2);
-            sectionCenterY(first:last)  = mean([connectivity.EdgePosition(relevantEdges(1:end-1),2), connectivity.EdgePosition(relevantEdges(2:end),2)],2);
+            sectionCenterX(first:last)  = mean([connectivity.EdgePosition(relevantEdges(1:end),1), connectivity.EdgePosition(relevantEdges(2:end),1)],2);
+            sectionCenterY(first:last)  = mean([connectivity.EdgePosition(relevantEdges(1:end),2), connectivity.EdgePosition(relevantEdges(2:end),2)],2);
             sectionCurrentX(first:last) = cos(wireAngles(currWire))*wireCurrents;
             sectionCurrentY(first:last) = sin(wireAngles(currWire))*wireCurrents;
             numSectionsDone = last;
@@ -269,31 +269,54 @@ function snapshotFigure = snapshotToFigure(snapshot, contacts, connectivity, wha
         end
         
         % Plot current arrows:
-        quiver(sectionCenterX,sectionCenterY,sectionCurrentX/axesLimits.CurrentArrowSacling,sectionCurrentY/axesLimits.CurrentArrowSacling,0,'Color','w','LineWidth',1);
+        quiver(sectionCenterX,sectionCenterY,sectionCurrentX/axesLimits.CurrentArrowScaling,sectionCurrentY/axesLimits.CurrentArrowScaling,0,'Color','w','LineWidth',1);
         %quiver(sectionCenterX,sectionCenterY,sectionCurrentX,sectionCurrentY,'Color','w','LineWidth',1);
     end
-    
+
+ if whatToPlot.Currents
+            % Calculate currents:
+            currents = 5e3*full(snapshot.Voltage(1:end))./(snapshot.Resistance(1:end)); % (nA)
+
+            XData=connectivity.EdgePosition(:,1);
+            YData=connectivity.EdgePosition(:,2);
+            %Lengths of quiver vectors
+            sectionCurrentX = (XData(connectivity.EdgeList(2,:)) -  XData(connectivity.EdgeList(1,:))).*currents'/axesLimits.CurrentArrowScaling;
+            sectionCurrentY = (YData(connectivity.EdgeList(2,:)) -  YData(connectivity.EdgeList(1,:))).*currents'/axesLimits.CurrentArrowScaling;          
+
+            %Positions of Current vectors. Centre of quivers are at the centre of edges
+            sectionCentreX  = (XData(connectivity.EdgeList(1,:)) +  XData(connectivity.EdgeList(2,:)))/2 - sectionCurrentX/2;
+            sectionCentreY  = (YData(connectivity.EdgeList(1,:)) +  YData(connectivity.EdgeList(2,:)))/2 - sectionCurrentY/2;
+            %sectionCentreX(1)
+            quiver(sectionCentreX,sectionCentreY,sectionCurrentX,sectionCurrentY,0,'Color','w','LineWidth',1.5);
+end
+%     
     %% contacts:   
     if whatToPlot.Contacts
-        if whatToPlot.Currents
-            scatter([sourcePoint(1),drainPoint(1)],[sourcePoint(2),drainPoint(2)],200,[[0 1 0];[1 0 0]],'filled','h');
-            sourceTextPosition = sourcePoint;
-            drainTextPosition  = drainPoint;
-        else
+       
+%            if currWire == contacts(1)
+%                         sourcePoint = contactEnd;
+%                     else
+%                         drainPoint  = contactEnd;
+%                     end
+%         if whatToPlot.Currents
+%             scatter([sourcePoint(1),drainPoint(1)],[sourcePoint(2),drainPoint(2)],200,[[0 1 0];[1 0 0]],'filled','h');
+%             sourceTextPosition = sourcePoint;
+%             drainTextPosition  = drainPoint;
+%         else
             line([connectivity.WireEnds(contacts(1),1),connectivity.WireEnds(contacts(1),3)],[connectivity.WireEnds(contacts(1),2),connectivity.WireEnds(contacts(1),4)],'Color','g','LineWidth',0.2)
             line([connectivity.WireEnds(contacts(2),1),connectivity.WireEnds(contacts(2),3)],[connectivity.WireEnds(contacts(2),2),connectivity.WireEnds(contacts(2),4)],'Color','r','LineWidth',0.2)
             sourceTextPosition = connectivity.VertexPosition(contacts(1),:);
             drainTextPosition  = connectivity.VertexPosition(contacts(2),:);
-        end
+%         end
         text(sourceTextPosition(1), sourceTextPosition(2), '  (1)',  'Color', 'g', 'FontSize', 16);
         text(drainTextPosition(1),  drainTextPosition(2),  '  (2)',  'Color', 'r', 'FontSize', 16);
     end
     
     %% title, axes labels and limits:
-    title(sprintf('t=%.2f (sec)', snapshot.Timestamp));
-    xlabel('x (\mum)');
-    ylabel('y (\mum)');
-    shoulder = 800;
-    axis([-shoulder,connectivity.GridSize(1)+shoulder,-shoulder,connectivity.GridSize(2)+shoulder]);
-    axis square;
+%     title(sprintf('t=%.2f (sec)', snapshot.Timestamp));
+%     xlabel('x (\mum)');
+%     ylabel('y (\mum)');
+%     shoulder = 800;
+%     axis([-shoulder,connectivity.GridSize(1)+shoulder,-shoulder,connectivity.GridSize(2)+shoulder]);
+%     axis square;
 end

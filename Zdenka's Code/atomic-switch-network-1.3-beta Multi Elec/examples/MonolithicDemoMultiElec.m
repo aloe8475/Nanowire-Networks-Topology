@@ -14,7 +14,7 @@ SimulationOptions.onlyGraphics    = false; % true \ false (no analysis is done a
 %% Simulation general options:
 SimulationOptions.seed = s;    % save
 SimulationOptions.dt = 1e-3;   % (sec)
-SimulationOptions.T  = 2;    % (sec) duration of simulation
+SimulationOptions.T  = 1;    % (sec) duration of simulation
 SimulationOptions.TimeVector = (SimulationOptions.dt:SimulationOptions.dt:SimulationOptions.T)';
 SimulationOptions.NumberOfIterations = length(SimulationOptions.TimeVector);  
 
@@ -110,16 +110,16 @@ if SimulationOptions.takingSnapshots
     % What to plot:
     whatToPlot = struct(...
                         'Nanowires',    true, ...
-                        'Contacts',     false, ...
+                        'Contacts',     true, ...
                         'Dissipation',  true, ...
-                        'Currents',     false, ...
+                        'Currents',     false, ... %need to fix this
                         'Voltages',     true  ...
                         );
     
                     
     % Uniform scales:
     axesLimits.DissipationCbar = [0,5]; % (1pW*10^0 : 1pW*10^5)
-    axesLimits.CurrentArrowSacling = 0.25;
+    axesLimits.CurrentArrowScaling = 100000000;
     switch Stimulus.BiasType
         case 'DC'
             if Stimulus.Signal(1) > 0
