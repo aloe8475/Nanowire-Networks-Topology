@@ -4,8 +4,10 @@
 
 function [f6, f7, f8, f9, f10, f11, f12,f13, Explore, sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj, Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices,drain_exist)
 %% Find Source and Drain Electrodes:
+
+
 for i = 1:length(new_electrodes)
-    electrodes_cell(i)=new_electrodes(i).Name;
+    electrodes_cell(i)=new_electrodes(i).Name;%% ALON TO FIX  06/08/19
 end
 
 sourceIndex = find(contains(electrodes_cell,'Source')); %find index of electrodes that are source electrodes

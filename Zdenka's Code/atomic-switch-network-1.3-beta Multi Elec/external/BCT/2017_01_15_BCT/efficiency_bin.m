@@ -1,4 +1,4 @@
-function E=efficiency_bin(A,local)
+function [D, E]=efficiency_bin(A,local)
 %EFFICIENCY_BIN     Global efficiency, local efficiency.
 %
 %   Eglob = efficiency_bin(A);
@@ -44,8 +44,8 @@ if exist('local','var') && local            %local efficiency
     for u=1:n
         V=find(A(u,:)|A(:,u).');            %neighbors
         sa=A(u,V)+A(V,u).';                 %symmetrized adjacency vector
-        e=distance_inv(A(V,V));             %inverse distance matrix
-        se=e+e.';                           %symmetrized inverse distance matrix
+        D=distance_inv(A(V,V));             %inverse distance matrix
+        se=D+D.';                           %symmetrized inverse distance matrix
         numer=sum(sum((sa.'*sa).*se))/2;    %numerator
         if numer~=0
             denom=sum(sa).^2 - sum(sa.^2);  %denominator
@@ -53,8 +53,8 @@ if exist('local','var') && local            %local efficiency
         end
     end
 else                                        %global efficiency
-    e=distance_inv(A);
-    E=sum(e(:))./(n^2-n);
+    D=distance_inv(A);
+    E=sum(D(:))./(n^2-n);
 end
 
 
