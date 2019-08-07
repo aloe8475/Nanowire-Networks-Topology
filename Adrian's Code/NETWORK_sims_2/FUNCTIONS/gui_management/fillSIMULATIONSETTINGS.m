@@ -138,7 +138,7 @@ switch ini
         
         
         sim.ElectrodesInfo={};
-        sim.Vmax=1;
+        sim.Vmax=0.25;
         sim.Vmin=1e-3;
         sim.NoC=1;
         sim.Frequency=0;

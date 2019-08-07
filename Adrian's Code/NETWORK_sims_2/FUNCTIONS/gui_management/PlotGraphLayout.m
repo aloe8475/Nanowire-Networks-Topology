@@ -4,7 +4,7 @@ function PlotGraphLayout(currAx,NodeList,Sim,type,Status,IndexTime,varargin)
 glay=varargin{1};
 Layout=Sim.SelLayout;
 G=Layout.SelGraph;
-Adj=(Layout.AdjMat);
+Adj=(Layout.AdjMat); %adj mat of the simulation
 
 if ~isequal(Status,'redraw')
     
