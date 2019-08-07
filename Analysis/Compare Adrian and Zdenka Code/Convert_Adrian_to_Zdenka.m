@@ -37,6 +37,8 @@ yc=(ya+yb)/2;
 wire_distances=pdist2(xc',yc');
 %Adj Mat
 adj_matrix=LayoutSim.AdjMat;
+temp=largestcomponent(adj_matrix);
+adj_matrix=adj_matrix(temp,temp); %find largest connected component
 
 %Number of Wires
 number_of_wires=length(xa);
@@ -65,12 +67,12 @@ number_of_wires=length(xa);
 
 % Connectivity Edge Position for Network with Simulation
 xi=triu(LayoutSim.CX);
-% xi=xi(adj_matrix~=0);
-% xi=xi(xi~=0)';
+xi=xi(adj_matrix~=0);
+xi=xi(xi~=0)';
 
 yi=triu(LayoutSim.CY);
-% yi=yi(adj_matrix~=0);
-% yi=yi(yi~=0)';
+yi=yi(adj_matrix~=0);
+yi=yi(yi~=0)';
 
 length_x=15;
 length_y=15;
