@@ -338,6 +338,7 @@ if threshold_network=='t'
 else
     Explore.Thresholded='No';
 end
+Explore.GraphView.NodeIndices=node_indices;
 %% Save Plots
 if currentSimulation==length(simulations)
 save_explore_plots=lower(input('Would you like to save the plots? y or n \n','s'));
@@ -492,12 +493,12 @@ Graph.BC=betweenness_bin(net_mat);
 % fprintf('Betweenness Centrality Complete \n');
 
 %Eigenvector Centrality
-% Graph.EC=eigenvector_centrality_und(full(net_mat));
+Graph.EC=eigenvector_centrality_und(full(net_mat));
 % Eigenector centrality is a self-referential measure of centrality -- nodes have high eigenvector centrality if they connect to other nodes that have high eigenvector centrality.
 % fprintf('Eigenvector Centrality Complete \n');
 
 %Subgraph Centrality
-% Graph.SC=subgraph_centrality(full(net_mat));
+Graph.SC=subgraph_centrality(full(net_mat));
 %The subgraph centrality of a node is a weighted sum of closed walks of different lengths in the network starting and ending at the node.
 % fprintf('Subgraph Centrality Complete \n');
 
