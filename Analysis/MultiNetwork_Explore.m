@@ -510,12 +510,17 @@ PRandom=[];
 POrdered=[];
 MZRandom=[];
 MZOrdered=[];
+stdPRandom=[];
+stdPOrdered=[];
+stdMZRandom=[];
+stdMZOrdered=[];
+
 for i = 1:plotNet
 %Circuit Rank:
 PRandom=[PRandom Net(i).random100.AvgAvgPCoeff];
 POrdered=[POrdered Net(i).ordered100.AvgAvgPCoeff];
-stdPRandom=[stdPRandom Net(i).random100.StdAvgP];
-stdPOrdered=[stdPOrdered Net(i).ordered100.StdAvgP];
+stdPRandom=[stdPRandom Net(i).random100.StdAvgPCoeff];
+stdPOrdered=[stdPOrdered Net(i).ordered100.StdAvgPCoeff];
 MZRandom=[MZRandom Net(i).random100.AvgAvgMZ];
 MZOrdered=[MZOrdered Net(i).ordered100.AvgAvgMZ];
 stdMZRandom=[stdMZRandom Net(i).random100.StdAvgMZ];

@@ -251,6 +251,8 @@ netsourceBC=[sourceBC{:}];
 netdrainBC=[drainBC{:}];
 netsourcePCoeff=[sourcePCoeff{:}];
 netdrainPCoeff=[drainPCoeff{:}];
+netsourceMZ=[sourceMZ{:}];
+netdrainMZ=[drainMZ{:}];
 netsourceDEG=[sourceDEG{:}];
 netdrainDEG=[drainDEG{:}];
 netidx=[idx{:}];
@@ -294,6 +296,7 @@ title([num2str(length(Explore{1}.GraphView.currents)) 'nw | ' num2str(length(Sim
 hold on 
 legend([p2,p3, h],'2nd order Polynomial Fit','3rd order Polynomial Fit','Linear Fit');
 [r.COMM,p.COMM]=corrcoef(netCOMM,netCurrs);
+
 
 % Plot correlation for mean and variance
 fmean=figure('Position',[0 0 1920 1080]);
@@ -345,7 +348,7 @@ hold on
 
 labelpoints(netsourceDEG,netsourceCurrent,netSourceElec);
 
-% Participation Coefficient
+% Participation Coefficient & Module Z
 f3=figure('Position',[0 0 1920 1080]);
 s3=scatter(netsourcePCoeff,netsourceCurrent);
 h3=lsline;
@@ -384,14 +387,29 @@ title([num2str(length(Explore{1}.GraphView.currents)) 'nw | ' num2str(length(Sim
 [r.DEGdrain]=corrcoef(netdrainDEG,netdrainCurrent);
 labelpoints(netdrainDEG,netdrainCurrent,netDrainElec);
 
-% Participation Coefficient
+% Participation Coefficient & Module Z
+% To do: scatter for each simulation independently and label drain from subgraph instead of
+% drain from original graph
 f3=figure('Position',[0 0 1920 1080]);
-s3=scatter(netdrainPCoeff,netdrainCurrent);
+yyaxis left
+s3=scatter(netdrainCurrent,netdrainPCoeff);
+hold on
+ConnectorHub=patch([0 0 2.2*1e-4 2.2*1e-4],[0.3 0.7 0.7 0.3],'blue','LineStyle','none','FaceAlpha',0.2);
+xlim([0.2*1e-4 2.2*1e-4])
+labelpoints(netdrainCurrent,netdrainPCoeff,netDrainElec);
 h3=lsline;
-h3.Color='r';
-xlabel('Participant Coefficient');
-ylabel('Current (A)');
+h3.Color='blue';
+ylabel('Participant Coefficient')
+yyaxis right
+s3b=scatter(netdrainCurrent,netdrainMZ,'r');
+labelpoints(netdrainCurrent,netdrainMZ,netDrainElec);
+h3b=lsline;
+h3b.Color='r';
+%Plot rectangles:
+
+
+ylabel('Module z-Score')
+xlabel('Current (A)');
 title([num2str(length(Explore{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Sim{1}.Settings.Time) ' sec | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Drain Electrode']);
 [r.Pdrain]=corrcoef(netdrainPCoeff,netdrainCurrent);
-labelpoints(netdrainPCoeff,netdrainCurrent,netDrainElec);
 
