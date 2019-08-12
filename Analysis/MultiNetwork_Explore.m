@@ -27,12 +27,12 @@ switch computer
         explore_location='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\';
         savePath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\Multi-Network Data\';
         fig_dir='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Figures\Explore Analysis\Cross-Network Explore\Graph Theory\';
-
+        
     case '' %if on linux
         explore_location='/suphys/aloe8475/Documents/CODE/Data/Explore Analysis/';
         savePath='/suphys/aloe8475/Documents/CODE/Data/Explore Analysis/Multi-Network Data/';
         fig_dir='/suphys/aloe8475/Documents/CODE/Data/Figures/Explore Analysis/Cross-Network Explore/Graph Theory/';
-
+        
     case 'LAPTOP-S1BV3HR7'
         explore_location='D:\alon_\Research\PhD\CODE\Data\Explore Analysis\';
         savePath='D:\alon_\Research\PhD\CODE\Data\Explore Analysis\Multi-Network Data\';
@@ -76,74 +76,74 @@ plotAll(Net,random,ordered, human, e100, e500, e1000, e2000, AgNW, network,cEleg
 
 function ANN=AI(network)
 cd('../../Data/Inorganic Networks Connectomes/')
-    fprintf('Loading Artificial Neural Network Data \n');
+fprintf('Loading Artificial Neural Network Data \n');
 
 if exist('ANNGraphTheory.mat','file')
     load('ANNGraphTheory.mat','ANN');
 else
-   
-fprintf('No ANN Data found, creating ANN Data \n');
-s=rng(2);
-
-temp=mnrnd(498,[0.02 0.21 0.25 0.25 0.25  0.02]);
-temp2=[];
-for i =1:length(temp)
-    temp2(i)=sum(temp(1:i));
-end 
-temp2 = [1 temp2];
-B=zeros(498,498);
-C=1;
-for i = 1:length(temp)-1
-    for j = temp2(i):temp2(i+1)
-        for k = temp2(i+1):temp2(i+2)
-            B(j,k)=1;
+    
+    fprintf('No ANN Data found, creating ANN Data \n');
+    s=rng(2);
+    
+    temp=mnrnd(498,[0.02 0.21 0.25 0.25 0.25  0.02]);
+    temp2=[];
+    for i =1:length(temp)
+        temp2(i)=sum(temp(1:i));
+    end
+    temp2 = [1 temp2];
+    B=zeros(498,498);
+    C=1;
+    for i = 1:length(temp)-1
+        for j = temp2(i):temp2(i+1)
+            for k = temp2(i+1):temp2(i+2)
+                B(j,k)=1;
+            end
         end
-    end 
-end 
-
-B=B+B';
-
-[ANN.Ci,ANN.Q] = community_louvain(B,1);
-%Clustering Coefficient
-[ANN.GlobalClust,ANN.AvgLocalClust, ANN.Clust] = clustCoeff(B);
-
-%Participation Coefficient & Module z-Score
-ANN.P = participation_coef(B,ANN.Ci);
-ANN.MZ = module_degree_zscore(B, ANN.Ci);
-% Avg + Std PC + MZ:
-ANN.avgP=mean(ANN.P);
-ANN.stdP=std(ANN.P);
-ANN.avgMZ=mean(ANN.MZ);
-ANN.stdMZ=std(ANN.MZ);
-
-%Communicability:
-ANN.COMM = expm(B);
-%Avg COMM
-ANN.avgCOMM=mean(ANN.COMM);
-ANN.stdCOMM=std(ANN.COMM);
-
-
-%Betweenness Centrality:
-[ANN.BC, ANN.normBC]=betweenness_bin(B);
-%Avg:
-ANN.avgBC=mean(ANN.BC);
-ANN.stdBC=std(ANN.BC);
-
-%ANN Path Length
-ANN.Path = path_length(B);
-ANN.AvgPath=mean(ANN.Path);
-G_up=graph(B,'upper');
-G_low=graph(B,'lower');
-G=graph(B);
-
-ANN.Graph=G;
-%Circuit Rank
-ANN.CircuitRank=numedges(G) - (numnodes(G) - 1);
-ANN.SmallWorldProp=small_world_propensity(B);
-
-save('ANNGraphTheory.mat','ANN');
-end 
-end 
+    end
+    
+    B=B+B';
+    
+    [ANN.Ci,ANN.Q] = community_louvain(B,1);
+    %Clustering Coefficient
+    [ANN.GlobalClust,ANN.AvgLocalClust, ANN.Clust] = clustCoeff(B);
+    
+    %Participation Coefficient & Module z-Score
+    ANN.P = participation_coef(B,ANN.Ci);
+    ANN.MZ = module_degree_zscore(B, ANN.Ci);
+    % Avg + Std PC + MZ:
+    ANN.avgP=mean(ANN.P);
+    ANN.stdP=std(ANN.P);
+    ANN.avgMZ=mean(ANN.MZ);
+    ANN.stdMZ=std(ANN.MZ);
+    
+    %Communicability:
+    ANN.COMM = expm(B);
+    %Avg COMM
+    ANN.avgCOMM=mean(ANN.COMM);
+    ANN.stdCOMM=std(ANN.COMM);
+    
+    
+    %Betweenness Centrality:
+    [ANN.BC, ANN.normBC]=betweenness_bin(B);
+    %Avg:
+    ANN.avgBC=mean(ANN.BC);
+    ANN.stdBC=std(ANN.BC);
+    
+    %ANN Path Length
+    ANN.Path = path_length(B);
+    ANN.AvgPath=mean(ANN.Path);
+    G_up=graph(B,'upper');
+    G_low=graph(B,'lower');
+    G=graph(B);
+    
+    ANN.Graph=G;
+    %Circuit Rank
+    ANN.CircuitRank=numedges(G) - (numnodes(G) - 1);
+    ANN.SmallWorldProp=small_world_propensity(B);
+    
+    save('ANNGraphTheory.mat','ANN');
+end
+end
 %% C-Elegans:
 function elegans=cElegansFun()
 
@@ -153,57 +153,57 @@ function elegans=cElegansFun()
 
 cd('../../Data/Organic Networks Connectomes/')
 cElegans=load('celegans277neurons.mat');
-    fprintf('Loading cElegans Data \n');
+fprintf('Loading cElegans Data \n');
 
 if exist('cElegansGraphTheory.mat','file')
     load('cElegansGraphTheory.mat','elegans');
 else
-   
-fprintf('No cElegans Data found, creating cElegans Data \n');
-
-%Elegans Matrix (Taken from above sources):
-A=cElegans.celegans277matrix;
-B=A+A'; %creating undirected matrix from directed matrix.
-[elegans.Ci,elegans.Q] = community_louvain(B,1);
-%Clustering Coefficient
-[elegans.GlobalClust,elegans.AvgLocalClust, elegans.Clust] = clustCoeff(B);
-
-%Participation Coefficient & Module z-Score
-elegans.P = participation_coef(B,elegans.Ci);
-elegans.MZ = module_degree_zscore(B, elegans.Ci);
-% Avg + Std PC + MZ:
-elegans.avgP=mean(elegans.P);
-elegans.stdP=std(elegans.P);
-elegans.avgMZ=mean(elegans.MZ);
-elegans.stdMZ=std(elegans.MZ);
-
-%Communicability:
-elegans.COMM = expm(B);
-%Avg COMM
-elegans.avgCOMM=mean(elegans.COMM);
-elegans.stdCOMM=std(elegans.COMM);
-
-
-%Betweenness Centrality:
-[elegans.BC, elegans.normBC]=betweenness_bin(B);
-%Avg:
-elegans.avgBC=mean(elegans.BC);
-elegans.stdBC=std(elegans.BC);
-
-%Random Path Length
-elegans.Path = path_length(B);
-elegans.AvgPath=mean(elegans.Path);
-G_up=graph(B,'upper');
-G_low=graph(B,'lower');
-G=graph(B);
-
-elegans.Graph=G;
-%Circuit Rank
-elegans.CircuitRank=numedges(G) - (numnodes(G) - 1);
-elegans.SmallWorldProp=small_world_propensity(B);
-
-save('cElegansGraphTheory.mat','elegans');
-end 
+    
+    fprintf('No cElegans Data found, creating cElegans Data \n');
+    
+    %Elegans Matrix (Taken from above sources):
+    A=cElegans.celegans277matrix;
+    B=A+A'; %creating undirected matrix from directed matrix.
+    [elegans.Ci,elegans.Q] = community_louvain(B,1);
+    %Clustering Coefficient
+    [elegans.GlobalClust,elegans.AvgLocalClust, elegans.Clust] = clustCoeff(B);
+    
+    %Participation Coefficient & Module z-Score
+    elegans.P = participation_coef(B,elegans.Ci);
+    elegans.MZ = module_degree_zscore(B, elegans.Ci);
+    % Avg + Std PC + MZ:
+    elegans.avgP=mean(elegans.P);
+    elegans.stdP=std(elegans.P);
+    elegans.avgMZ=mean(elegans.MZ);
+    elegans.stdMZ=std(elegans.MZ);
+    
+    %Communicability:
+    elegans.COMM = expm(B);
+    %Avg COMM
+    elegans.avgCOMM=mean(elegans.COMM);
+    elegans.stdCOMM=std(elegans.COMM);
+    
+    
+    %Betweenness Centrality:
+    [elegans.BC, elegans.normBC]=betweenness_bin(B);
+    %Avg:
+    elegans.avgBC=mean(elegans.BC);
+    elegans.stdBC=std(elegans.BC);
+    
+    %Random Path Length
+    elegans.Path = path_length(B);
+    elegans.AvgPath=mean(elegans.Path);
+    G_up=graph(B,'upper');
+    G_low=graph(B,'lower');
+    G=graph(B);
+    
+    elegans.Graph=G;
+    %Circuit Rank
+    elegans.CircuitRank=numedges(G) - (numnodes(G) - 1);
+    elegans.SmallWorldProp=small_world_propensity(B);
+    
+    save('cElegansGraphTheory.mat','elegans');
+end
 end
 
 %% Human Graph Analysis
@@ -243,20 +243,23 @@ while 1
     % variable (sizeNetwork).
     switch sizeNetwork
         case 100
-            network=e100;
             i=1;
+            network{i}=e100;
             Net(i).sizeNetwork=100;
         case 500
-            network=e500;
             i=2;
+            network{i}=e500;
+            
             Net(i).sizeNetwork=500;
         case 1000
-            network =e1000;
             i=3;
+            network{i}=e1000;
+            
             Net(i).sizeNetwork=1000;
         case 2000
-            network =e2000;
             i=4;
+            network{i}=e2000;
+            
             Net(i).sizeNetwork=2000;
     end
     if createNewRand=='n'
@@ -267,7 +270,7 @@ while 1
         else
             fprintf('Ordered and Random Graphs have not been created yet \n');
             fprintf('Creating New Graphs \n');
-            [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(network,Net(i).sizeNetwork);
+            [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(network{i},Net(i).sizeNetwork);
         end
     else
         if exist([loadPath 'Ordered_Graphs_' num2str(Net(i).sizeNetwork) 'nw.mat'], 'file') == 2 && exist([loadPath 'Random_Graphs_' num2str(Net(i).sizeNetwork) 'nw.mat'],'file') == 2 %2 because .mat file
@@ -278,12 +281,12 @@ while 1
                 load([loadPath 'Random_Graphs_' num2str(Net(i).sizeNetwork) 'nw.mat']);
             else
                 fprintf('Creating New Graphs \n');
-                [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(network,Net(i).sizeNetwork);
+                [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(network{i},Net(i).sizeNetwork);
                 fprintf('New Graphs Created \n');
             end
         else
             fprintf('Creating New Graphs \n');
-            [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(network,Net(i).sizeNetwork);
+            [random, ordered, random100, ordered100, Parameters]=createRandom_Ordered_Graphs(network{i},Net(i).sizeNetwork);
             fprintf('New Graphs Created \n');
         end
     end
@@ -322,9 +325,9 @@ fprintf('Graphs Loaded... \n Creating Plots... \n');
 %% Random & Ordered
 %Number of Nodes
 for z=1:length(Net)
-    while isempty(Net(z).sizeNetwork) %if we only load 500, 1000 or 2000, we need to increase our counter to skip over the empty arrays. 
+    while isempty(Net(z).sizeNetwork) %if we only load 500, 1000 or 2000, we need to increase our counter to skip over the empty arrays.
         z=z+1;
-    end 
+    end
     for i =1:100
         Net(z).random(i).numNodes=height(Net(z).random(i).Graph.Nodes);
         Net(z).ordered(i).numNodes=height(Net(z).ordered(i).Graph.Nodes);
@@ -461,19 +464,34 @@ fprintf('Figure 1 Complete \n');
 % p1(:,1).MarkerEdgeColor='r';
 % p1.LineWidth=1.5;
 
+smallWorldPropRandom=[];
+smallWorldPropOrdered=[];
+
+for i = 1:plotNet
+    %Circuit Rank:
+    smallWorldPropRandom=[smallWorldPropRandom Net(i).random100.AvgSmallWorldProp];
+    smallWorldPropOrdered=[smallWorldPropOrdered Net(i).ordered100.AvgSmallWorldProp];
+    randomLabel{i}=[num2str(Net(i).sizeNetwork) ' Random Nw'];
+    orderedLabel{i}=[num2str(Net(i).sizeNetwork) ' Ordered Nw'];
+end
+
 %Small World Prop
 f2=figure;
-for i = 1:plotNet
-x=[Net(i).random100.AvgSmallWorldProp Net(i).ordered100.AvgSmallWorldProp  ANN.SmallWorldProp cElegans.SmallWorldProp AgNW.SmallWorldProp];
-p2=bar(x);
-hold on
-e=errorbar(x(1), Net(i).random100.StdSmallWorldProp);
-e2=errorbar(x(2),Net(i).ordered100.StdSmallWorldProp);
-% xlim([0.05 0.6])
-% ylim([2 16])
-hold on 
-end 
-xticklabels({[num2str(Net(i).sizeNetwork) 'node Random Nw'],[num2str(Net(i).sizeNetwork) 'node Ordered Nw'],'500node Artificial Neural Nw','C. Elegans Nw','100nw','500nw','1000nw','2000nw'});
+
+    x=[smallWorldPropRandom smallWorldPropOrdered  ANN.SmallWorldProp cElegans.SmallWorldProp AgNW.SmallWorldProp];
+    p2=bar(x);
+    hold on
+    for i = 1:plotNet
+    e=errorbar(x(1), Net(i).random100.StdSmallWorldProp);
+    e2=errorbar(x(2),Net(i).ordered100.StdSmallWorldProp);
+    % xlim([0.05 0.6])
+    % ylim([2 16])
+    hold on
+end
+xticklabels([randomLabel,orderedLabel,'500node Artificial Neural Nw','C. Elegans Nw','100nw','500nw','1000nw','2000nw']);
+
+set(gca, 'XTickLabelRotation', 45)
+
 ylabel('Small World Prop');
 
 
@@ -484,16 +502,16 @@ f3=figure;
 circuitRankRandom=[];
 circuitRankOrdered=[];
 for i = 1:plotNet
-%Circuit Rank:
-circuitRankRandom=[circuitRankRandom Net(i).random(1).CircuitRank];
-circuitRankOrdered=[circuitRankOrdered Net(i).ordered(1).CircuitRank];
-randomLabel{i}=[num2str(Net(i).sizeNetwork) ' Random Nw'];
-orderedLabel{i}=[num2str(Net(i).sizeNetwork) ' Ordered Nw'];
-end 
+    %Circuit Rank:
+    circuitRankRandom=[circuitRankRandom Net(i).random(1).CircuitRank];
+    circuitRankOrdered=[circuitRankOrdered Net(i).ordered(1).CircuitRank];
+end
 
 circuitRank=[circuitRankRandom circuitRankOrdered ANN.CircuitRank AgNW.CircuitRank];
 p3=bar(circuitRank);
 xticklabels([randomLabel orderedLabel {'500node Artificial Neural Nw','100nw', '500nw', '1000nw','2000nw'}]);
+set(gca, 'XTickLabelRotation', 45)
+
 ylabel('Circuit Rank');
 hAx=gca;            % get a variable for the current axes handle
 hT=[];              % placeholder for text object handles
@@ -501,7 +519,7 @@ for i=1:length(p3)  % iterate over number of bar objects
     hT=[hT text(p3(i).XData+p3(i).XOffset,p3(i).YData,num2str(p3(i).YData.'), ...
         'VerticalAlignment','bottom','horizontalalign','center')];
 end
-hold on 
+hold on
 %Average Participation Coefficient & Module z-Score
 fprintf('Figure 3 Complete \n');
 
@@ -517,18 +535,16 @@ stdMZRandom=[];
 stdMZOrdered=[];
 
 for i = 1:plotNet
-%Circuit Rank:
-PRandom=[PRandom Net(i).random100.AvgAvgPCoeff];
-POrdered=[POrdered Net(i).ordered100.AvgAvgPCoeff];
-stdPRandom=[stdPRandom Net(i).random100.StdAvgPCoeff];
-stdPOrdered=[stdPOrdered Net(i).ordered100.StdAvgPCoeff];
-MZRandom=[MZRandom Net(i).random100.AvgAvgMZ];
-MZOrdered=[MZOrdered Net(i).ordered100.AvgAvgMZ];
-stdMZRandom=[stdMZRandom Net(i).random100.StdAvgMZ];
-stdMZOrdered=[stdMZOrdered Net(i).ordered100.StdAvgMZ];
-randomLabel{i}=[num2str(Net(i).sizeNetwork) ' Random Nw'];
-orderedLabel{i}=[num2str(Net(i).sizeNetwork) ' Ordered Nw'];
-end 
+    %Circuit Rank:
+    PRandom=[PRandom Net(i).random100.AvgAvgPCoeff];
+    POrdered=[POrdered Net(i).ordered100.AvgAvgPCoeff];
+    stdPRandom=[stdPRandom Net(i).random100.StdAvgPCoeff];
+    stdPOrdered=[stdPOrdered Net(i).ordered100.StdAvgPCoeff];
+    MZRandom=[MZRandom Net(i).random100.AvgAvgMZ];
+    MZOrdered=[MZOrdered Net(i).ordered100.AvgAvgMZ];
+    stdMZRandom=[stdMZRandom Net(i).random100.StdAvgMZ];
+    stdMZOrdered=[stdMZOrdered Net(i).ordered100.StdAvgMZ];
+end
 
 PCoeff=[PRandom POrdered  ANN.avgP cElegans.avgP human.AvgP human.PLocalHubs human.PLocalHubs human.PConnectorHubs human.PConnectorHubs  mean(e100.Explore.GraphTheory.P), mean(e500.Explore.GraphTheory.P), mean(e1000.Explore.GraphTheory.P) mean(e2000.Explore.GraphTheory.P)];
 stdPCoeff=[PRandom POrdered  ANN.avgP cElegans.avgP, 0, 0, 0, 0, 0,  std(e100.Explore.GraphTheory.P), std(e500.Explore.GraphTheory.P), std(e1000.Explore.GraphTheory.P) std(e2000.Explore.GraphTheory.P)];
@@ -540,23 +556,23 @@ p4=gscatter(PCoeff,MZ);
 % e2=errorbar(PCoeff,stdPCoeff);
 
 %High PCoeff = Hubs / Central areas (Power et al., 2013)
-text(PCoeff,MZ,{randomLabel{:}, orderedLabel{:}, '500node Artificial Neural Nw', 'C. Elegans Nw', 'Human Average', 'Human Connector Local Provincial Hub','Human Local Peripheral Node','Human Connector Hub','Human Satellite Connector', '100nw Avg', '500nw Avg', '1000nw Avg','2000nw Avg'},'NorthWest');
+text(PCoeff,MZ,[randomLabel, orderedLabel, '500node Artificial Neural Nw', 'C. Elegans Nw', 'Human Average', 'Human Connector Local Provincial Hub','Human Local Peripheral Node','Human Connector Hub','Human Satellite Connector', '100nw Avg', '500nw Avg', '1000nw Avgs','2000nw Avg'],'NorthWest');
 xlabel('Average Participant Coefficient Coefficient');
 ylabel('Average Module z-Score');
 p4.MarkerEdgeColor='b';
 p4(:,1).MarkerEdgeColor='r';
 p4.LineWidth=1.5;
-hold on 
+hold on
 
 fprintf('Figure 4 Complete \n');
 
 %Plot Guimera & Amaral rectangles:
 for i=1:plotNet
-f5(i)=figure;
-guimera(network,Net,i); %change network here
-fprintf(['Figure 5 part ' num2str(i) ' Complete \n']);
-
-end 
+    f5(i)=figure;
+    guimera(network{i},Net,i); %change network here
+    fprintf(['Figure 5 part ' num2str(i) ' Complete \n']);
+    
+end
 
 fprintf('Figure 5 Complete \n');
 
@@ -582,14 +598,14 @@ BCOrdered=[];
 BCRandomstd=[];
 BCOrderedstd=[];
 for i = 1:plotNet
-%Circuit Rank:
-BCRandom=[BCRandom Net(i).random100.AvgBC];
-BCOrdered=[BCOrdered Net(i).ordered100.AvgBC];
-BCRandomstd=[BCRandomstd Net(i).random100.StdBC];
-BCOrderedstd=[BCOrderedstd Net(i).ordered100.StdBC];
-randomLabel{i}=[num2str(Net(i).sizeNetwork) ' Random Nw'];
-orderedLabel{i}=[num2str(Net(i).sizeNetwork) ' Ordered Nw'];
-end 
+    %Circuit Rank:
+    BCRandom=[BCRandom Net(i).random100.AvgBC];
+    BCOrdered=[BCOrdered Net(i).ordered100.AvgBC];
+    BCRandomstd=[BCRandomstd Net(i).random100.StdBC];
+    BCOrderedstd=[BCOrderedstd Net(i).ordered100.StdBC];
+    randomLabel{i}=[num2str(Net(i).sizeNetwork) ' Random Nw'];
+    orderedLabel{i}=[num2str(Net(i).sizeNetwork) ' Ordered Nw'];
+end
 
 BC=[BCRandom BCOrdered ANN.avgBC cElegans.avgBC AgNW.AvgBC];
 stdBC=[BCRandomstd BCOrderedstd ANN.stdBC cElegans.stdBC AgNW.StdBC];
@@ -599,22 +615,24 @@ e=errorbar(BC, stdBC);
 e.LineStyle='none';
 % xlim([0.05 0.6])
 % ylim([2 16])
-xticklabels({[num2str(Net(i).sizeNetwork) 'node Random Nw'],[num2str(Net(i).sizeNetwork) 'node Ordered Nw'],'500node Artificial Neural Nw','C. Elegans Nw','100nw','500nw','1000nw','2000nw'});
+
+xticklabels({randomLabel{:},orderedLabel{:},'500node Artificial Neural Nw','C. Elegans Nw','100nw','500nw','1000nw','2000nw'});
+set(gca, 'XTickLabelRotation', 45)
 ylabel('Betweenness Centrality');
-hold on 
- 
- 
+hold on
+
+
 fprintf('Figure 7 Complete \n');
 
 
-%% SAVE GRAPHS 
+%% SAVE GRAPHS
 print(f,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Clustering Coefficient vs Path Length all networks.pdf']);
 print(f2,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Small World Prop all networks.pdf']);
 print(f3,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Circuit Rank all networks.pdf']);
 print(f4,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Participant Coefficient vs Module z-Score all networks.pdf']);
 for i = 1:length(f5)
-print(f5(i),'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Guimera PC vs Module z-Score ' num2str(Net(i).sizeNetwork) 'nw network.pdf']);
-end 
+    print(f5(i),'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Guimera PC vs Module z-Score ' num2str(Net(i).sizeNetwork) 'nw network.pdf']);
+end
 % print(f6,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Communicability all networks.pdf']);
 print(f7,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Betweenness Centrality all networks.pdf']);
 
@@ -688,10 +706,10 @@ for i = 1:length(PCoeff)
             r5=scatter(PCoeff(i),MZ(i),'yellow','filled');
             r5.MarkerEdgeColor='black';
         case 6
-            r6=scatter(PCoeff(i),MZ(i),[255 204 153]./255,'filled');
+            r6=scatter(PCoeff(i),MZ(i),[],[255 204 153]/255,'filled');
             r6.MarkerEdgeColor='black';
         case 7
-            r7=scatter(PCoeff(i),MZ(i),[0.7 0.7 0.7],'filled');
+            r7=scatter(PCoeff(i),MZ(i),[],[0.7 0.7 0.7],'filled');
             r7.MarkerEdgeColor='black';
     end
 end
@@ -699,7 +717,7 @@ ylim([-3 8]);
 xlabel('Participant Coefficient')
 ylabel('Within-Module Degree z-Score');
 title([num2str(Net(plotNet).sizeNetwork) 'nw Network']);
-hold on 
+hold on
 end
 
 
