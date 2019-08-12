@@ -471,10 +471,11 @@ e=errorbar(x(1), Net(i).random100.StdSmallWorldProp);
 e2=errorbar(x(2),Net(i).ordered100.StdSmallWorldProp);
 % xlim([0.05 0.6])
 % ylim([2 16])
-xticklabels({[num2str(Net(i).sizeNetwork) 'node Random Nw'],[num2str(Net(i).sizeNetwork) 'node Ordered Nw'],'500node Artificial Neural Nw','C. Elegans Nw','100nw','500nw','1000nw','2000nw'});
-ylabel('Small World Prop');
 hold on 
 end 
+xticklabels({[num2str(Net(i).sizeNetwork) 'node Random Nw'],[num2str(Net(i).sizeNetwork) 'node Ordered Nw'],'500node Artificial Neural Nw','C. Elegans Nw','100nw','500nw','1000nw','2000nw'});
+ylabel('Small World Prop');
+
 
 fprintf('Figure 2 Complete \n');
 
@@ -496,8 +497,8 @@ xticklabels([randomLabel orderedLabel {'500node Artificial Neural Nw','100nw', '
 ylabel('Circuit Rank');
 hAx=gca;            % get a variable for the current axes handle
 hT=[];              % placeholder for text object handles
-for i=1:length(p2)  % iterate over number of bar objects
-    hT=[hT text(p2(i).XData+p2(i).XOffset,p2(i).YData,num2str(p2(i).YData.'), ...
+for i=1:length(p3)  % iterate over number of bar objects
+    hT=[hT text(p3(i).XData+p3(i).XOffset,p3(i).YData,num2str(p3(i).YData.'), ...
         'VerticalAlignment','bottom','horizontalalign','center')];
 end
 hold on 
@@ -530,13 +531,13 @@ orderedLabel{i}=[num2str(Net(i).sizeNetwork) ' Ordered Nw'];
 end 
 
 PCoeff=[PRandom POrdered  ANN.avgP cElegans.avgP human.AvgP human.PLocalHubs human.PLocalHubs human.PConnectorHubs human.PConnectorHubs  mean(e100.Explore.GraphTheory.P), mean(e500.Explore.GraphTheory.P), mean(e1000.Explore.GraphTheory.P) mean(e2000.Explore.GraphTheory.P)];
-stdPCoeff=[PRandom POrdered  ANN.avgP cElegans.avgP human.AvgP human.PLocalHubs human.PLocalHubs human.PConnectorHubs human.PConnectorHubs  mean(e100.Explore.GraphTheory.P), mean(e500.Explore.GraphTheory.P), mean(e1000.Explore.GraphTheory.P) mean(e2000.Explore.GraphTheory.P)];
-stdMZ=[stdMZRandom stdMZOrdered ANN.stdMZ cElegans.stdMZ,[],[],[],[],[], std(e100.Explore.GraphTheory.MZ), std(e500.Explore.GraphTheory.MZ), std(e1000.Explore.GraphTheory.MZ) std(e2000.Explore.GraphTheory.MZ)];
+stdPCoeff=[PRandom POrdered  ANN.avgP cElegans.avgP, 0, 0, 0, 0, 0,  std(e100.Explore.GraphTheory.P), std(e500.Explore.GraphTheory.P), std(e1000.Explore.GraphTheory.P) std(e2000.Explore.GraphTheory.P)];
+stdMZ=[stdMZRandom stdMZOrdered ANN.stdMZ cElegans.stdMZ,0,0,0,0,0, std(e100.Explore.GraphTheory.MZ), std(e500.Explore.GraphTheory.MZ), std(e1000.Explore.GraphTheory.MZ) std(e2000.Explore.GraphTheory.MZ)];
 MZ=[MZRandom MZOrdered ANN.avgMZ cElegans.avgMZ human.AvgMZ human.MZHubs human.MZNonHubs human.MZHubs human.MZNonHubs  mean(e100.Explore.GraphTheory.MZ), mean(e500.Explore.GraphTheory.MZ), mean(e1000.Explore.GraphTheory.MZ) mean(e2000.Explore.GraphTheory.MZ)];
 
 p4=gscatter(PCoeff,MZ);
-e=errorbar(MZ, stdMZ);
-e2=errorbar(PCoeff,stdPCoeff);
+% e=errorbar(MZ, stdMZ);
+% e2=errorbar(PCoeff,stdPCoeff);
 
 %High PCoeff = Hubs / Central areas (Power et al., 2013)
 text(PCoeff,MZ,{randomLabel{:}, orderedLabel{:}, '500node Artificial Neural Nw', 'C. Elegans Nw', 'Human Average', 'Human Connector Local Provincial Hub','Human Local Peripheral Node','Human Connector Hub','Human Satellite Connector', '100nw Avg', '500nw Avg', '1000nw Avg','2000nw Avg'},'NorthWest');
@@ -552,7 +553,7 @@ fprintf('Figure 4 Complete \n');
 %Plot Guimera & Amaral rectangles:
 for i=1:plotNet
 f5(i)=figure;
-guimera(network,Net,plotNet); %change network here
+guimera(network,Net,i); %change network here
 fprintf(['Figure 5 part ' num2str(i) ' Complete \n']);
 
 end 
@@ -583,7 +584,7 @@ BCOrderedstd=[];
 for i = 1:plotNet
 %Circuit Rank:
 BCRandom=[BCRandom Net(i).random100.AvgBC];
-BCOrdered=[POrdered Net(i).ordered100.AvgBC];
+BCOrdered=[BCOrdered Net(i).ordered100.AvgBC];
 BCRandomstd=[BCRandomstd Net(i).random100.StdBC];
 BCOrderedstd=[BCOrderedstd Net(i).ordered100.StdBC];
 randomLabel{i}=[num2str(Net(i).sizeNetwork) ' Random Nw'];
