@@ -54,6 +54,7 @@ if more_networks=='y'
                 % save a var with number of networks
                 numNetworks=count;
                 i=i+1; %can also use break
+                error_state=0;
             end
         end
         if error_state~=1 %we don't want to ask to load again if we got an error
