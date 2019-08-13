@@ -43,6 +43,8 @@ end
 cd(explore_location);
 
 loadData=lower(input('Would you like to load the network data? \n','s'));
+
+
 if loadData=='y'
     %Load three explore analyses:
     fprintf('Loading Data... \n');

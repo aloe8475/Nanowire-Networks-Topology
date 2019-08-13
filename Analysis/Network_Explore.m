@@ -53,13 +53,15 @@ if load_data_question~='a'
         simNum=input(['Which Simulation # do you want to explore? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
     end
 end
-
-if size(simulations,1)==1
-    currentSim=simulations{simNum};
+if sim_loaded
+    if size(simulations,1)==1
+         currentSim=simulations{simNum};
+    else
+         currentSim=simulations(simNum);
+    end
 else
-    currentSim=simulations(simNum);
-end
-
+    currentSim=network(networkNum).Simulations{simNum};
+end 
 fprintf(['Simulation: ' network(networkNum).Name currentSim.Name ' selected \n\n\n']);
 
 
@@ -367,8 +369,13 @@ end
 save_explore_plots=lower(input('Would you like to save the plots? y or n \n','s'));
 cd(currentPath)
 save_directory='..\Data\Figures\Explore Analysis\';
+if length(network)== 1
 network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
-
+else
+    for q = 1:length(network)
+        network(q).Name(regexp(network(q).Name,'[/:]'))=[];
+    end 
+end 
 if save_explore_plots=='y'
     if threshold_network~='t'
         % NOTE: 05/06 - for simulations created after this date, we need to
