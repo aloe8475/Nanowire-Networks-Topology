@@ -624,7 +624,7 @@ while 1
     errorbar(x(3), y(3),Net(plotNet).ordered100.StdGlobalClust,'horizontal');
     % xlim([0.05 0.6])
     % ylim([2 16])
-    text(x,y,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],'500node Artificial Neural Nw','C. Elegans Nw', 'Human Nw',[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
+    text(x,y,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],'500node Artificial Neural Nw','C. Elegans Nw', 'Human Nw (mm-scale regions)',[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
     ylabel('Global Clustering Coefficient');
     xlabel('Global Mean Path Length');
     p.MarkerEdgeColor='b';
@@ -864,7 +864,7 @@ while 1
     errorbar(x(6:end), y(6:end),AgNW.StdGlobalClust,'horizontal');
     % xlim([0.05 0.6])
     % ylim([2 16])
-    text(x,y,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],'500node Artificial Neural Nw','C. Elegans Nw', 'Human Nw',[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
+    text(x,y,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],'500node Artificial Neural Nw','C. Elegans Nw', 'Human Nw (mm-scale regions)',[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
     ylabel('Global Clustering Coefficient');
     xlabel('Global Mean Path Length');
     p.MarkerEdgeColor='b';

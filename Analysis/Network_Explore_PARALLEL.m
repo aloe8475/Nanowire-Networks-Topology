@@ -1,11 +1,15 @@
 %---------------------------
-% 22/04/19
-% Network Explore Code v1.1
+% 14/08/19
+% Network Explore Parellel Code
 %
 % Author: Alon Loeffler
 %
+
+% Used for parallel processing on the cluster
+
 % IMPORTANT:
-% Threshold = Degree of greater than 1
+% Threshold = Degree of greater than 0
+
 % Binarise Threshold = Only low resistence junctions + wires
 % Full Graph = all degrees, all resistences
 % --------------------------
@@ -23,7 +27,7 @@ switch computer
         %case '' %--- Add other computer paths (e.g. Mike)
 end
 cd(currentPath);
-load_data_question=lower(input('Load network data, Analysis Data Only or None? N - None, D - Network Data, A - Analysis Data, L - All Network Data for Loop \n','s'));
+load_data_question=lower(input('Load network data, Analysis Data Only or None? N - None, D - Network Data, L - All Network Data for Loop \n','s'));
 
 if load_data_question=='d' || load_data_question=='l'
     if load_data_question=='l'
@@ -33,13 +37,6 @@ if load_data_question=='d' || load_data_question=='l'
     close all
     %load network data
     [network, network_load, simulations,sim_loaded,numNetworks, explore_network]= load_data(currentPath,loop);
-elseif load_data_question=='a'
-    clear LDA_Analysis
-    close all
-    %Load previous LDA analysis data
-    networkNum=input(['Which Network # do you want to load? 1 - ' num2str(length(network)) '\n']);
-    simNum=input(['Which Simulation # do you want to load? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
-    [LDA_Analysis(simNum)] = load_LDA_data(currentPath);
 else
     close all
 end
@@ -47,26 +44,23 @@ end
 %% Choose Simulations
 %-------
 %Choose Network and Simulation for training or exploring
-if load_data_question~='a'
-    if explore_network=='t'
-        networkNum=input(['Which Network # do you want to select for Training? 1 - ' num2str(length(network)) '\n']);
-        simNum=input(['Which Simulation # do you want to select for Training? 1 - '  num2str(network(networkNum).numTrainingSims) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
+if explore_network=='t'
+    networkNum=input(['Which Network # do you want to select for Training? 1 - ' num2str(length(network)) '\n']);
+    simNum=input(['Which Simulation # do you want to select for Training? 1 - '  num2str(network(networkNum).numTrainingSims) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
+else
+    networkState=0;%input(['Which Network # do you want to explore?  1  -  ' num2str(length(network)) '  OR  0  to loop through all \n']);
+    networkNum=networkState;
+    if networkState==0
+        simNum=1;
     else
-        networkState=input(['Which Network # do you want to explore?  1  -  ' num2str(length(network)) '  OR  0  to loop through all \n']);
-        networkNum=networkState;
-        if networkState==0
-            simNum=1;
-        else
-            simNum=input(['Which Simulation # do you want to explore? | 1 | - | '  num2str(length(network(networkNum).Simulations)) ' | \n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
-        end
+        simNum=input(['Which Simulation # do you want to explore?  1  -  '  num2str(length(network(networkNum).Simulations)) '  \n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
     end
 end
-
 %% Loop through networks:
 if networkNum==0 %if we want to loop through all networks
     NetMulti=[];
     loop=1;
-    for networkCount=1:length(network) %loop though the networks:
+    parfor networkCount=1:length(network) %loop though the networks:
         if sim_loaded
             if size(simulations,1)==1
                 currentSim=simulations{simNum};
@@ -80,13 +74,14 @@ if networkNum==0 %if we want to loop through all networks
         i = 1;
         while i == 1
             %% Exploratary analysis of simulation
-            Explore{networkCount}=explore_simulation_loop(currentSim,network(networkCount),network_load,simNum,currentPath,loop,networkCount);
+            Explore{networkCount}=explore_simulation(currentSim,network(networkCount),network_load,simNum,currentPath,loop,networkCount);
+            
             i=i+1;
             %% Saving Explore
             if networkCount==length(network)
                 save_state=lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
                 if save_state=='y'
-                    save_explore(Explore,network(networkCount),network_load,currentPath,simNum,loop);
+                    save_explore(Explore{networkCount},network(networkCount),network_load,currentPath,simNum,loop);
                     i=i+1; %get out of while loop this loop finishes
                 end
             end
@@ -657,11 +652,7 @@ if strcmp(network_load,'z')%Zdenka Code:
     save([save_directory 'Zdenka_' num2str(network.number_of_wires) 'nw_Exploration_Analysis_' date],'Explore');
 elseif strcmp(network_load,'a') %adrian code
     network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
-    if loop
-        save([save_directory 'Adrian_NW_Sx' num2str(network.NetworkSettings.Number) '_NumNetworkIterations_' num2str(length(Explore)) '_' date],'Explore');
-    else
-        save([save_directory 'Adrian_' num2str(network.Name) '_Length_' num2str(network.NetworkSettings.Length) '_Disp_' num2str(network.NetworkSettings.Disp) '_Sim_' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Exploration_Analysis_Timestamp_' num2str(Explore.IndexTime)],'Explore');
-    end
+    save([save_directory 'Adrian_' num2str(network.Name) '_Length_' num2str(network.NetworkSettings.Length) '_Disp_' num2str(network.NetworkSettings.Disp) '_Sim_' num2str(simNum) '_Exploration_Analysis_Timestamp_' num2str(Explore.IndexTime)],'Explore');
 end
 end
 
@@ -1369,25 +1360,25 @@ end
 
 %% Save
 network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
-
-saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Network_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Network_Timestamp' num2str(IndexTime)],'eps');
-saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Closeness_Centrality_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Closeness_Centrality_Timestamp' num2str(IndexTime)],'eps');
-saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Degree_Size_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Degree_Size_Timestamp' num2str(IndexTime)],'eps');
-saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Degree_&_Closeness_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Degree_&_Closeness_Timestamp' num2str(IndexTime)],'eps');
-saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Degree_Distribution_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Degree_Distribution_Timestamp' num2str(IndexTime)],'eps');
-saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Cluster_Analysis_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Cluster_Analysis_Timestamp' num2str(IndexTime)],'eps');
-saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Participant_Coefficient_Analysis_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Participant_Coefficient_Analysis_Timestamp' num2str(IndexTime)],'eps');
-saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Module_Degree_Z_Score_Analysis_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Module_Degree_Z_Score_Analysis_Timestamp' num2str(IndexTime)],'eps');
-saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Communicability_Analysis_Timestamp' num2str(IndexTime)],'jpg');
-saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Communicability_Analysis_Timestamp' num2str(IndexTime)],'eps');
+% 
+% saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Network_Timestamp' num2str(IndexTime)],'jpg');
+% saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Network_Timestamp' num2str(IndexTime)],'eps');
+% saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Closeness_Centrality_Timestamp' num2str(IndexTime)],'jpg');
+% saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Closeness_Centrality_Timestamp' num2str(IndexTime)],'eps');
+% saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Degree_Size_Timestamp' num2str(IndexTime)],'jpg');
+% saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Degree_Size_Timestamp' num2str(IndexTime)],'eps');
+% saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Degree_&_Closeness_Timestamp' num2str(IndexTime)],'jpg');
+% saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Degree_&_Closeness_Timestamp' num2str(IndexTime)],'eps');
+% saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Degree_Distribution_Timestamp' num2str(IndexTime)],'jpg');
+% saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Degree_Distribution_Timestamp' num2str(IndexTime)],'eps');
+% saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Cluster_Analysis_Timestamp' num2str(IndexTime)],'jpg');
+% saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Cluster_Analysis_Timestamp' num2str(IndexTime)],'eps');
+% saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Participant_Coefficient_Analysis_Timestamp' num2str(IndexTime)],'jpg');
+% saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Participant_Coefficient_Analysis_Timestamp' num2str(IndexTime)],'eps');
+% saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Module_Degree_Z_Score_Analysis_Timestamp' num2str(IndexTime)],'jpg');
+% saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Module_Degree_Z_Score_Analysis_Timestamp' num2str(IndexTime)],'eps');
+% saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Communicability_Analysis_Timestamp' num2str(IndexTime)],'jpg');
+% saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Communicability_Analysis_Timestamp' num2str(IndexTime)],'eps');
 
 end
 function save_graph(Graph,network,network_load,currentPath)
