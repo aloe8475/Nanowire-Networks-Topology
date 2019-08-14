@@ -28,8 +28,8 @@ load_data_question=lower(input('Load network data, Analysis Data Only or None? N
 if load_data_question=='d' || load_data_question=='l'
     if load_data_question=='l'
         loop=1;
-    end 
-    clearvars -except load_data_question currentPath
+    end
+    clearvars -except load_data_question currentPath loop
     close all
     %load network data
     [network, network_load, simulations,sim_loaded,numNetworks, explore_network]= load_data(currentPath,loop);
@@ -52,18 +52,18 @@ if load_data_question~='a'
         networkNum=input(['Which Network # do you want to select for Training? 1 - ' num2str(length(network)) '\n']);
         simNum=input(['Which Simulation # do you want to select for Training? 1 - '  num2str(network(networkNum).numTrainingSims) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
     else
-        networkState=lower(input(['Which Network # do you want to explore? | 1 | - | ' num2str(length(network)) ' | OR | loop | to loop through all \n','s']));
-        if strcmp(networkState,'loop')
+        networkState=input(['Which Network # do you want to explore?  1  -  ' num2str(length(network)) '  OR  0  to loop through all \n']);
+        networkNum=networkState;
+        if networkState==0
             simNum=1;
         else
-            networkNum=num2str(networkState);
             simNum=input(['Which Simulation # do you want to explore? | 1 | - | '  num2str(length(network(networkNum).Simulations)) ' | \n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
         end
     end
 end
 
 %% Loop through networks:
-if strcmp(networkNum,'loop') %if we want to loop through all networks
+if networkNum==0 %if we want to loop through all networks
     NetMulti=[];
     loop=1;
     for networkCount=1:length(network) %loop though the networks:
@@ -80,12 +80,15 @@ if strcmp(networkNum,'loop') %if we want to loop through all networks
         i = 1;
         while i == 1
             %% Exploratary analysis of simulation
-            Explore{networkCount}=explore_simulation(currentSim,network(networkCount),network_load,simNum,currentPath);
+            Explore{networkCount}=explore_simulation_loop(currentSim,network(networkCount),network_load,simNum,currentPath,loop,networkCount);
+            i=i+1;
             %% Saving Explore
-            save_state=lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
-            if save_state=='y'
-                save_explore(Explore,network(networkCount),network_load,currentPath,simNum,loop);
-                i=i+1; %get out of while loop this loop finishes
+            if networkCount==length(network)
+                save_state=lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
+                if save_state=='y'
+                    save_explore(Explore,network(networkCount),network_load,currentPath,simNum,loop);
+                    i=i+1; %get out of while loop this loop finishes
+                end
             end
             %% Insert Further Analysis Below
             % -------------------------------
@@ -103,77 +106,78 @@ else %if we're not looping
         currentSim=network(networkNum).Simulations{simNum};
     end
     fprintf(['Simulation: ' network(networkNum).Name currentSim.Name ' selected \n\n\n']);
-end
-
-%% No Looping through networks
-% Analysis -----------------------------------------------
-i = 1;
-while i == 1
-    %Choose Analysis to perform
-    if explore_network=='t'
-        extract_data(network); %extract data for python
-        fprintf(['Extracting Data for Python Use...\n\n\n']);
-        fprintf(['Data Extracted \n\n\n']);
-        analysis_type=lower(input('Which analysis would you like to perform? G - graph, E - Explore Network,L - LDA, N - none \n','s'));
-    elseif explore_network=='e' % we don't want to allow LDA if just exploring
-        analysis_type=lower(input('Which analysis would you like to perform? G - graph, E - Explore Network, N - none \n','s'));
-    end
-    if analysis_type=='g'
-        %% Graph Analysis
-        [Graph,binarise_network]=graph_analysis(network(networkNum),network_load,currentSim,[]);
-        %% Save Graph analysis data
-        i=i+1;
-    elseif analysis_type=='e'
-        %% Exploratary analysis of simulation
-        Explore=explore_simulation(currentSim,network,network_load,simNum,currentPath);
-        %% Saving Explore
-        save_state=lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
-        if save_state=='y'
-            save_explore(Explore,network(networkNum),network_load,currentPath,simNum);
-            i=i+1; %get out of while loop this loop finishes
+    
+    
+    %% No Looping through networks
+    % Analysis -----------------------------------------------
+    i = 1;
+    while i == 1
+        %Choose Analysis to perform
+        if explore_network=='t'
+            extract_data(network); %extract data for python
+            fprintf(['Extracting Data for Python Use...\n\n\n']);
+            fprintf(['Data Extracted \n\n\n']);
+            analysis_type=lower(input('Which analysis would you like to perform? G - graph, E - Explore Network,L - LDA, N - none \n','s'));
+        elseif explore_network=='e' % we don't want to allow LDA if just exploring
+            analysis_type=lower(input('Which analysis would you like to perform? G - graph, E - Explore Network, N - none \n','s'));
         end
-        i=i+1;
-    elseif analysis_type=='l'
-        %% LDA Analysis
-        LDA_Analysis=lda_analysis(currentSim,network,network_load,simNum);
-        i=i+1;
-    end
-    if analysis_type=='l' || analysis_type=='n'
-        %% Plotting LDA
-        plot_state=lower(input('Would you like to plot LDA Analysis? y or n \n','s'));
-        if plot_state=='y'
-            plot_LDA(LDA_Analysis(simNum),simNum,network(networkNum).Name,currentPath,simulations);
+        if analysis_type=='g'
+            %% Graph Analysis
+            [Graph,binarise_network]=graph_analysis(network(networkNum),network_load,currentSim,[],loop);
+            %% Save Graph analysis data
+            i=i+1;
+        elseif analysis_type=='e'
+            %% Exploratary analysis of simulation
+            Explore=explore_simulation(currentSim,network,network_load,simNum,currentPath,loop);
+            %% Saving Explore
+            save_state=lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
+            if save_state=='y'
+                save_explore(Explore,network(networkNum),network_load,currentPath,simNum);
+                i=i+1; %get out of while loop this loop finishes
+            end
+            i=i+1;
+        elseif analysis_type=='l'
+            %% LDA Analysis
+            LDA_Analysis=lda_analysis(currentSim,network,network_load,simNum);
             i=i+1;
         end
-        
-        %% Apply LDA Training to testing data (different simulation)
-        if analysis_type~='n'
-            apply_LDA=lower(input('Would you like to apply the loaded LDA analysis to another simulation? y or n \n','s'));
-            if apply_LDA=='y'
-                [LDA_Analysis, simulationChoice]=lda_apply_func(numNetworks,network,LDA_Analysis,simNum,simulations,currentPath);
+        if analysis_type=='l' || analysis_type=='n'
+            %% Plotting LDA
+            plot_state=lower(input('Would you like to plot LDA Analysis? y or n \n','s'));
+            if plot_state=='y'
+                plot_LDA(LDA_Analysis(simNum),simNum,network(networkNum).Name,currentPath,simulations);
+                i=i+1;
             end
-            i=i+1; %get out of while loop when this loop finishes
-        elseif analysis_type~='l' &&  analysis_type~='g' && analysis_type~='n' && analysis_type~='e'
-            fprintf('Please type either G, L or N only \n');
+            
+            %% Apply LDA Training to testing data (different simulation)
+            if analysis_type~='n'
+                apply_LDA=lower(input('Would you like to apply the loaded LDA analysis to another simulation? y or n \n','s'));
+                if apply_LDA=='y'
+                    [LDA_Analysis, simulationChoice]=lda_apply_func(numNetworks,network,LDA_Analysis,simNum,simulations,currentPath);
+                end
+                i=i+1; %get out of while loop when this loop finishes
+            elseif analysis_type~='l' &&  analysis_type~='g' && analysis_type~='n' && analysis_type~='e'
+                fprintf('Please type either G, L or N only \n');
+            end
         end
+        if analysis_type=='g' || analysis_type=='n'
+            %% Plotting Graph
+            plot_state=lower(input('Would you like to plot Graph Analysis? y or n \n','s'));
+            if plot_state=='y'
+                Graph=plot_graph(Graph,network(networkNum),network_load,currentSim,sim_loaded,currentPath,binarise_network,simNum);
+            end
+            i=i+1;
+            %% Saving Graph
+            save_state=lower(input('Would you like to save the Graph Analysis? y or n \n','s'));
+            if save_state=='y'
+                save_graph(Graph,network(networkNum),network_load,currentPath);
+            end
+            i=i+1;
+        end
+        %% Insert Further Analysis Below
+        % -------------------------------
+        % -------------------------------
     end
-    if analysis_type=='g' || analysis_type=='n'
-        %% Plotting Graph
-        plot_state=lower(input('Would you like to plot Graph Analysis? y or n \n','s'));
-        if plot_state=='y'
-            Graph=plot_graph(Graph,network(networkNum),network_load,currentSim,sim_loaded,currentPath,binarise_network,simNum);
-        end
-        i=i+1;
-        %% Saving Graph
-        save_state=lower(input('Would you like to save the Graph Analysis? y or n \n','s'));
-        if save_state=='y'
-            save_graph(Graph,network(networkNum),network_load,currentPath);
-        end
-        i=i+1;
-    end
-    %% Insert Further Analysis Below
-    % -------------------------------
-    % -------------------------------
 end
 
 %--------------------------------------------------------------------------
@@ -188,65 +192,66 @@ function [network, network_load, simulations, sim_loaded, numNetworks, explore_n
 %Ask to load Zdenka or Adrian:
 network_load='a';%lower(input('Which Network do you want to analyse? Z - Zdenka, A - Adrian \n','s'));
 if ~loop
-% if strcmp(network_load,'a')
-%Get current network - Adrian
-[network,sim_loaded, explore_network, numNetworks]=Load_Adrian_Code();
-%unpack simulation data into simulation variable
-if sim_loaded==1
-    if explore_network=='t' %if we have training and testing simulations
-        tempSim=network.Simulations{2};
-        %         tempSim=num2cell(tempSim);
-        %         network.Simulations(2) = [];
-        %         network.Simulations=[network.Simulations tempSim];
-        
-        %number of training + number of testing:
-        
-        fprintf(['Your Training Simulations are Simulations 1 - ' num2str(network.numTrainingSims) '\n']);
-        fprintf(['Your Testing Simulations are Simulations ' num2str(network.numTrainingSims +1) ' - ' num2str(network.numTestingSims) '\n']);
-        
-        fprintf('\n -------------------------- \nStart Analysis: \n');
-        
+    % if strcmp(network_load,'a')
+    %Get current network - Adrian
+    [network,sim_loaded, explore_network, numNetworks]=Load_Adrian_Code();
+    %unpack simulation data into simulation variable
+    if sim_loaded==1
+        if explore_network=='t' %if we have training and testing simulations
+            tempSim=network.Simulations{2};
+            %         tempSim=num2cell(tempSim);
+            %         network.Simulations(2) = [];
+            %         network.Simulations=[network.Simulations tempSim];
+            
+            %number of training + number of testing:
+            
+            fprintf(['Your Training Simulations are Simulations 1 - ' num2str(network.numTrainingSims) '\n']);
+            fprintf(['Your Testing Simulations are Simulations ' num2str(network.numTrainingSims +1) ' - ' num2str(network.numTestingSims) '\n']);
+            
+            fprintf('\n -------------------------- \nStart Analysis: \n');
+            
+        end
+        for i = 1:length(network.Simulations)
+            simulations(i)=network.Simulations(i);
+        end
+    else
+        simulations=network.Simulations;
     end
-    for i = 1:length(network.Simulations)
-        simulations(i)=network.Simulations(i);
-    end
-else
-    simulations=network.Simulations;
-end
-cd(currentPath);
-% elseif strcmp(network_load,'z')
-%Get network - Zdenka:
-% D:\alon_\Research\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
-%     network=Load_Zdenka_Code();
-%     cd(currentPath);
-% end
+    cd(currentPath);
+    % elseif strcmp(network_load,'z')
+    %Get network - Zdenka:
+    % D:\alon_\Research\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
+    %     network=Load_Zdenka_Code();
+    %     cd(currentPath);
+    % end
 else
     % Load all data from specified folder:
     currMultiNet=input('Which size Network would you like to load iterations from? 100, 500, 1000 or 2000? \n');
     computer=getenv('computername');
     switch computer
         case 'W4PT80T2'
-            dataPath=['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\' num2str(currMultiNet) 'Alternate NWs\'];
+            dataPath=['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\' num2str(currMultiNet) 'nw Alternate NWs\'];
         case ''
-            dataPath=['/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks/' num2str(currMultiNet) 'Alternate NWs/'];
+            dataPath=['/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks/' num2str(currMultiNet) 'nw Alternate NWs/'];
         case 'LAPTOP-S1BV3HR7'
-            dataPath=['D:\alon_\Research\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\' num2str(currMultiNet) 'Alternate NWs\'];
+            dataPath=['D:\alon_\Research\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\' num2str(currMultiNet) 'nw Alternate NWs\'];
     end
     fprintf(['Loading Multi Network Data from Network size ' num2str(currMultiNet) '\n']);
     cd(dataPath); %go to chosen data folder
     dinfo = dir('Net*.mat'); %choose files starting with 'Net' in folder.
     for K = 1 : length(dinfo) %Load all files in selected folder
-    thisfile = dinfo(K).name;
-    destfile = fullfile(explore_location, thisfile);
-     network(K) = load(thisfile); %load file into network variable
-     simulations(K)=network(K).Simulations;
-    end 
-    numNetworks=length(network); %number of networks 
-        sim_loaded=1; %yes we are loading simulations 
-    explore_network='e'; %explore 
+        thisfile = dinfo(K).name;
+        destfile = fullfile(dataPath, thisfile);
+        temp = load(thisfile); %load file into network variable
+        network(K)=temp.SelNet;
+        simulations(K)=network(K).Simulations;
+    end
+    numNetworks=length(network); %number of networks
+    sim_loaded=1; %yes we are loading simulations
+    explore_network='e'; %explore
 end
 
-end 
+end
 function [LDA_Analysis] = load_LDA_data(currentPath)
 cd(currentPath);
 cd('..\Data\LDA Analysis (Mac)');
@@ -258,10 +263,144 @@ cd('..\..\CODE\Analysis');
 end
 
 %Exploring Functions:
-function Explore = explore_simulation(Sim,network,network_load,simNum,currentPath)
-
+function Explore=explore_simulation_loop(Sim,network,network_load,simNum,currentPath,loop,networkNum)
 % IMPORTANT:
 % Threshold = Degree of greater than 1
+% Binarise Threshold = Only low resistence junctions + wires
+% Full Graph = all degrees, all resistences
+
+[NodeList.String,NodeList.UserData]=GetNodeList(Sim);
+NodeList.Value=1:height(Sim.Electrodes);
+
+%% Timeseries View
+%Plot Current
+% f=figure;
+drainIndex=find(contains(Sim.Electrodes.Name,'Drain'));
+if isempty(drainIndex)
+    drain_exist=0;
+end
+sourceIndex=find(contains(Sim.Electrodes.Name,'Source'));
+for i = 1:length(sourceIndex)
+    source(:,i)=full(Sim.Data.(['ISource' num2str(i)]));
+end
+for i = 1:length(drainIndex)
+    if ismember(['IDrain' num2str(i)], fieldnames(Sim.Data))
+        drain(:,i)=full(Sim.Data.(['IDrain' num2str(i)]));
+        drain_exist=1;
+    end
+end
+% if drain_exist
+%     subplot(1,2,1)
+%     plot(source)
+%     title('Source')
+%     xlabel('Timestamp (0.01sec)')
+%     ylabel('Current (A)');
+%     subplot(1,2,2)
+%     plot(drain)
+%     title('Drain');
+%     xlabel('Timestamp (0.01sec)')
+%     ylabel('Current (A)');
+% else
+%     plot(source)
+%     title('Source')
+%     xlabel('Timestamp (0.01sec)')
+%     ylabel('Current (A)');
+% end
+
+%Plot conductance
+% f1=figure;
+drainIndex=find(contains(Sim.Electrodes.Name,'Drain'));
+if isempty(drainIndex)
+    drain_exist=0;
+end
+sourceIndex=find(contains(Sim.Electrodes.Name,'Source'));
+for i = 1:length(sourceIndex)
+    source(:,i)=full(Sim.Data.(['ISource' num2str(i)]));
+    sourceV(:,i)=full(Sim.Data.(['VSource' num2str(i)]));
+end
+for i = 1:length(drainIndex)
+    if ismember(['IDrain' num2str(i)], fieldnames(Sim.Data))
+        drain(:,i)=full(Sim.Data.(['IDrain' num2str(i)]));
+        drainV(:,i)=full(Sim.Data.(['VDrain' num2str(i)]));
+        drain_exist=1;
+    end
+end
+% plot(source./sourceV)
+% title('Source')
+% xlabel('Timestamp (0.01sec)')
+% ylabel('Conductance');
+
+%Choose a time to Explore Simulation:
+%Always choose the last available time stamp:
+IndexTime=size(Sim.Data,1);%input(['What Timestamp do you want to analyse? 1-' num2str(size(Sim.Data,1)) '\n']); %CHOOSE TIMESTAMP
+
+%% Network View
+% Function that plots network view of current and resistance
+[f2, f3, Adj, NumEl, Explore] = network_view(Sim,IndexTime, NodeList);
+fprintf('Network Analysis Complete \n');
+close all
+%% Overlay Graph Theory:
+% -----------------------------
+%Threshold
+[Graph, binarise_network]=graph_analysis(network,network_load,Sim,IndexTime,loop);
+fprintf('Graph Analysis Complete \n');
+%Threshold graph degree:
+if binarise_network=='y'
+    threshold_network='t';
+else
+    threshold_network='g';%lower(input('Do you want to plot the entire Graph or the Thresholded Graph (>1 Degree)? g - entire, t - threshold \n','s'));
+end
+if threshold_network=='t'
+    threshold=Graph.DEG>0; %greater than 1 degree threshold
+    Graph.networkThreshold=Graph.AdjMat(threshold,threshold); %applying degree threshold
+    G=graph(Graph.networkThreshold);
+    node_indices=find(threshold==1); %find nodes with threshold == 1
+else
+    G=graph(Graph.AdjMat);
+end
+
+%% Graph View
+% Function that plots graphical view of current, voltage and resistance
+if threshold_network=='t'
+    [f4, f5, f6, G, Adj, Adj2, Explore, highlightElec, new_electrodes] = graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold, drain_exist);
+else
+    [f4, f5, f6, G, Adj, Explore, highlightElec, new_electrodes] = graph_view(Sim,IndexTime,Explore,G, threshold_network,drain_exist);
+end
+close all
+%% Graph Theory View
+% Function that plots graph theory overlayed on graph view of currents
+if threshold_network=='t'
+    [f7, f8, f9, f10, f11, f12,f13,f14, Explore,sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj,Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices,drain_exist);
+    fprintf('Graph Theory Complete \n');
+    
+else
+    [f7, f8, f9, f10, f11, f12,f13,f14, Explore, sourceElec, drainElec]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore, Graph, highlightElec, new_electrodes,drain_exist);
+    fprintf('Graph Theory Complete \n');
+end
+close all
+
+%% Save
+%Save Variables
+Explore.IndexTime=IndexTime;
+Explore.Name=Sim.Name;
+Graph.CircuitRank = numedges(G) - (numnodes(G) - 1);
+Explore.GraphTheory=Graph;
+Explore.GraphTheory.Definitions={'GE = Global Efficiency','LE = Local Efficiency', 'COMM = Communicability', 'Ci = Community/Cluster Affiliation',...
+    'Q = Modularity', 'P = Participation Coefficient', 'MZ = Module Degree z Score', 'AvgPath - Average Path Length', ...
+    'GlobalC1ust = number of triangle loops / number of connected triples', 'AvgLocalClust = the average local clustering, where Ci = (number of triangles connected to i) / (number of triples centered on i)', ...
+    'Graph.Clust = a 1xN vector of clustering coefficients per node (where mean(C) = C2)'};
+if threshold_network=='t'
+    Explore.Thresholded='Yes';
+else
+    Explore.Thresholded='No';
+end
+
+fprintf(['Network ' num2str(networkNum) ' Finished \n \n']);
+end
+function Explore = explore_simulation(Sim,network,network_load,simNum,currentPath,loop)
+
+% IMPORTANT:
+% Threshold = Degree of greater than 0
 % Binarise Threshold = Only low resistence junctions + wires
 % Full Graph = all degrees, all resistences
 
@@ -337,7 +476,7 @@ fprintf('Network Analysis Complete \n');
 %% Overlay Graph Theory:
 % -----------------------------
 %Threshold
-[Graph, binarise_network]=graph_analysis(network,network_load,Sim,IndexTime);
+[Graph, binarise_network]=graph_analysis(network,network_load,Sim,IndexTime,loop);
 fprintf('Graph Analysis Complete \n');
 %Threshold graph degree:
 if binarise_network=='y'
@@ -346,7 +485,7 @@ else
     threshold_network=lower(input('Do you want to plot the entire Graph or the Thresholded Graph (>1 Degree)? g - entire, t - threshold \n','s'));
 end
 if threshold_network=='t'
-    threshold=Graph.DEG>1; %greater than 1 degree threshold
+    threshold=Graph.DEG>0; %greater than 1 degree threshold
     Graph.networkThreshold=Graph.AdjMat(threshold,threshold); %applying degree threshold
     G=graph(Graph.networkThreshold);
     node_indices=find(threshold==1); %find nodes with threshold == 1
@@ -361,6 +500,7 @@ if threshold_network=='t'
 else
     [f4, f5, f6, G, Adj, Explore, highlightElec, new_electrodes] = graph_view(Sim,IndexTime,Explore,G, threshold_network,drain_exist);
 end
+
 %% Graph Theory View
 % Function that plots graph theory overlayed on graph view of currents
 if threshold_network=='t'
@@ -512,7 +652,7 @@ end
 function save_explore(Explore,network,network_load,currentPath,simNum,loop)
 cd(currentPath);
 % save_directory='..\Data\Explore Analysis\';
-save_directory='..\Data\Explore Analysis\100nw Alternate NWs\';
+save_directory=['..\Data\Explore Analysis\' num2str(network.number_of_wires) 'nw Alternate NWs\'];
 if strcmp(network_load,'z')%Zdenka Code:
     save([save_directory 'Zdenka_' num2str(network.number_of_wires) 'nw_Exploration_Analysis_' date],'Explore');
 elseif strcmp(network_load,'a') %adrian code
@@ -845,7 +985,7 @@ end
 end
 
 %Graph Functions
-function [Graph, binarise_network]=graph_analysis(network,network_load,currentSim,IndexTime)
+function [Graph, binarise_network]=graph_analysis(network,network_load,currentSim,IndexTime,loop)
 %% Mac's Analysis: (Graph)
 if strcmp(network_load,'z')%Zdenka Code:
     net_mat=network.adj_matrix; %symmetrical matrix
@@ -854,7 +994,11 @@ elseif strcmp(network_load,'a') %adrian code
         IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(size(currentSim.Data,1)) '\n']); %CHOOSE TIMESTAMP
     end
     %this gives a resistance matrix for the network used for a chosen simulation at a specific timestamp
-    binarise_network=input('Do you want to view the network thresholded/binarised ONLY with low Resistance? \n','s');
+    if loop
+        binarise_network='n';
+    else
+        binarise_network=input('Do you want to view the network thresholded/binarised ONLY with low Resistance? \n','s');
+    end
     if binarise_network=='y' %Binarise so we can use Resistance for graph theory analysis
         
         %what we are doing here is creating a matrix of 0 and 1 (high and
