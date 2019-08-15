@@ -67,15 +67,7 @@ if networkNum==0 %if we want to loop through all networks
     NetMulti=[];
     loop=1;
     for networkCount=1:length(network) %loop though the networks:
-        if sim_loaded
-            if size(simulations,1)==1
-                currentSim=simulations{simNum};
-            else
-                currentSim=simulations(simNum);
-            end
-        else
-            currentSim=network(networkCount).Simulations{simNum};
-        end
+        currentSim=network(networkCount).Simulations{simNum};
         % ANALYSIS: -----------------------------------------------------
         i = 1;
         while i == 1
