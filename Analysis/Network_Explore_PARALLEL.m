@@ -13,21 +13,24 @@
 % Binarise Threshold = Only low resistence junctions + wires
 % Full Graph = all degrees, all resistences
 % --------------------------
-dbstop if error
+% dbstop if error
 %% Load Data
+
+fprintf('Started');
+addpath(genpath('/headnode2/aloe8475/CODE/'));
 
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2' %if on desktop at uni - Alon
         currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis';
     case '' %if on linux
-        currentPath='/suphys/aloe8475/Documents/CODE/Analysis';
+        currentPath='/headnode2/aloe8475/CODE/Analysis';
     case 'LAPTOP-S1BV3HR7'
         currentPath='D:\alon_\Research\PhD\CODE\Analysis';
         %case '' %--- Add other computer paths (e.g. Mike)
 end
 cd(currentPath);
-load_data_question=lower(input('Load network data, Analysis Data Only or None? N - None, D - Network Data, L - All Network Data for Loop \n','s'));
+load_data_question='l';%lower(input('Load network data, Analysis Data Only or None? N - None, D - Network Data, L - All Network Data for Loop \n','s'));
 
 if load_data_question=='d' || load_data_question=='l'
     if load_data_question=='l'
@@ -44,10 +47,6 @@ end
 %% Choose Simulations
 %-------
 %Choose Network and Simulation for training or exploring
-if explore_network=='t'
-    networkNum=input(['Which Network # do you want to select for Training? 1 - ' num2str(length(network)) '\n']);
-    simNum=input(['Which Simulation # do you want to select for Training? 1 - '  num2str(network(networkNum).numTrainingSims) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
-else
     networkState=0;%input(['Which Network # do you want to explore?  1  -  ' num2str(length(network)) '  OR  0  to loop through all \n']);
     networkNum=networkState;
     if networkState==0
@@ -55,41 +54,21 @@ else
     else
         simNum=input(['Which Simulation # do you want to explore?  1  -  '  num2str(length(network(networkNum).Simulations)) '  \n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
     end
-end
 %% Loop through networks:
 if networkNum==0 %if we want to loop through all networks
     NetMulti=[];
     loop=1;
+    Explore=cell(length(network),1);
     parfor networkCount=1:length(network) %loop though the networks:
-        if sim_loaded
-            if size(simulations,1)==1
-                currentSim=simulations{simNum};
-            else
-                currentSim=simulations(simNum);
-            end
-        else
-            currentSim=network(networkCount).Simulations{simNum};
-        end
+        currentSim=network(networkCount).Simulations{simNum};
         % ANALYSIS: -----------------------------------------------------
-        i = 1;
-        while i == 1
             %% Exploratary analysis of simulation
-            Explore{networkCount}=explore_simulation(currentSim,network(networkCount),network_load,simNum,currentPath,loop,networkCount);
-            
-            i=i+1;
-            %% Saving Explore
-            if networkCount==length(network)
-                save_state=lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
-                if save_state=='y'
-                    save_explore(Explore{networkCount},network(networkCount),network_load,currentPath,simNum,loop);
-                    i=i+1; %get out of while loop this loop finishes
-                end
-            end
+            Explore{networkCount}=explore_simulation_loop(currentSim,network(networkCount),network_load,simNum,currentPath,loop,networkCount);
             %% Insert Further Analysis Below
             % -------------------------------
-            % -------------------------------
-        end
     end
+                %% Saving Explore
+    save_explore(Explore,network,network_load,currentPath,simNum,loop);
 else %if we're not looping
     if sim_loaded
         if size(simulations,1)==1
@@ -108,12 +87,7 @@ else %if we're not looping
     i = 1;
     while i == 1
         %Choose Analysis to perform
-        if explore_network=='t'
-            extract_data(network); %extract data for python
-            fprintf(['Extracting Data for Python Use...\n\n\n']);
-            fprintf(['Data Extracted \n\n\n']);
-            analysis_type=lower(input('Which analysis would you like to perform? G - graph, E - Explore Network,L - LDA, N - none \n','s'));
-        elseif explore_network=='e' % we don't want to allow LDA if just exploring
+        if explore_network=='e' % we don't want to allow LDA if just exploring
             analysis_type=lower(input('Which analysis would you like to perform? G - graph, E - Explore Network, N - none \n','s'));
         end
         if analysis_type=='g'
@@ -221,13 +195,14 @@ if ~loop
     % end
 else
     % Load all data from specified folder:
-    currMultiNet=input('Which size Network would you like to load iterations from? 100, 500, 1000 or 2000? \n');
+    %% NEED TO CHANGE currMultiNet for each cluster batch
+    currMultiNet=2000;%input('Which size Network would you like to load iterations from? 100, 500, 1000 or 2000? \n');
     computer=getenv('computername');
     switch computer
         case 'W4PT80T2'
             dataPath=['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\' num2str(currMultiNet) 'nw Alternate NWs\'];
         case ''
-            dataPath=['/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks/' num2str(currMultiNet) 'nw Alternate NWs/'];
+            dataPath=['/headnode2/aloe8475/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks/' num2str(currMultiNet) 'nw Alternate NWs/'];
         case 'LAPTOP-S1BV3HR7'
             dataPath=['D:\alon_\Research\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\' num2str(currMultiNet) 'nw Alternate NWs\'];
     end
@@ -461,7 +436,7 @@ xlabel('Timestamp (0.01sec)')
 ylabel('Conductance');
 
 %Choose a time to Explore Simulation:
-IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(size(Sim.Data,1)) '\n']); %CHOOSE TIMESTAMP
+IndexTime=size(Sim.Data,1);%input(['What Timestamp do you want to analyse? 1-' num2str(size(Sim.Data,1)) '\n']); %CHOOSE TIMESTAMP
 
 %% Network View
 % Function that plots network view of current and resistance
@@ -568,7 +543,7 @@ else
 end
 %% Save Plots
 
-save_explore_plots=lower(input('Would you like to save the plots? y or n \n','s'));
+save_explore_plots='n';%lower(input('Would you like to save the plots? y or n \n','s'));
 cd(currentPath)
 save_directory='..\Data\Figures\Explore Analysis\';
 if length(network)== 1
@@ -646,14 +621,21 @@ end
 end
 function save_explore(Explore,network,network_load,currentPath,simNum,loop)
 cd(currentPath);
+fprintf('Saving... \n');
 % save_directory='..\Data\Explore Analysis\';
-save_directory=['..\Data\Explore Analysis\' num2str(network.NetworkSettings.Number) 'nw Alternate NWs\'];
+save_directory=['../Data/Explore Analysis/' num2str(network(1).NetworkSettings.Number) 'nw Alternate NWs/'];
 if strcmp(network_load,'z')%Zdenka Code:
-    save([save_directory 'Zdenka_' num2str(network.number_of_wires) 'nw_Exploration_Analysis_' date],'Explore');
+    save([save_directory 'Zdenka_' num2str(network(1).number_of_wires) 'nw_Exploration_Analysis_' date],'Explore');
 elseif strcmp(network_load,'a') %adrian code
-    network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
-    save([save_directory 'Adrian_' num2str(network.Name) '_Length_' num2str(network.NetworkSettings.Length) '_Disp_' num2str(network.NetworkSettings.Disp) '_Sim_' num2str(simNum) '_Exploration_Analysis_Timestamp_' num2str(Explore.IndexTime)],'Explore');
-end
+    network(1).Name(regexp(network(1).Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
+    if loop
+        save([save_directory 'Adrian_NW_Sx' num2str(network(1).NetworkSettings.Number) '_NumNetworkIterations_' num2str(length(Explore)) '_' date],'Explore');
+        cd(save_directory);
+        pwd
+    else
+        save([save_directory 'Adrian_' num2str(network.Name) '_Length_' num2str(network.NetworkSettings.Length) '_Disp_' num2str(network.NetworkSettings.Disp) '_Sim_' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Exploration_Analysis_Timestamp_' num2str(Explore.IndexTime)],'Explore');
+    end
+end 
 end
 
 %LDA Functions

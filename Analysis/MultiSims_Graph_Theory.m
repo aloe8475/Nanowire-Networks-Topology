@@ -255,8 +255,8 @@ netsourceMZ=[sourceMZ{:}];
 netdrainMZ=[drainMZ{:}];
 netsourceDEG=[sourceDEG{:}];
 netdrainDEG=[drainDEG{:}];
-netidx=[idx{:}];
-netidx2=[idx2{:}];
+netSourceIdx=[idx{:}];
+netDrainIdx=[idx2{:}];
 netSourceElec=[sourceElec{:}];
 netDrainElec=[drainElec{:}];
 %Means and Stds
@@ -333,7 +333,7 @@ title([num2str(length(Explore{1}.GraphView.currents)) 'nw | ' num2str(length(Sim
 [r.BCsource]=corrcoef(netsourceBC,netsourceCurrent);
 hold on
 
-labelpoints(netsourceBC,netsourceCurrent,netSourceElec);
+labelpoints(netsourceBC,netsourceCurrent,netSourceIdx);
 
 % Degree
 f2=figure('Position',[0 0 1920 1080]);
@@ -346,7 +346,7 @@ title([num2str(length(Explore{1}.GraphView.currents)) 'nw | ' num2str(length(Sim
 [r.DEGsource]=corrcoef(netsourceDEG,netsourceCurrent);
 hold on
 
-labelpoints(netsourceDEG,netsourceCurrent,netSourceElec);
+labelpoints(netsourceDEG,netsourceCurrent,netSourceIdx);
 
 % Participation Coefficient & Module Z
 f3=figure('Position',[0 0 1920 1080]);
@@ -358,7 +358,7 @@ ylabel('Current (A)');
 title([num2str(length(Explore{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Sim{1}.Settings.Time) ' sec | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Source Electrode']);
 [r.Psource]=corrcoef(netsourcePCoeff,netsourceCurrent);
 hold on
-labelpoints(netsourcePCoeff,netsourceCurrent,netSourceElec);
+labelpoints(netsourcePCoeff,netsourceCurrent,netSourceIdx);
 
 
 
@@ -373,7 +373,7 @@ ylabel('Current (A) at Drain');
 title([num2str(length(Explore{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Sim{1}.Settings.Time) ' sec | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Drain Electrode']);
 [r.BCdrain]=corrcoef(netdrainBC,netdrainCurrent);
 hold on
-labelpoints(netdrainBC,netdrainCurrent,netDrainElec);
+labelpoints(netdrainBC,netdrainCurrent,netDrainIdx);
 
 
 % Degree
@@ -385,7 +385,7 @@ xlabel('Degree');
 ylabel('Current (A)');
 title([num2str(length(Explore{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Sim{1}.Settings.Time) ' sec | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Drain Electrode']);
 [r.DEGdrain]=corrcoef(netdrainDEG,netdrainCurrent);
-labelpoints(netdrainDEG,netdrainCurrent,netDrainElec);
+labelpoints(netdrainDEG,netdrainCurrent,netDrainIdx);
 
 % Participation Coefficient & Module Z
 % To do: scatter for each simulation independently and label drain from subgraph instead of
@@ -396,13 +396,13 @@ s3=scatter(netdrainCurrent,netdrainPCoeff);
 hold on
 ConnectorHub=patch([0 0 2.2*1e-4 2.2*1e-4],[0.3 0.7 0.7 0.3],'blue','LineStyle','none','FaceAlpha',0.2);
 xlim([0.2*1e-4 2.2*1e-4])
-labelpoints(netdrainCurrent,netdrainPCoeff,netDrainElec);
+labelpoints(netdrainCurrent,netdrainPCoeff,netDrainIdx);
 h3=lsline;
 h3.Color='blue';
 ylabel('Participant Coefficient')
 yyaxis right
 s3b=scatter(netdrainCurrent,netdrainMZ,'r');
-labelpoints(netdrainCurrent,netdrainMZ,netDrainElec);
+labelpoints(netdrainCurrent,netdrainMZ,netDrainIdx);
 h3b=lsline;
 h3b.Color='r';
 %Plot rectangles:
