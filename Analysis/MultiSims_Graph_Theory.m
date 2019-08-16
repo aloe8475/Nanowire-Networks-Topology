@@ -1,4 +1,21 @@
 %% MultiSim Explore Analysis
+%-------------------------------------------------------------------------
+
+% This script loads Graph Theory analyses performed in Network_Explore_MultiSim_Same_Network for
+% all simulations of the same size network. 
+
+% Author: Alon Loeffler
+% Date: 16/08/2019
+% Version: 1.0
+
+% Changelog:
+% 22/07/2019 - Added Guimera and Amaral (2005) colored rectangular
+% distribution of participant coefficient and module z score
+% 26/06/2019 - Added Participant coefficient, Small World Propensity and
+% Betweenness centrality measures.
+%-------------------------------------------------------------------------
+
+
 clear all;
 close all;
 
@@ -139,7 +156,7 @@ for i = 1:length(Explore)
     
     %% COMMUNICABILITY
     % Adj{i}=Explore{i}.GraphView.AdjMat(threshold{i},threshold{i});
-    COMM{i}=Explore{i}.GraphTheory.COMM(threshold{i},threshold{i});
+    COMM2{i}=Explore{i}.GraphTheory.COMM(threshold{i},threshold{i});
     if largestcomponent
     [jj,ii,~]=find(tril(Adj));%{i}));
     else
@@ -165,8 +182,15 @@ for i = 1:length(Explore)
     %Find Graph.COMM in network
     com3{i}=com(logical(com2));
         meanCom3{i}=mean(com3{i});
-        stdCom3{i}=std(com3{i});
-
+        stdCom3{i}=std(com3{i});        
+        
+        %% CharPath, Distance & Global Efficiency
+%     [Distance{i}, GE{i}] = efficiency_bin(Adj,0);
+%     Distance{i}(Distance{i}==Inf)=0;
+%     % Distance from Source:
+%     DistSource{i}=Distance{i}(idx{1},:);
+%     [CharPath{i},Efficiency{i},ecc{i},Radius{i},Diameter{i}]=charpath(Distance{i});          
+        
     %% Current at Nodes:
     
     % Take the sum:
@@ -180,9 +204,11 @@ for i = 1:length(Explore)
     BC{i}=Explore{i}.GraphTheory.BC(threshold{i});
     sourceBC{i}=BC{i}(idx{i});
     drainBC{i}=BC{i}(idx2{i});
-    
+          
     %% Path Length
     PathLength{i} = path_length(Adj);
+    PathLength{i}(PathLength{i}==Inf)=0;
+    AvgPath{i}=mean(PathLength{i});
 
     %% Degree 
     Degree{i}=Explore{i}.GraphTheory.DEG(threshold{i});
@@ -259,12 +285,12 @@ netSourceIdx=[idx{:}];
 netDrainIdx=[idx2{:}];
 netSourceElec=[sourceElec{:}];
 netDrainElec=[drainElec{:}];
+netDistSource=[DistSource{:}];
 %Means and Stds
 meanCOMM=[meanCom3{:}];
 stdCOMM=[stdCom3{:}];
 meanCurrs=[meanCC3{:}];
 stdCurrs=[stdCC3{:}];
-
 %% Plots:
 
 %Plot Graph
@@ -297,8 +323,36 @@ hold on
 legend([p2,p3, h],'2nd order Polynomial Fit','3rd order Polynomial Fit','Linear Fit');
 [r.COMM,p.COMM]=corrcoef(netCOMM,netCurrs);
 
+%% Plot correlation current vs Path Length
 
-% Plot correlation for mean and variance
+%Plot Correlations at Edges:
+fcurr=figure('Position',[0 0 1920 1080]);
+scurr=scatter(netDistSource,netCurrs);
+hcurr=lsline; %Linear Fit
+
+%Polynomial Fits -------
+hpcurr=polyfit(netDistSource,netCurrs,2); %2nd Order Polynomial Fit
+x2=min(netDistSource):1:max(netDistSource);
+y2=polyval(hpcurr,x2);
+hold on
+p2curr=plot(x2,y2,'g');
+
+hp3curr=polyfit(netDistSource,netCurrs,3); %3rd Order Polynomial Fit
+x3=min(netDistSource):1:max(netDistSource);
+y3=polyval(hp3curr,x3);
+hold on
+p3curr=plot(x3,y3,'m');
+% ------
+
+hcurr.Color='r';
+xlabel('Path Length');
+ylabel('Current (A)');
+title([num2str(length(Explore{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Sim{1}.Settings.Time) ' sec | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Random Electrode Placement']);
+hold on 
+legend([p2curr,p3curr, h],'2nd order Polynomial Fit','3rd order Polynomial Fit','Linear Fit');
+[r.PATH,p.PATH]=corrcoef(netDistSource,netCurrs);
+
+%% Plot correlation for mean and variance
 fmean=figure('Position',[0 0 1920 1080]);
 smean=scatter(meanCOMM,meanCurrs);
 e=errorbar(meanCOMM,stdCOMM);

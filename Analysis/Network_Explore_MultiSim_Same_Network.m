@@ -85,7 +85,32 @@ while i == 1
         i=i+1;
     elseif analysis_type=='e'
         %% Exploratary analysis of simulation
-        [Explore{currentSimulation},threshold{currentSimulation}]=explore_simulation(currentSim,network,network_load,simNum,currentPath,currentSimulation,simulations);
+        
+        %Choose a time to Explore Simulation:
+        %Find the times where the voltage is on:
+        a=currentSim.Data.time(currentSim.Data.VSource1>0.1);
+        time1=median(a(1:round(252/3)))-0.005;%252 = total timepoints where voltage >0.5 in all scenarios
+        if time1>a(end)
+            time1=a(end);
+            endTime=1;
+        else
+            endTime=0;
+        end
+        time2=time1*5;
+        if time2>a(end) & ~endTime
+            time2=a(end);
+            endTime=1;
+        else
+            endTime=0;
+        end
+        time3=time1*10;
+        if time3>a(end) & ~endTime
+            time3=a(end);
+        end
+        times=[time1 time2 time3];
+        for time=1:length(times)
+        [Explore{currentSimulation}(time),threshold{currentSimulation}]=explore_simulation(currentSim,network,network_load,simNum,currentPath,currentSimulation,simulations,times,time);
+        end 
         %% Saving Explore
         if currentSimulation==length(simulations)
         save_state=lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
@@ -164,7 +189,7 @@ cd(currentPath);
 end
 
 %Exploring Functions:
-function [Explore,threshold] = explore_simulation(Sim,network,network_load,simNum,currentPath,currentSimulation,simulations)
+function [Explore,threshold] = explore_simulation(Sim,network,network_load,simNum,currentPath,currentSimulation,simulations,times,time)
 
 % IMPORTANT:
 % Threshold = Degree of greater than 1
@@ -232,8 +257,8 @@ end
 %     xlabel('Timestamp (0.01sec)')
 %     ylabel('Conductance');
 
-%Choose a time to Explore Simulation:
-IndexTime=size(Sim.Data.Currents,1); %choose the last timestamp 
+
+IndexTime=single(times(time)*100); %choose the last timestamp 
 %input(['What Timestamp do you want to analyse? 1-' num2str(size(Sim.Data,1)) '\n']); %CHOOSE TIMESTAMP
 
 %% Network View
@@ -279,49 +304,7 @@ else
 %     fprintf('Graph Theory Complete \n');
 end
 
-%Biograph view
-% h = view(biograph(Adj,[],'ShowArrows','off'));
-% set(h.Nodes(path),'Color',[1 0.4 0.4])
-% fowEdges = getedgesbynodeid(h,get(h.Nodes(path),'ID'));
-% revEdges = getedgesbynodeid(h,get(h.Nodes(fliplr(path)),'ID'));
-% edges = [fowEdges;revEdges];
-% set(edges,'LineColor',[1 0 0])
-% set(edges,'LineWidth',1.5)
-
-%% Searching Algorithms
-
-if threshold_network=='t' %only conduct search if we thresholded the network - otherwise too complex
-    %     T1 = bfsearch(G,sourceElec,'allevents'); %Breadth-First Search
-    %     T2 = dfsearch(G, sourceElec, 'allevents', 'Restart', true); %Depth-First Search
-    %figure;
-    %visualize_search(G,T1) %Visual search step by step
-    % visualize_search(G,T2) %Visual search step by step
-    
-    %plot searching algorithms
-    %bfsearch
-    %     fs1=figure;p = plot(G,'Layout','layered');
-    %     events = {'edgetonew','edgetofinished','startnode'};
-    %     T = bfsearch(G,sourceElec,events,'Restart',true);
-    %     highlight(p, 'Edges', T.EdgeIndex(T.Event == 'edgetofinished'), 'EdgeColor', 'k')
-    %     highlight(p, 'Edges', T.EdgeIndex(T.Event == 'edgetonew'), 'EdgeColor', 'r')
-    %     highlight(p,T.Node(~isnan(T.Node)),'NodeColor','g')
-    %     if drain_exist
-    %     %Overlay shortest path:
-    %     [dist,path,pred]=graphshortestpath(Adj2,sourceElec,drainElec,'Directed','false');
-    %     highlight(p,path,'EdgeColor','cyan','LineWidth',6,'LineStyle','-');
-    %     title('Layered Graph Breadth-First Search overlayed w Shortest Path');
-    %         fprintf('Shortest Path Complete \n');
-    %     end
-    %Outputs:
-    
-    %'discovernode' (default)-A new node has been discovered.
-    %'finishnode'- All outgoing edges from the node have been visited.
-    %'startnode'- This flag indicates the starting node in the search. If 'Restart' is true, then 'startnode' flags the starting node each time the search restarts.
-    %'edgetonew'-Edge connects to an undiscovered node.
-    %'edgetodiscovered'	-Edge connects to a previously discovered node.
-    %'edgetofinished'- Edge connects to a finished node.
-    
-end
+ 
 
 %% Save
 %Save Variables
@@ -424,7 +407,7 @@ if strcmp(network_load,'z')%Zdenka Code:
     save([save_directory 'Zdenka_' num2str(network.number_of_wires) 'nw_Exploration_Analysis_' date],'Explore');
 elseif strcmp(network_load,'a') %adrian code
     network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
-    save([save_directory 'Adrian_' num2str(network.Name) '_Sim_' num2str(simNum) '_LastSim_SourceElectrode_' num2str(Explore{simNum}.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore{simNum}.GraphView.ElectrodePosition(2)) '_Exploration_Analysis_ Timestamp_' num2str(Explore{simNum}.IndexTime) '_' date],'Explore','threshold','network','Sim');
+    save([save_directory 'Adrian_' num2str(network.Name) '_Sim_' num2str(simNum) '_LastSim_SourceElectrode_' num2str(Explore{simNum}.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore{simNum}.GraphView.ElectrodePosition(2)) '_Exploration_Analysis_ Timestamp_' num2str(Explore{simNum}.IndexTime) '_' date],'Explore','threshold','network','Sim','-v7.3');
 end
 end
 
@@ -531,7 +514,9 @@ Graph.AvgPath=mean(Graph.Path);
 Graph.ConnectivityMagnitude=Graph.AvgPath/(length(net_mat)*length(net_mat)); 
 
 %Small World Propensity:
+if ~unique(net_mat)==0
 Graph.SmallWorldProp=small_world_propensity(net_mat);
+end 
 % fprintf('Small World Propensity Complete \n');
 
 %modularity --> an estimate of how segregated the network is
@@ -542,7 +527,9 @@ Graph.SmallWorldProp=small_world_propensity(net_mat);
 % fprintf('Ci & Q Complete \n');
 
 %Modularity:
+if ~unique(net_mat)==0
 Graph.Modularity=modularity_und(full(net_mat));
+end 
 %The optimal community structure is a subdivision of the network into nonoverlapping groups of nodes in a way that maximizes the number of within-group edges, and minimizes the number of between-group edges.
 %The modularity is a statistic that quantifies the degree to which the network may be subdivided into such clearly delineated groups
 % fprintf('Modularity Complete \n');

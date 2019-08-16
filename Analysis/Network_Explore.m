@@ -1025,9 +1025,9 @@ fprintf('Global Efficiency Complete \n');
 [localDistance, Graph.LE]= efficiency_bin(net_mat,1);
 fprintf('Local Efficiency Complete \n');
 
-% Diameter
-Graph.Diameter=diameter(net_mat);
-fprintf('Diameter Complete \n');
+% % Diameter
+% Graph.Diameter=diameter(net_mat);
+
 
 % Density
 %Network Density:
@@ -1070,10 +1070,11 @@ fprintf('Clustering Coefficient Complete \n');
 
 %Path Length
 Graph.Path = path_length(net_mat);
-Graph.CharPath=charpath(Graph.Distance);
+[Graph.CharPath,Graph.Efficiency,Graph.ecc,Graph.Radius,Graph.Diameter]=charpath(Graph.Distance);
 %Average Path Length
 Graph.AvgPath=mean(Graph.Path);
 fprintf('Path Length Complete \n');
+fprintf('Diameter Complete \n');
 
 %Connectivity Magnitude Measure of the network:
 %Average number of connections divided by maximum number of possible connections

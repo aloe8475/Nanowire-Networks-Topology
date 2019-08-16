@@ -61,13 +61,21 @@ for i=1:size(Sim.Electrodes.PosIndex,1)
     if ~isempty(find(node_indices==Sim.Electrodes.PosIndex(i)))
         new_electrodes(i).PosIndex=find(node_indices==Sim.Electrodes.PosIndex(i));
         new_electrodes(i).Name=Sim.Electrodes.Name(i);
+        noPath=0;
+    else
+        noPath=1;
     end
 end
 
+if ~noPath
 highlightElec={new_electrodes.PosIndex};
 highlightElec=cell2num(highlightElec);
 highlight(p,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
 labelnode(p,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
+else
+    highlightElec=[];
+    new_electrodes=[];
+end 
 title(['Current Graph View | T= ' num2str(IndexTime)]);
 
 
@@ -108,9 +116,10 @@ colorbar(currAx);
 caxis(currAx,clim);
 
 %Highlight Electrodes:
+if ~noPath
 highlight(p1,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
 labelnode(p1,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
-
+end 
 title(['Resistance Graph View | T= ' num2str(IndexTime)]);
 
 %Voltage at each Node: %17/05/19
@@ -134,8 +143,9 @@ p2.MarkerSize=3;
 colormap(currAx,hot);
 colorbar(currAx);
 caxis([Sim.SimInfo.MinV Sim.SimInfo.MaxV]);
-
+if ~noPath
 labelnode(p2,highlightElec,[new_electrodes(:).Name]);
+end 
 title(['Voltage Graph View |T= ' num2str(IndexTime)]);
 
 Explore.GraphView.currents=Sim.Data.Currents{IndexTime};

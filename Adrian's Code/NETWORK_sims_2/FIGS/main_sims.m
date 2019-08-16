@@ -199,16 +199,16 @@ else
 end 
 %for 100nw - (need to change for others)
 for j = 1:numEl
-    elec(1).x=3;
-    elec(1).y=12;
-    elec(2).x=22;
-    elec(2).y=12;
-% elec(j).x=randi(round(mean(x_lim)+10),1); % IF WE WANT RANDOM
+%     elec(1).x=3;
+%     elec(1).y=12;
+%     elec(2).x=22;
+%     elec(2).y=12;
+elec(j).x=randi(round(mean(x_lim)+10),1); % IF WE WANT RANDOM
 % ELECTRODES
 % while existElec==1 & temp.x1 == elec.x1 & temp.y1 == elec.y1 %make sure x and y are not the same as last time
 %     elec.y1=randi(y_lim); %if they are the same, randomise y again
 % end 
-% elec(j).y=randi(round(mean(y_lim)+12.5),1); % IF WE WANT RANDOM
+elec(j).y=randi(round(mean(y_lim)+10),1); % IF WE WANT RANDOM
 % ELECTRODES
 end
 

@@ -117,7 +117,7 @@ switch ini
         sim.SquareNW=0;
         
         sim.IniRes=5e6;
-        sim.Time=1;
+        sim.Time=5;
         sim.Step=0.01;
         sim.Ron=5e3;
         sim.Roff=5e6;
@@ -140,12 +140,12 @@ switch ini
         sim.ElectrodesInfo={};
         sim.Vmax=0.5;
         sim.Vmin=1e-3;
-        sim.NoC=1; %number of cycles
+        sim.NoC=3; %number of cycles
         sim.Frequency=0;
         sim.Name='Source1';
         sim.OpenCheck=0;
         sim.Duty=50;
-        sim.SigType='Constant';
+        sim.SigType='Square';
         sim.TStartOff=0;
         sim.SetFreq=10;
         sim.VSet=5;
