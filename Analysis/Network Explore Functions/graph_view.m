@@ -1,7 +1,7 @@
 %% Graph View
 % This function plots graph parameters such as current, voltage and
 % resistance for the chosen Sim at the given timestamp (IndexTime)
-function [f3, f4, f5, G, Adj, Explore,  highlightElec, new_electrodes]= graph_view(Sim,IndexTime,Explore,G, threshold_network, drain_exist)
+function [f3, f4, f5, G, Adj, Explore,  highlightElec, new_electrodes]= graph_view(Sim,IndexTime,Explore,G, threshold_network, drain_exist,source_exist)
 if threshold_network=='t'
     return
     fprintf('Error in graph_view - you should not be seeing this');

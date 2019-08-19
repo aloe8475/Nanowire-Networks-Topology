@@ -59,16 +59,20 @@ if networkNum==0 %if we want to loop through all networks
     NetMulti=[];
     loop=1;
     Explore=cell(length(network),1);
+    pool=parpool(6);
     parfor networkCount=1:length(network) %loop though the networks:
         currentSim=network(networkCount).Simulations{simNum};
+        fprintf([num2str(networkCount) '\n']);
         % ANALYSIS: -----------------------------------------------------
             %% Exploratary analysis of simulation
             Explore{networkCount}=explore_simulation_loop(currentSim,network(networkCount),network_load,simNum,currentPath,loop,networkCount);
             %% Insert Further Analysis Below
             % -------------------------------
+            fprintf('Finished Explore');
     end
                 %% Saving Explore
     save_explore(Explore,network,network_load,currentPath,simNum,loop);
+    
 else %if we're not looping
     if sim_loaded
         if size(simulations,1)==1

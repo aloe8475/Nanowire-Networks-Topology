@@ -2,7 +2,7 @@
 % This function plots graph theory parameters overlayed on graph view of
 % currents for the chosen Sim at the given timestamp (IndexTime)
 
-function [f6, f7, f8, f9, f10, f11,f12,f13, Explore, sourceElec, drainElec]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore,Graph, highlightElec, new_electrodes,drain_exist)
+function [f6, f7, f8, f9, f10, f11,f12,f13, Explore, sourceElec, drainElec]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore,Graph, highlightElec, new_electrodes,drain_exist,source_exist)
 
 %% Find Source and Drain Electrodes:
 for i = 1:length(new_electrodes)

@@ -1,7 +1,7 @@
 %% Graph View
 % This function plots graph parameters such as current, voltage and
 % resistance for the chosen Sim at the given timestamp (IndexTime)
-function [f3, f4, f5, G, Adj, Adj2, Explore,  highlightElec, new_electrodes]= graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold, drain_exist,node_indices)
+function [f3, f4, f5, G, Adj, Adj2, Explore,  highlightElec, new_electrodes]= graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold, drain_exist,source_exist,node_indices)
 if threshold_network~='t'
     return
     fprintf('Error in graph_view_threshold - you should not be seeing this');
@@ -57,10 +57,12 @@ caxis(currAx,clim);
 
 %Highlight Electrodes:
 node_indices=find(threshold==1); %find nodes with threshold == 1
+count=0;
 for i=1:size(Sim.Electrodes.PosIndex,1)
-    if ~isempty(find(node_indices==Sim.Electrodes.PosIndex(i)))
-        new_electrodes(i).PosIndex=find(node_indices==Sim.Electrodes.PosIndex(i));
-        new_electrodes(i).Name=Sim.Electrodes.Name(i);
+    if ~isempty(find(node_indices==Sim.Electrodes.PosIndex(i))) 
+        count=count+1;
+        new_electrodes(count).PosIndex=find(node_indices==Sim.Electrodes.PosIndex(i));
+        new_electrodes(count).Name=Sim.Electrodes.Name(i);
         noPath=0;
     else
         noPath=1;

@@ -2,27 +2,46 @@
 % This function plots graph theory parameters overlayed on graph view of
 % currents for the chosen Sim at the given timestamp (IndexTime)
 
-function [f6, f7, f8, f9, f10, f11, f12,f13, Explore, sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj, Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices,drain_exist)
+function [f6, f7, f8, f9, f10, f11, f12,f13, Explore, sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj, Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices,drain_exist,source_exist)
 %% Find Source and Drain Electrodes:
 
-
-for i = 1:length(new_electrodes)
-    electrodes_cell(i)=new_electrodes(i).Name;%% ALON TO FIX  06/08/19
+%NOTE: This only works with 1 source and 1 drain:
+if source_exist & ~drain_exist
+    electrodes_cell(1)=new_electrodes(1).Name
+elseif ~source_exist & drain_exist
+    electrodes_cell(1)=new_electrodes(2).Name
+else
+    %this works as many sources/drains as required
+    for i = 1:length(new_electrodes)
+        electrodes_cell(i)=new_electrodes(i).Name;%% ALON TO FIX  06/08/19
+    end
 end
 if ~isempty(new_electrodes)
-    noPath=0;
     sourceIndex = find(contains(electrodes_cell,'Source')); %find index of electrodes that are source electrodes
     drainIndex = find(contains(electrodes_cell,'Drain')); %find index of electrodes that are drain electrodes
     
-    sourceElec=highlightElec(sourceIndex); %change to show path from different electrodes
     if drain_exist
         drainElec=highlightElec(drainIndex);
     else
         drainElec=[];
     end
     
+    if source_exist
+        sourceElec=highlightElec(sourceIndex); %change to show path from different electrodes
+    else
+        sourceElec=[];
+    end
+    
+    if ~isempty(sourceElec) & ~isempty(drainElec)
+            noPath=0; %if we have both source and drain - we do have a path, so noPath = 0; 
+    elseif isempty(sourceElec) | isempty(drainElec)
+        noPath=1;
+    end 
+    
     for i =1:length(sourceElec)
-        source(i)=sourceElec(i); %choose first electrode if there are more than 1
+        if source_exist
+            source(i)=sourceElec(i); %choose first electrode if there are more than 1
+        end
     end
     for i =1:length(drainElec)
         if drain_exist
@@ -227,8 +246,9 @@ xlabel('Median Distance');
 ylabel('Frequency');
 
 %Plot all paths from current Electrode
+
+f10=figure;
 if ~noPath
-    f10=figure;
     currAx=gca;
     p6=plot(currAx,G);
     p6.NodeLabel=d(source(1),:); %label the shortest path from the source;
@@ -237,9 +257,8 @@ if ~noPath
     colormap(currAx,jet);%gcurrmap
     colorbar(currAx);
     title(['Path Distances from Source Electrode, Thresholded | T=' num2str(IndexTime)]);
-    
     %% Show shortest path from source to drain: %27/05/19
-    if drain_exist
+    if drain_exist & source_exist
         f11=figure;
         currAx=gca;
         p8=plot(currAx,G);
@@ -299,6 +318,8 @@ if ~noPath
         end
         title(['Shortest Path, Thresholded + Overlayed on Current | T=' num2str(IndexTime)]);
     end
+else
+    f11=figure;
 end
 
 
@@ -342,7 +363,7 @@ if ~noPath
     highlight(p9,highlightElec,'NodeColor','green','Marker','o'); %change simulation number
 end
 %Overlay Shortest Path
-if drain_exist & ~isempty(new_electrodes)
+if ~noPath  
     hold on
     p10=plot(currAx,G);
     set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
@@ -377,10 +398,10 @@ p11.NodeCData=Graph.Ci(threshold);
 colormap hsv(6)
 % colorbar
 if ~noPath
-labelnode(p11,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
-labelnode(p11,highlightElec,[new_electrodes(:).Name]);
-end 
-if drain_exist & ~isempty(new_electrodes)
+    labelnode(p11,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
+    labelnode(p11,highlightElec,[new_electrodes(:).Name]);
+end
+if ~noPath  
     %Overlay Shortest Path
     hold on
     p12=plot(currAx,G);
@@ -404,10 +425,23 @@ Explore.GraphView.Distances.Values=d;
 Explore.GraphView.Distances.Avg=avgD;
 Explore.GraphView.Distances.Std=stdD;
 Explore.GraphView.Distances.Median=medianD;
-Explore.GraphView.Distances.DistancesFromSource=d(sourceElec,:);
-Explore.Electrodes.Source=sourceElec;
-if drain_exist
-    Explore.Electrodes.Drain=drainElec;
-    Explore.GraphView.Distances.ShortestPath=path;
+if ~noPath
+    Explore.GraphView.Distances.DistancesFromSource=d(sourceElec,:);
+    if source_exist
+        Explore.Electrodes.Source=sourceElec;
+    else
+        Explore.Electrodes.Source=[];
+    end
+    if drain_exist
+        Explore.Electrodes.Drain=drainElec;
+    else
+        Explore.Electrodes.Drain=[]
+    end
+    if drain_exist & source_exist %if both source and drain - we have shortest paths
+        Explore.GraphView.Distances.ShortestPath=path;
+    end
+else
+    sourceElec=[];
+    drainElec=[];
 end
 end
