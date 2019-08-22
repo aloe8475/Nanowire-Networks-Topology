@@ -200,7 +200,7 @@ if ~loop
 else
     % Load all data from specified folder:
     %% NEED TO CHANGE currMultiNet for each cluster batch
-    currMultiNet=2000;%input('Which size Network would you like to load iterations from? 100, 500, 1000 or 2000? \n');
+    currMultiNet=1000;%input('Which size Network would you like to load iterations from? 100, 500, 1000 or 2000? \n');
     computer=getenv('computername');
     switch computer
         case 'W4PT80T2'

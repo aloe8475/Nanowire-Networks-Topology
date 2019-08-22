@@ -28,6 +28,8 @@ load_data_question=lower(input('Load network data, Analysis Data Only or None? N
 if load_data_question=='d' || load_data_question=='l'
     if load_data_question=='l'
         loop=1;
+    else
+        loop=0;
     end
     clearvars -except load_data_question currentPath loop
     close all
