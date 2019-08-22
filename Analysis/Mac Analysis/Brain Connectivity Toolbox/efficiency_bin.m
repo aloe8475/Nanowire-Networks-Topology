@@ -39,7 +39,7 @@ A(1:n+1:end)=0;                             %clear diagonal
 A=double(A~=0);                             %enforce double precision
 
 if exist('local','var') && local            %local efficiency
-    fprintf('Local Efficiency Started \n'); 
+%     fprintf('Local Efficiency Started \n'); 
     E=zeros(n,1);   
     for u=1:n
 %         fprintf([num2str(u) '\n']);
@@ -60,7 +60,7 @@ if exist('local','var') && local            %local efficiency
         tic
     end
 else                                        %global efficiency
-    fprintf('Global Efficiency Started \n');
+%     fprintf('Global Efficiency Started \n');
     [e, D]=distance_inv(A);
     E=sum(e(:))./(n^2-n); 
 end
