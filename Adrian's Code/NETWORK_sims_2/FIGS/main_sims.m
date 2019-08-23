@@ -548,7 +548,7 @@ SelNet=handles.Networks{IndNet}; %need for the name
 SelSims=SelNet.Simulations;
 
 %Alon Code 08/04/19
-NameSims=[SelNet.Name SelSims{1}.Settings.Model '_' SelSims{1}.Settings.SigType '_' num2str(length(SelSims)) 'SimsOnly_' num2str(SelSims{1}.Settings.Time) '_Sec_' num2str(height(SelSims{1}.Electrodes)) 'Electrodes_Vmax_' num2str(SelSims{1}.Settings.Vmax) '_' date];
+NameSims=[SelNet.Name SelSims{1}.Settings.Model '_' SelSims{1}.Settings.SetFreq '_' SelSims{1}.Settings.SigType '_' num2str(length(SelSims)) 'SimsOnly_' num2str(SelSims{1}.Settings.Time) '_Sec_' num2str(height(SelSims{1}.Electrodes)) 'Electrodes_Vmax_' num2str(SelSims{1}.Settings.Vmax) '_' date];
 NameSims=strrep(NameSims,':','_');
 NameSims=strrep(NameSims,'/','_');
 NameSims=strcat(NameSims,'.mat');

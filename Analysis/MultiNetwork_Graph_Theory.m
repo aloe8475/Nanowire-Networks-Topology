@@ -17,7 +17,7 @@
 % Betweenness centrality measures.
 %-------------------------------------------------------------------------
 
-
+dbstop if error
 close all
 
 
@@ -61,6 +61,7 @@ if loadData=='y'
                     fig_dir=['D:\alon_\Research\PhD\CODE\Data\Figures\Explore Analysis\Cross-Network Explore\Graph Theory\' num2str(currMultiNet) 'nw Alternate NWs\'];
                     %case '' %--- Add other computer paths (e.g. Mike)
                 end
+        end 
                 
                 if loadData=='y' & loadDataMulti=='n'
                     cd(explore_location)
@@ -108,8 +109,7 @@ if loadData=='y'
                     break;
                 end
         end
-    end 
-end 
+    end  
     %% Run Functions:
     if loadDataMulti=='n' %if we are doing our normal analysis without multiple networks:
         loop=0;
@@ -147,35 +147,45 @@ end
     %% FUNCTIONS
     % Artificial Neural Networks
     function ANN=AI(network,savePath,loop)
+    
+    
+    
+    
+    
+    
     cd(savePath)
     cd('../../../Data/Inorganic Networks Connectomes/');
     fprintf('Loading Artificial Neural Network Data \n');
-    
     if exist('ANNGraphTheory.mat','file')
-        load('ANNGraphTheory.mat','ANN');
-    else
-        
-        fprintf('No ANN Data found, creating ANN Data \n');
-        s=rng(2);
-        
-        temp=mnrnd(498,[0.02 0.21 0.25 0.25 0.25  0.02]);
-        temp2=[];
-        for i =1:length(temp)
-            temp2(i)=sum(temp(1:i));
-        end
-        temp2 = [1 temp2];
-        B=zeros(498,498);
-        C=1;
-        for i = 1:length(temp)-1
-            for j = temp2(i):temp2(i+1)
-                for k = temp2(i+1):temp2(i+2)
-                    B(j,k)=1;
-                end
-            end
-        end
-        
-        B=B+B';
-        
+        load('ANNGraphTheory.mat'); 
+    elseif ~exist('ANNGraphTheory.mat','file')
+    load('ANN_Adj_Trained.mat'); %load trained data
+    load('ANN_Adj.mat'); %load untrained data
+    
+    B=double(ANN_Adj_Mat);
+    B_Trained=double(ANN_Adj_Mat_Trained);
+%         s=rng(2);
+%         
+%         temp=mnrnd(498,[0.02 0.21 0.25 0.25 0.25  0.02]);
+%         temp2=[];
+%         for i =1:length(temp)
+%             temp2(i)=sum(temp(1:i));
+%         end
+%         temp2 = [1 temp2];
+%         B=zeros(498,498);
+%         C=1;
+%         for i = 1:length(temp)-1
+%             for j = temp2(i):temp2(i+1)
+%                 for k = temp2(i+1):temp2(i+2)
+%                     B(j,k)=1;
+%                 end
+%             end
+%         end
+%         
+%         B=B+B';
+%         
+
+        % UNTRAINED
         [ANN.Ci,ANN.Q] = community_louvain(B,1);
         %Clustering Coefficient
         [ANN.GlobalClust,ANN.AvgLocalClust, ANN.Clust] = clustCoeff(B);
@@ -214,8 +224,51 @@ end
         ANN.CircuitRank=numedges(G) - (numnodes(G) - 1);
         ANN.SmallWorldProp=small_world_propensity(B);
         
+        %TRAINED
+         [ANN.Ci_Trained,ANN.Q_Trained] = community_louvain(B_Trained,1,[],'negative_asym');
+        %Clustering Coefficient
+        [ANN.GlobalClust_Trained,ANN.AvgLocalClust_Trained, ANN.Clust_Trained] = clustCoeff(B_Trained);
+        
+        %Participation Coefficient & Module z-Score
+        ANN.P_Trained = participation_coef(B_Trained,ANN.Ci_Trained);
+        ANN.MZ_Trained = module_degree_zscore(B_Trained, ANN.Ci_Trained);
+        % Avg + Std PC + MZ:
+        ANN.avgP_Trained=mean(ANN.P_Trained);
+        ANN.stdP_Trained=std(ANN.P_Trained);
+        ANN.avgMZ_Trained=mean(ANN.MZ_Trained);
+        ANN.stdMZ_Trained=std(ANN.MZ_Trained);
+        
+        %Communicability:
+        ANN.COMM_Trained = expm(B_Trained);
+        %Avg COMM
+        ANN.avgCOMM_Trained=mean(ANN.COMM_Trained);
+        ANN.stdCOMM_Trained=std(ANN.COMM_Trained);
+        
+        
+%         %Betweenness Centrality:
+%         [ANN.BC_Trained, ANN.normBC_Trained]=betweenness_bin(B_Trained);
+%         %Avg:
+%         ANN.avgBC_Trained=mean(ANN.BC_Trained);
+%         ANN.stdBC_Trained=std(ANN.BC_Trained);
+%         
+        %ANN Path Length
+        %% NEED TO MAKE SYMMETRIC MATRIX:
+
+%         A=B_Trained;
+%         B_Trained_Undirected=A+A';
+        ANN.Path_Trained = path_length(B_Trained);
+        ANN.AvgPath_Trained=mean(ANN.Path_Trained);
+%         G_up_Trained=graph(B_Trained,'upper');
+%         G_low_Trained=graph(B_Trained,'lower');
+        G_Trained=graph(B_Trained);
+        
+        ANN.Graph_Trained=G_Trained;
+        %Circuit Rank
+        ANN.CircuitRank_Trained=numedges(G_Trained) - (numnodes(G_Trained) - 1);
+        ANN.SmallWorldProp_Trained=small_world_propensity(B_Trained);
+        
         save('ANNGraphTheory.mat','ANN');
-    end
+    end 
     end
     % C-Elegans:
     function elegans=cElegansFun()
@@ -490,102 +543,102 @@ end
         AvgPath(z)=e100Multi.Explore{z}.GraphTheory.AvgPath;
         CircuitRank(z)=e100Multi.Explore{z}.GraphTheory.CircuitRank;
         SmallWorldProp(z)=e100Multi.Explore{z}.GraphTheory.SmallWorldProp;
-        BC(z,:)=e100Multi.Explore{z}.GraphTheory.BC;
-        PCoeff(z,:)=e100Multi.Explore{z}.GraphTheory.P;
-        MZ(z,:)=e100Multi.Explore{z}.GraphTheory.MZ;
+%         BC(z,:)=e100Multi.Explore{z}.GraphTheory.BC;
+        PCoeff{z}=e100Multi.Explore{z}.GraphTheory.P;
+        MZ{z}=e100Multi.Explore{z}.GraphTheory.MZ;
     end
     e100.AvgGlobalClust=mean([GlobalClust]);
-    e100.StdGlobalClust=std([GlobalClust]);
+    e100.StdGlobalClust=std([GlobalClust])./sqrt(length([GlobalClust]));
     e100.AvgAvgPath=mean([AvgPath]);
-    e100.StdAvgPath=std([AvgPath]);
+    e100.StdAvgPath=std([AvgPath])./sqrt(length([AvgPath]));
     e100.AvgCircuitRank=mean([CircuitRank]);
     e100.StdCircuitRank=std([CircuitRank]);
     e100.AvgSmallWorldProp=mean([SmallWorldProp]);
     e100.StdSmallWorldProp=std([SmallWorldProp]);
-    e100.AvgBC=mean([BC]);
-    e100.StdBC=std([BC]);
-    e100.AvgPCoeff=mean([PCoeff]);
-    e100.StdPCoeff=std([PCoeff]);
-    e100.AvgMZ=mean([MZ]);
-    e100.StdMZ=std([MZ]);
-    clear PCoeff BC SmallWorldProp GlobalClust AvgPath CircuitRank MZ
+%     e100.AvgBC=mean([BC]);
+%     e100.StdBC=std([BC]);
+    e100.AvgPCoeff=mean(vertcat(PCoeff{:}));
+    e100.StdPCoeff=std(vertcat(PCoeff{:}));
+    e100.AvgMZ=mean(vertcat(MZ{:}));
+    e100.StdMZ=std(vertcat(MZ{:}));
+    clear PCoeff SmallWorldProp GlobalClust AvgPath CircuitRank MZ %BC
     %500 Nw
     for z = 1:length(e500Multi.Explore)
         GlobalClust(z)=e500Multi.Explore{z}.GraphTheory.GlobalClust;
         AvgPath(z)=e500Multi.Explore{z}.GraphTheory.AvgPath;
         CircuitRank(z)=e500Multi.Explore{z}.GraphTheory.CircuitRank;
         SmallWorldProp(z)=e500Multi.Explore{z}.GraphTheory.SmallWorldProp;
-        BC(z,:)=e500Multi.Explore{z}.GraphTheory.BC;
-        PCoeff(z,:)=e500Multi.Explore{z}.GraphTheory.P;
-        MZ(z,:)=e500Multi.Explore{z}.GraphTheory.MZ;
+%         BC(z,:)=e500Multi.Explore{z}.GraphTheory.BC;
+        PCoeff{z}=e500Multi.Explore{z}.GraphTheory.P;
+        MZ{z}=e500Multi.Explore{z}.GraphTheory.MZ;
         
     end
     e500.AvgGlobalClust=mean([GlobalClust]);
-    e500.StdGlobalClust=std([GlobalClust]);
+    e500.StdGlobalClust=std([GlobalClust])./sqrt(length([GlobalClust]));
     e500.AvgAvgPath=mean([AvgPath]);
-    e500.StdAvgPath=std([AvgPath]);
+    e500.StdAvgPath=std([AvgPath])./sqrt(length([AvgPath]));
     e500.AvgCircuitRank=mean([CircuitRank]);
     e500.StdCircuitRank=std([CircuitRank]);
     e500.AvgSmallWorldProp=mean([SmallWorldProp]);
     e500.StdSmallWorldProp=std([SmallWorldProp]);
-    e500.AvgBC=mean([BC]);
-    e500.StdBC=std([BC]);
-    e500.AvgPCoeff=mean([PCoeff]);
-    e500.StdPCoeff=std([PCoeff]);
-    e500.AvgMZ=mean([MZ]);
-    e500.StdMZ=std([MZ]);
-    clear PCoeff BC SmallWorldProp GlobalClust AvgPath CircuitRank MZ
+%     e500.AvgBC=mean([BC]);
+%     e500.StdBC=std([BC]);
+    e500.AvgPCoeff=mean(vertcat(PCoeff{:}));
+    e500.StdPCoeff=std(vertcat(PCoeff{:}));
+    e500.AvgMZ=mean(vertcat(MZ{:}));
+    e500.StdMZ=std(vertcat(MZ{:}));
+    clear PCoeff SmallWorldProp GlobalClust AvgPath CircuitRank MZ %BC
     %1000 Nw
     for z = 1:length(e1000Multi.Explore)
         GlobalClust(z)=e1000Multi.Explore{z}.GraphTheory.GlobalClust;
         AvgPath(z)=e1000Multi.Explore{z}.GraphTheory.AvgPath;
         CircuitRank(z)=e1000Multi.Explore{z}.GraphTheory.CircuitRank;
         SmallWorldProp(z)=e1000Multi.Explore{z}.GraphTheory.SmallWorldProp;
-        BC(z,:)=e1000Multi.Explore{z}.GraphTheory.BC;
-        PCoeff(z,:)=e1000Multi.Explore{z}.GraphTheory.P;
-        MZ(z,:)=e1000Multi.Explore{z}.GraphTheory.MZ;
+%         BC(z,:)=e1000Multi.Explore{z}.GraphTheory.BC;
+        PCoeff{z}=e1000Multi.Explore{z}.GraphTheory.P;
+        MZ{z}=e1000Multi.Explore{z}.GraphTheory.MZ;
         
     end
     e1000.AvgGlobalClust=mean([GlobalClust]);
-    e1000.StdGlobalClust=std([GlobalClust]);
+    e1000.StdGlobalClust=std([GlobalClust])./sqrt(length([GlobalClust]));
     e1000.AvgAvgPath=mean([AvgPath]);
-    e1000.StdAvgPath=std([AvgPath]);
+    e1000.StdAvgPath=std([AvgPath])./sqrt(length([AvgPath]));
     e1000.AvgCircuitRank=mean([CircuitRank]);
     e1000.StdCircuitRank=std([CircuitRank]);
     e1000.AvgSmallWorldProp=mean([SmallWorldProp]);
     e1000.StdSmallWorldProp=std([SmallWorldProp]);
-    e1000.AvgBC=mean([BC]);
-    e1000.StdBC=std([BC]);
-    e1000.AvgPCoeff=mean([PCoeff]);
-    e1000.StdPCoeff=std([PCoeff]);
-    e1000.AvgMZ=mean([MZ]);
-    e1000.StdMZ=std([MZ]);
-    clear PCoeff BC SmallWorldProp GlobalClust AvgPath CircuitRank MZ
+%     e1000.AvgBC=mean([BC]);
+%     e1000.StdBC=std([BC]);
+    e1000.AvgPCoeff=mean(vertcat(PCoeff{:}));
+    e1000.StdPCoeff=std(vertcat(PCoeff{:}));
+    e1000.AvgMZ=mean(vertcat(MZ{:}));
+    e1000.StdMZ=std(vertcat(MZ{:}));
+    clear PCoeff SmallWorldProp GlobalClust AvgPath CircuitRank MZ %BC
     %2000 Nw
     for z = 1:length(e2000Multi.Explore)
         GlobalClust(z)=e2000Multi.Explore{z}.GraphTheory.GlobalClust;
         AvgPath(z)=e2000Multi.Explore{z}.GraphTheory.AvgPath;
         CircuitRank(z)=e2000Multi.Explore{z}.GraphTheory.CircuitRank;
         SmallWorldProp(z)=e2000Multi.Explore{z}.GraphTheory.SmallWorldProp;
-        BC(z,:)=e2000Multi.Explore{z}.GraphTheory.BC;
-        PCoeff(z,:)=e2000Multi.Explore{z}.GraphTheory.P;
-        MZ(z,:)=e2000Multi.Explore{z}.GraphTheory.MZ;
+%         BC(z,:)=e2000Multi.Explore{z}.GraphTheory.BC;
+        PCoeff{z}=e2000Multi.Explore{z}.GraphTheory.P;
+        MZ{z}=e2000Multi.Explore{z}.GraphTheory.MZ;
         
     end
     e2000.AvgGlobalClust=mean([GlobalClust]);
-    e2000.StdGlobalClust=std([GlobalClust]);
+    e2000.StdGlobalClust=std([GlobalClust])./sqrt(length([GlobalClust]));
     e2000.AvgAvgPath=mean([AvgPath]);
-    e2000.StdAvgPath=std([AvgPath]);
+    e2000.StdAvgPath=std([AvgPath])./sqrt(length([AvgPath]));
     e2000.AvgCircuitRank=mean([CircuitRank]);
     e2000.StdCircuitRank=std([CircuitRank]);
     e2000.AvgSmallWorldProp=mean([SmallWorldProp]);
     e2000.StdSmallWorldProp=std([SmallWorldProp]);
-    e2000.AvgBC=mean([BC]);
-    e2000.StdBC=std([BC]);
-    e2000.AvgPCoeff=mean([PCoeff]);
-    e2000.StdPCoeff=std([PCoeff]);
-    e2000.AvgMZ=mean([MZ]);
-    e2000.StdMZ=std([MZ]);
+%     e2000.AvgBC=mean([BC]);
+%     e2000.StdBC=std([BC]);
+    e2000.AvgPCoeff=mean(vertcat(PCoeff{:}));
+    e2000.StdPCoeff=std(vertcat(PCoeff{:}));
+    e2000.AvgMZ=mean(vertcat(MZ{:}));
+    e2000.StdMZ=std(vertcat(MZ{:}));
     
     %Combine all
     AgNW.AvgGlobalClust=[e100.AvgGlobalClust e500.AvgGlobalClust e1000.AvgGlobalClust e2000.AvgGlobalClust];
@@ -596,8 +649,8 @@ end
     AgNW.StdCircuitRank=[e100.StdCircuitRank e500.StdCircuitRank e1000.StdCircuitRank e2000.StdCircuitRank];
     AgNW.AvgSmallWorldProp=[e100.AvgSmallWorldProp e500.AvgSmallWorldProp e1000.AvgSmallWorldProp e2000.AvgSmallWorldProp];
     AgNW.StdSmallWorldProp=[e100.StdSmallWorldProp e500.StdSmallWorldProp e1000.StdSmallWorldProp e2000.StdSmallWorldProp];
-    AgNW.AvgBC=[e100.AvgBC e500.AvgBC e1000.AvgBC e2000.AvgBC];
-    AgNW.StdBC=[e100.StdBC e500.StdBC e1000.StdBC e2000.StdBC];
+%     AgNW.AvgBC=[e100.AvgBC e500.AvgBC e1000.AvgBC e2000.AvgBC];
+%     AgNW.StdBC=[e100.StdBC e500.StdBC e1000.StdBC e2000.StdBC];
     AgNW.AvgPCoeff=[e100.AvgPCoeff e500.AvgPCoeff e1000.AvgPCoeff e2000.AvgPCoeff];
     AgNW.StdPCoeff=[e100.StdPCoeff e500.StdPCoeff e1000.StdPCoeff e2000.StdPCoeff];
     AgNW.AvgMZ=[e100.AvgMZ e500.AvgMZ e1000.AvgMZ e2000.AvgMZ];
@@ -621,8 +674,8 @@ end
                 plotNet=4;
         end
         
-        y=[Net(plotNet).random100.AvgGlobalClust ANN.GlobalClust cElegans.GlobalClust human.GlobalClust Net(plotNet).ordered100.AvgGlobalClust e100.Explore.GraphTheory.GlobalClust e500.Explore.GraphTheory.GlobalClust e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
-        x=[Net(plotNet).random100.AvgPath ANN.AvgPath cElegans.AvgPath human.AvgPath Net(plotNet).ordered100.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
+        y=[Net(plotNet).random100.AvgGlobalClust ANN.GlobalClust ANN.GlobalClust_Trained cElegans.GlobalClust human.GlobalClust Net(plotNet).ordered100.AvgGlobalClust e100.Explore.GraphTheory.GlobalClust e500.Explore.GraphTheory.GlobalClust e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
+        x=[Net(plotNet).random100.AvgPath ANN.AvgPath ANN.AvgPath_Trained cElegans.AvgPath human.AvgPath Net(plotNet).ordered100.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
         p=gscatter(x,y);
         hold on
         e=errorbar(x(1), y(1),Net(plotNet).random100.StdPath);
@@ -631,7 +684,7 @@ end
         errorbar(x(3), y(3),Net(plotNet).ordered100.StdGlobalClust,'horizontal');
         % xlim([0.05 0.6])
         % ylim([2 16])
-        text(x,y,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],'500node Artificial Neural Nw','C. Elegans Nw', 'Human Nw (mm-scale regions)',[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
+        text(x,y,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],'500node ANN Untrained','500node ANN Trained','C. Elegans Nw', 'Human Nw (mm-scale regions)',[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
         ylabel('Global Clustering Coefficient');
         xlabel('Global Mean Path Length');
         p.MarkerEdgeColor='b';
@@ -859,21 +912,21 @@ end
                 plotNet=4;
         end
         
-        y=[Net(plotNet).random100.AvgGlobalClust ANN.GlobalClust cElegans.GlobalClust human.GlobalClust Net(plotNet).ordered100.AvgGlobalClust AgNW.AvgGlobalClust];
-        x=[Net(plotNet).random100.AvgPath ANN.AvgPath cElegans.AvgPath human.AvgPath Net(plotNet).ordered100.AvgPath AgNW.AvgAvgPath];
+        y=[Net(plotNet).random100.AvgGlobalClust ANN.GlobalClust ANN.GlobalClust_Trained cElegans.GlobalClust human.GlobalClust Net(plotNet).ordered100.AvgGlobalClust AgNW.AvgGlobalClust];
+        x=[Net(plotNet).random100.AvgPath ANN.AvgPath ANN.AvgPath_Trained cElegans.AvgPath human.AvgPath Net(plotNet).ordered100.AvgPath AgNW.AvgAvgPath];
         p=gscatter(x,y);
         hold on
         errorbar(x(1), y(1),Net(plotNet).random100.StdPath);
         errorbar(x(1), y(1),Net(plotNet).random100.StdGlobalClust,'horizontal');
-        errorbar(x(3), y(3),Net(plotNet).ordered100.StdPath);
-        errorbar(x(3), y(3),Net(plotNet).ordered100.StdGlobalClust,'horizontal');
-        e1=errorbar(x(6:end), y(6:end),AgNW.StdAvgPath);
-        e2=errorbar(x(6:end), y(6:end),AgNW.StdGlobalClust,'horizontal');
+        errorbar(x(6), y(6),Net(plotNet).ordered100.StdPath);
+        errorbar(x(6), y(6),Net(plotNet).ordered100.StdGlobalClust,'horizontal');
+        e1=errorbar(x(7:end), y(7:end),AgNW.StdAvgPath);
+        e2=errorbar(x(7:end), y(7:end),AgNW.StdGlobalClust,'horizontal');
         e1.LineStyle='none';
         e2.LineStyle='none';
         % xlim([0.05 0.6])
         % ylim([2 16])
-        text(x,y,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],'500node Artificial Neural Nw','C. Elegans Nw', 'Human Nw (mm-scale regions)',[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
+        text(x,y,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],'500node ANN Untrained','500node ANN Trained','C. Elegans Nw', 'Human Nw (mm-scale regions)',[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
         ylabel('Global Clustering Coefficient');
         xlabel('Global Mean Path Length');
         p.MarkerEdgeColor='b';

@@ -140,7 +140,7 @@ switch ini
         sim.ElectrodesInfo={};
         sim.Vmax=0.5;
         sim.Vmin=1e-3;
-        sim.NoC=3; %number of cycles
+        sim.NoC=5; %number of cycles
         sim.Frequency=0;
         sim.Name='Source1';
         sim.OpenCheck=0;

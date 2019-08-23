@@ -325,30 +325,30 @@ end
 % p = plot(Explore{end}.GraphView.Graph,'NodeLabel',Explore{end}.GraphView.NodeIndices);
 
 
-% Find average index times for each pulse:
-for j = 1:length(Explore)
-    a{j}.Time=Explore{j}(:);
-    for i = 1:length(a{j}.Time)
-        if ~isempty(a{j}.Time{i})
-            idxTime{j}.Time(i)=a{j}.Time{i}.IndexTime;
-        else
-            idxTime{j}.Time(i)=nan;
-        end
-    end
-    avgIdxTime{j}=nanmean([idxTime{j}.Time(:)])./100;
-    stdIdxTime{j}=nanstd([idxTime{j}.Time(:)])./100;
-end
-% Plot timeseries:
-figure;
-plot(Sim{2}.Time, Sim{2}.Data.VSource1);
-ylim([0 0.75]);
-xlabel('Seconds')
-ylabel('Source (V)');
-hold on
-vline([avgIdxTime{:}]); %mean time chosen
-vline([avgIdxTime{:}]-[stdIdxTime{:}],'blue:'); %std of time chosen
-vline([avgIdxTime{:}]+[stdIdxTime{:}],'blue:'); 
-title([num2str(length(Explore{2}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Sim{2}.SimInfo.MaxV) 'V | Random Electrode Placement | Timeseries']);
+% % Find average index times for each pulse:
+% for j = 1:length(Explore)
+%     a{j}.Time=Explore{j}(:);
+%     for i = 1:length(a{j}.Time)
+%         if ~isempty(a{j}.Time{i})
+%             idxTime{j}.Time(i)=a{j}.Time{i}.IndexTime;
+%         else
+%             idxTime{j}.Time(i)=nan;
+%         end
+%     end
+%     avgIdxTime{j}=nanmean([idxTime{j}.Time(:)])./100;
+%     stdIdxTime{j}=nanstd([idxTime{j}.Time(:)])./100;
+% end
+% % Plot timeseries:
+% figure;
+% plot(Sim{2}.Time, Sim{2}.Data.VSource1);
+% ylim([0 0.75]);
+% xlabel('Seconds')
+% ylabel('Source (V)');
+% hold on
+% vline([avgIdxTime{:}]); %mean time chosen
+% vline([avgIdxTime{:}]-[stdIdxTime{:}],'blue:'); %std of time chosen
+% vline([avgIdxTime{:}]+[stdIdxTime{:}],'blue:'); 
+% title([num2str(length(Explore{2}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Sim{2}.SimInfo.MaxV) 'V | Random Electrode Placement | Timeseries']);
 
 
 %Plot Correlations at Edges:
