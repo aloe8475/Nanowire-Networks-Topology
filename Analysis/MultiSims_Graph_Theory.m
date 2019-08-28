@@ -52,7 +52,10 @@ for j = 1:length(Explore)
             %% What we are doing here is finding the adj matrix, and finding the edges that have current flowing through them.
             %
             %if we want to extract the largest connected component:
-            if j > 1
+            
+
+            
+            if j > 0
                 largestcomponent=1;
             else
                 largestcomponent=0;
@@ -80,7 +83,8 @@ for j = 1:length(Explore)
             %% connect source to drain on a copy of the adj matrix - THIS IS JOEL'S
             %CODE HE IS A LEGEND
             
-            if j > 1
+                        
+            if j > 0
                 toDelete = false(length(Adj),1);
                 for count=1:length(Adj)
                     tempAdj=Adj;
@@ -350,11 +354,14 @@ end
 % vline([avgIdxTime{:}]+[stdIdxTime{:}],'blue:'); 
 % title([num2str(length(Explore{2}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Sim{2}.SimInfo.MaxV) 'V | Random Electrode Placement | Timeseries']);
 
+%Scatter Colours:
+    clrs={'r','g','b','c','m','y','k',[0.75 0.2 0.25],[0.3 0.75 0.55], [0.6 0.6 0.1], [0.4 0.75 0.2]};
 
 %Plot Correlations at Edges:
 f=figure('Position',[0 0 1920 1080]);
 for i = 1:length(Explore)
-s(i)=scatter(netCOMM{i},netCurrs{i});
+
+s(i)=scatter(netCOMM{i},netCurrs{i},[],clrs{i});
 % h=lsline; %Linear Fit
 
 % %Polynomial Fits -------
@@ -387,7 +394,7 @@ Legend{i}=strcat([num2str(Explore{i}{1}.IndexTime) ' sec']);
 % log10 Current:
 flog=figure('Position',[0 0 1920 1080]);
 for i = 1:length(Explore)
-slog(i)=scatter(netCOMM{i},log10(netCurrs{i}));
+slog(i)=scatter(netCOMM{i},log10(netCurrs{i}),[],clrs{i});
 % h=lsline; %Linear Fit
 
 % %Polynomial Fits -------
