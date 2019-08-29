@@ -43,17 +43,62 @@ end
 
 % For each time point
 for j = 1:length(Explore)
+    
     %For each Simulations
     thisExplore=Explore{j};
     thisThreshold=threshold{j};
     progressBar(j,length(Explore));
     for i = 1:length(thisExplore)
+        
+        % Store the 'class' of time for the current time.
+        if ~isempty(Explore{j}{i})
+            idxTime{j}.Time(i)=Explore{j}{i}.IndexTime;
+            if j==length(Explore)
+                class{j}{i}='Never';
+            elseif j<=3
+                class{j}{i}='Early';
+            elseif j>3 & j <7
+                class{j}{i}='Mid';
+            elseif j>=7 & j<length(Explore)
+                class{j}{i}='Late';
+            end
+            
+        else
+            idxTime{j}.Time(i)=NaN;
+            if j==length(Explore)
+                if ~isnan(idxTime{j}.Time(i))
+                    class{j}{i}='Never';
+                else
+                    class{j}{i}=class{j-1}{i};
+                end
+            elseif j<=3
+                if ~isnan(idxTime{j}.Time(i))
+                    class{j}{i}='Early';
+                else
+                    class{j}{i}=class{j-1}{i};
+                end
+            elseif j>3 & j <7
+                if ~isnan(idxTime{j}.Time(i))
+                    class{j}{i}='Mid';
+                else
+                    class{j}{i}=class{j-1}{i};
+                end
+            elseif j>=7 & j<length(Explore)
+                if ~isnan(idxTime{j}.Time(i))
+                    class{j}{i}='Late';
+                else
+                    class{j}{i}=class{j-1}{i};
+                end
+            end
+            
+        end
+        
         if ~isempty(thisExplore{i})
             %% What we are doing here is finding the adj matrix, and finding the edges that have current flowing through them.
             %
             %if we want to extract the largest connected component:
             
-
+            
             
             if j > 0
                 largestcomponent=1;
@@ -83,7 +128,7 @@ for j = 1:length(Explore)
             %% connect source to drain on a copy of the adj matrix - THIS IS JOEL'S
             %CODE HE IS A LEGEND
             
-                        
+            
             if j > 0
                 toDelete = false(length(Adj),1);
                 for count=1:length(Adj)
@@ -94,7 +139,7 @@ for j = 1:length(Explore)
                         g=g.rmedge(sp(count2),sp(count2+1));
                     end
                     sp2=shortestpath(g,count,idx2{i});
-                    if isempty(sp2) & height(g.Nodes)>2 %we do not want to break nodes with only one edge between them 
+                    if isempty(sp2) & height(g.Nodes)>2 %we do not want to break nodes with only one edge between them
                         Adj(count,:)=0;
                         Adj(:,count)=0;
                     end
@@ -107,7 +152,7 @@ for j = 1:length(Explore)
                 id = binsize(bin) == max(binsize);
                 gRemovedEdges{j}{i} = subgraph(gRemovedEdges{j}{i}, id);
                 thisExplore{i}.GraphView.NodeIndices(~id)=[];
-            end 
+            end
             
             
             %     paths = allpaths(tempAdj, idx{i}, idx2{i});
@@ -294,7 +339,11 @@ for j = 1:length(Explore)
         end
     end
     
-    
+    num{j}.NaN=sum(isnan(idxTime{j}.Time));
+    num{j}.Never=sum(strcmp(class{j},'Never'));
+    num{j}.Early=sum(strcmp(class{j},'Early'));
+    num{j}.Mid=sum(strcmp(class{j},'Mid'));
+    num{j}.Late=sum(strcmp(class{j},'Late'));
     %%
     %Combine com3 and cc3 (network comm and network currents):
     netCOMM{j}=[com3{:}];
@@ -323,129 +372,139 @@ for j = 1:length(Explore)
     clear meanCom3 stdCom3 meanCC3 stdCC3 com3 cc3 sourceCurrent sourceClust sourceBC sourcePCoeff sourceMZ sourceDEG idx idx2 sourceElec drainBC drainClust drainCurrent drainDEG drainElec drainMZ drainPCoeff
 end
 
+%% BINNING:
+
+
+
 %% Plots:
 
 %Plot Graph
 % p = plot(Explore{end}.GraphView.Graph,'NodeLabel',Explore{end}.GraphView.NodeIndices);
 
 
-% % Find average index times for each pulse:
-% for j = 1:length(Explore)
-%     a{j}.Time=Explore{j}(:);
-%     for i = 1:length(a{j}.Time)
-%         if ~isempty(a{j}.Time{i})
-%             idxTime{j}.Time(i)=a{j}.Time{i}.IndexTime;
-%         else
-%             idxTime{j}.Time(i)=nan;
-%         end
-%     end
-%     avgIdxTime{j}=nanmean([idxTime{j}.Time(:)])./100;
-%     stdIdxTime{j}=nanstd([idxTime{j}.Time(:)])./100;
-% end
-% % Plot timeseries:
-% figure;
-% plot(Sim{2}.Time, Sim{2}.Data.VSource1);
-% ylim([0 0.75]);
-% xlabel('Seconds')
-% ylabel('Source (V)');
+%% Plot NaN/Early/Mid/Late/Never:
+
+%Histogram of Times sampled
+% fnan=figure('Position',[0 0 1920 1080]);
+% for i = 1:length(num)
+% hist(idxTime{i}.Time)
 % hold on
-% vline([avgIdxTime{:}]); %mean time chosen
-% vline([avgIdxTime{:}]-[stdIdxTime{:}],'blue:'); %std of time chosen
-% vline([avgIdxTime{:}]+[stdIdxTime{:}],'blue:'); 
-% title([num2str(length(Explore{2}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Sim{2}.SimInfo.MaxV) 'V | Random Electrode Placement | Timeseries']);
+% end 
+
+
+%Plot of early/mid/late:
+numMat=cell2mat(num);
+plot([1:11],[numMat.NaN]./length(idxTime{1}.Time),'o-')
+xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
+ylabel('% Reached Max Current');
+xlabel('Square Pulse Time (mSec)'); 
+
+% hold on 
+% plot([1:11],[numMat.Never]./length(idxTime{1}.Time),'o-')
+% plot([1:11],[numMat.Early]./length(idxTime{1}.Time),'o-')
+% plot([1:11],[numMat.Mid]./length(idxTime{1}.Time),'o-')
+% plot([1:11],[numMat.Late]./length(idxTime{1}.Time),'o-')
+
+% % Plot timeseries:
+figure;
+plot(Sim{2}.Time, Sim{2}.Data.VSource1);
+ylim([0 0.75]);
+xlabel('Seconds')
+ylabel('Source (V)');
+title([num2str(length(Explore{2}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Sim{2}.SimInfo.MaxV) 'V | Random Electrode Placement | Timeseries']);
 
 %Scatter Colours:
-    clrs={'r','g','b','c','m','y','k',[0.75 0.2 0.25],[0.3 0.75 0.55], [0.6 0.6 0.1], [0.4 0.75 0.2]};
+clrs={'r','g','b','c','m','y','k',[0.75 0.2 0.25],[0.3 0.75 0.55], [0.6 0.6 0.1], [0.4 0.75 0.2]};
 
 %Plot Correlations at Edges:
 f=figure('Position',[0 0 1920 1080]);
 for i = 1:length(Explore)
-
-s(i)=scatter(netCOMM{i},netCurrs{i},[],clrs{i});
-% h=lsline; %Linear Fit
-
-% %Polynomial Fits -------
-% hp=polyfit(netCOMM{i},netCurrs{i},2); %2nd Order Polynomial Fit
-% x2=min(netCOMM{i}):0.25:max(netCOMM{i});
-% y2=polyval(hp,x2);
-% hold on
-% p2=plot(x2,y2,'g');
-% 
-% hp3=polyfit(netCOMM{i},netCurrs{i},3); %3rd Order Polynomial Fit
-% x3=min(netCOMM{i}):0.25:max(netCOMM{i});
-% y3=polyval(hp3,x3);
-% hold on
-% p3=plot(x3,y3,'m');
-% % ------
-
-% h.Color='r';
-xlabel('Communicability');
-ylabel('Current (A)');
-title([num2str(length(Explore{i}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Random Electrode Placement']);
-hold on
-% legend([p2,p3, h],'2nd order Polynomial Fit','3rd order Polynomial Fit','Linear Fit');
-[r{i}.COMM,p{i}.COMM]=corrcoef(netCOMM{i},netCurrs{i});
-
-Legend{i}=strcat([num2str(Explore{i}{1}.IndexTime) ' sec']);
- end
-  legend(Legend)
+    
+    s(i)=scatter(netCOMM{i},netCurrs{i},[],clrs{i});
+    % h=lsline; %Linear Fit
+    
+    % %Polynomial Fits -------
+    % hp=polyfit(netCOMM{i},netCurrs{i},2); %2nd Order Polynomial Fit
+    % x2=min(netCOMM{i}):0.25:max(netCOMM{i});
+    % y2=polyval(hp,x2);
+    % hold on
+    % p2=plot(x2,y2,'g');
+    %
+    % hp3=polyfit(netCOMM{i},netCurrs{i},3); %3rd Order Polynomial Fit
+    % x3=min(netCOMM{i}):0.25:max(netCOMM{i});
+    % y3=polyval(hp3,x3);
+    % hold on
+    % p3=plot(x3,y3,'m');
+    % % ------
+    
+    % h.Color='r';
+    xlabel('Communicability');
+    ylabel('Current (A)');
+    title([num2str(length(Explore{i}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Random Electrode Placement']);
+    hold on
+    % legend([p2,p3, h],'2nd order Polynomial Fit','3rd order Polynomial Fit','Linear Fit');
+    [r{i}.COMM,p{i}.COMM]=corrcoef(netCOMM{i},netCurrs{i});
+    
+    Legend{i}=strcat([num2str(Explore{i}{1}.IndexTime) ' sec']);
+end
+legend(Legend)
 
 
 % log10 Current:
 flog=figure('Position',[0 0 1920 1080]);
 for i = 1:length(Explore)
-slog(i)=scatter(netCOMM{i},log10(netCurrs{i}),[],clrs{i});
-% h=lsline; %Linear Fit
+    slog(i)=scatter(netCOMM{i},log10(netCurrs{i}),[],clrs{i});
+    % h=lsline; %Linear Fit
+    
+    % %Polynomial Fits -------
+    % hp=polyfit(netCOMM{i},netCurrs{i},2); %2nd Order Polynomial Fit
+    % x2=min(netCOMM{i}):0.25:max(netCOMM{i});
+    % y2=polyval(hp,x2);
+    % hold on
+    % p2=plot(x2,y2,'g');
+    %
+    % hp3=polyfit(netCOMM{i},netCurrs{i},3); %3rd Order Polynomial Fit
+    % x3=min(netCOMM{i}):0.25:max(netCOMM{i});
+    % y3=polyval(hp3,x3);
+    % hold on
+    % p3=plot(x3,y3,'m');
+    % % ------
+    
+    % h.Color='r';
+    xlabel('Communicability');
+    ylabel('log10 Current (A)');
+    title([num2str(length(Explore{i}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Random Electrode Placement']);
+    hold on
+    % legend([p2,p3, h],'2nd order Polynomial Fit','3rd order Polynomial Fit','Linear Fit');
+    [r{i}.logCOMM,p{i}.logCOMM]=corrcoef(netCOMM{i},log10(netCurrs{i}));
+    
+    LegendLog{i}=strcat([num2str(Explore{i}{1}.IndexTime) ' sec']);
+end
+legend(LegendLog)
 
-% %Polynomial Fits -------
-% hp=polyfit(netCOMM{i},netCurrs{i},2); %2nd Order Polynomial Fit
-% x2=min(netCOMM{i}):0.25:max(netCOMM{i});
-% y2=polyval(hp,x2);
-% hold on
-% p2=plot(x2,y2,'g');
-% 
-% hp3=polyfit(netCOMM{i},netCurrs{i},3); %3rd Order Polynomial Fit
-% x3=min(netCOMM{i}):0.25:max(netCOMM{i});
-% y3=polyval(hp3,x3);
-% hold on
-% p3=plot(x3,y3,'m');
-% % ------
 
-% h.Color='r';
-xlabel('Communicability');
-ylabel('log10 Current (A)');
-title([num2str(length(Explore{i}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Random Electrode Placement']);
-hold on
-% legend([p2,p3, h],'2nd order Polynomial Fit','3rd order Polynomial Fit','Linear Fit');
-[r{i}.logCOMM,p{i}.logCOMM]=corrcoef(netCOMM{i},log10(netCurrs{i}));
 
-LegendLog{i}=strcat([num2str(Explore{i}{1}.IndexTime) ' sec']);
- end
-  legend(LegendLog)
-
-  
-  
 % %% Plot correlation current vs Path Length
-% 
+%
 % %Plot Correlations at Edges:
 % fcurr=figure('Position',[0 0 1920 1080]);
 % scurr=scatter(netDistSource{i},netCurrs{i});
 % hcurr=lsline; %Linear Fit
-% 
+%
 % %Polynomial Fits -------
 % hpcurr=polyfit(netDistSource{i},netCurrs{i},2); %2nd Order Polynomial Fit
 % x2=min(netDistSource{i}):1:max(netDistSource{i});
 % y2=polyval(hpcurr,x2);
 % hold on
 % p2curr=plot(x2,y2,'g');
-% 
+%
 % hp3curr=polyfit(netDistSource{i},netCurrs{i},3); %3rd Order Polynomial Fit
 % x3=min(netDistSource{i}):1:max(netDistSource{i});
 % y3=polyval(hp3curr,x3);
 % hold on
 % p3curr=plot(x3,y3,'m');
 % % ------
-% 
+%
 % hcurr.Color='r';
 % xlabel('Path Length');
 % ylabel('Current (A)');
@@ -475,7 +534,7 @@ LegendLog{i}=strcat([num2str(Explore{i}{1}.IndexTime) ' sec']);
 % title([num2str(length(Explore{i}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Explore{i}{1}.IndexTime) ' sec | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Mean & STD | Random Electrode Placement']);
 % [r{i}.COMM,p{i}.COMM]=corrcoef(meanCOMM{i},meanCurrs{i});
 
-% 
+%
 % %Plot Correlations at Source Nodes
 % % Betweenness Centrality
 % f1=figure('Position',[0 0 1920 1080]);
@@ -488,9 +547,9 @@ LegendLog{i}=strcat([num2str(Explore{i}{1}.IndexTime) ' sec']);
 % title([num2str(length(Explore{i}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Explore{i}{1}.IndexTime) ' sec | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Source Electrode']);
 % [r{i}.BCsource]=corrcoef(netsourceBC{i},netsourceCurrent{i});
 % hold on
-% 
+%
 % labelpoints(netsourceBC{i},netsourceCurrent{i},netSourceIdx{i});
-% 
+%
 % % Degree
 % f2=figure('Position',[0 0 1920 1080]);
 % s2=scatter(netsourceDEG{i},netsourceCurrent{i});
@@ -501,9 +560,9 @@ LegendLog{i}=strcat([num2str(Explore{i}{1}.IndexTime) ' sec']);
 % title([num2str(length(Explore{i}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Explore{i}{1}.IndexTime) ' sec | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Source Electrode']);
 % [r{i}.DEGsource]=corrcoef(netsourceDEG{i},netsourceCurrent{i});
 % hold on
-% 
+%
 % labelpoints(netsourceDEG{i},netsourceCurrent{i},netSourceIdx{i});
-% 
+%
 % % Participation Coefficient & Module Z
 % f3=figure('Position',[0 0 1920 1080]);
 % s3=scatter(netsourcePCoeff{i},netsourceCurrent{i});
@@ -515,9 +574,9 @@ LegendLog{i}=strcat([num2str(Explore{i}{1}.IndexTime) ' sec']);
 % [r{i}.Psource]=corrcoef(netsourcePCoeff{i},netsourceCurrent{i});
 % hold on
 % labelpoints(netsourcePCoeff{i},netsourceCurrent,netSourceIdx{i});
-% 
-% 
-% 
+%
+%
+%
 % %Plot Correlations at Drain Nodes
 % % Betweenness Centrality
 % f1=figure('Position',[0 0 1920 1080]);
@@ -530,8 +589,8 @@ LegendLog{i}=strcat([num2str(Explore{i}{1}.IndexTime) ' sec']);
 % [r{i}.BCdrain]=corrcoef(netdrainBC{i},netdrainCurrent{i});
 % hold on
 % labelpoints(netdrainBC{i},netdrainCurrent{i},netDrainIdx{i});
-% 
-% 
+%
+%
 % % Degree
 % f2=figure('Position',[0 0 1920 1080]);
 % s2=scatter(netdrainDEG{i},netdrainCurrent{i});
@@ -542,7 +601,7 @@ LegendLog{i}=strcat([num2str(Explore{i}{1}.IndexTime) ' sec']);
 % title([num2str(length(Explore{i}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Explore{i}{1}.IndexTime) ' sec | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Drain Electrode']);
 % [r{i}.DEGdrain]=corrcoef(netdrainDEG{i},netdrainCurrent{i});
 % labelpoints(netdrainDEG{i},netdrainCurrent,netDrainIdx{i});
-% 
+%
 % % Participation Coefficient & Module Z
 % % To do: scatter for each simulation independently and label drain from subgraph instead of
 % % drain from original graph
@@ -562,10 +621,10 @@ LegendLog{i}=strcat([num2str(Explore{i}{1}.IndexTime) ' sec']);
 % h3b=lsline;
 % h3b.Color='r';
 % %Plot rectangles:
-% 
-% 
+%
+%
 % ylabel('Module z-Score')
 % xlabel('Current (A)');
 % title([num2str(length(Explore{i}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Explore{i}{1}.IndexTime) ' sec | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Drain Electrode']);
 % [r{i}.Pdrain]=corrcoef(netdrainPCoeff{i},netdrainCurrent{i});
-% end 
+% end

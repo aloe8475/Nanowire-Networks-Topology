@@ -198,6 +198,10 @@ else
     existElec = 0;
 end 
 %for 100nw - (need to change for others)
+
+%% CAN LOAD A LIST OF ELECTRODE LOCATIONS HERE AND THEN LOOP THROUGH THEM
+% Alon + Mike - 29/08/2019
+
 for j = 1:numEl
 %     elec(1).x=3;
 %     elec(1).y=12;

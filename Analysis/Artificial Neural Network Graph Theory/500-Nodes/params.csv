@@ -1,0 +1,11 @@
+epochs,20
+neurons_per_layer,100
+pca_components,100
+number_of_layers,5
+save_folder,500-Nodes
+regularisation,0.001
+threshold_type,value
+threshold,0.08
+activation,elu
+dropout,False
+batch_norm,False
