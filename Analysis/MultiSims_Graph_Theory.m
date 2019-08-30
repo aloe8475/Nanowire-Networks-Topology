@@ -374,8 +374,6 @@ for j = 1:length(Explore)
     stdCOMM{j}=[stdCom3{:}];
     meanCurrs{j}=[meanCC3{:}];
     stdCurrs{j}=[stdCC3{:}];
-    
-    clear meanCom3 stdCom3 meanCC3 stdCC3 com3 cc3 sourceCurrent sourceClust sourceBC sourcePCoeff sourceMZ sourceDEG idx idx2 sourceElec drainBC drainClust drainCurrent drainDEG drainElec drainMZ drainPCoeff
 end
 
 % Firstly we compare different categories (early, mid, late & never) and
