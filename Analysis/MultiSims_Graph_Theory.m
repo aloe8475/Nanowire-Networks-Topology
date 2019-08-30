@@ -65,31 +65,31 @@ for j = 1:length(Explore)
             
         else
             idxTime{j}.Time(i)=NaN;
-            if j==length(Explore)
-                if ~isnan(idxTime{j}.Time(i))
-                    class{j}{i}='Never';
-                else
-                    class{j}{i}=class{j-1}{i};
-                end
-            elseif j<=3
-                if ~isnan(idxTime{j}.Time(i))
-                    class{j}{i}='Early';
-                else
-                    class{j}{i}=class{j-1}{i};
-                end
-            elseif j>3 & j <7
-                if ~isnan(idxTime{j}.Time(i))
-                    class{j}{i}='Mid';
-                else
-                    class{j}{i}=class{j-1}{i};
-                end
-            elseif j>=7 & j<length(Explore)
-                if ~isnan(idxTime{j}.Time(i))
-                    class{j}{i}='Late';
-                else
-                    class{j}{i}=class{j-1}{i};
-                end
-            end
+%             if j==length(Explore)
+%                 if ~isnan(idxTime{j}.Time(i))
+%                     class{j}{i}='Never';
+%                 else
+%                     class{j}{i}=class{j-1}{i};
+%                 end
+%             elseif j<=3
+%                 if ~isnan(idxTime{j}.Time(i))
+%                     class{j}{i}='Early';
+%                 else
+%                     class{j}{i}=class{j-1}{i};
+%                 end
+%             elseif j>3 & j <7
+%                 if ~isnan(idxTime{j}.Time(i))
+%                     class{j}{i}='Mid';
+%                 else
+%                     class{j}{i}=class{j-1}{i};
+%                 end
+%             elseif j>=7 & j<length(Explore)
+%                 if ~isnan(idxTime{j}.Time(i))
+%                     class{j}{i}='Late';
+%                 else
+%                     class{j}{i}=class{j-1}{i};
+%                 end
+%             end
             
         end
         
@@ -127,7 +127,6 @@ for j = 1:length(Explore)
             
             %% connect source to drain on a copy of the adj matrix - THIS IS JOEL'S
             %CODE HE IS A LEGEND
-            
             
             if j > 0
                 toDelete = false(length(Adj),1);
@@ -284,6 +283,7 @@ for j = 1:length(Explore)
             
             %% Degree
             Degree{i}=thisExplore{i}.GraphTheory.DEG(thisThreshold{i});
+%             TestDegree{j}{i}=Degree{i};
             sourceDEG{i}=Degree{i}(idx{i});
             drainDEG{i}=Degree{i}(idx2{i});
             
@@ -339,29 +339,35 @@ for j = 1:length(Explore)
         end
     end
     
-    num{j}.NaN=sum(isnan(idxTime{j}.Time));
-    num{j}.Never=sum(strcmp(class{j},'Never'));
-    num{j}.Early=sum(strcmp(class{j},'Early'));
-    num{j}.Mid=sum(strcmp(class{j},'Mid'));
-    num{j}.Late=sum(strcmp(class{j},'Late'));
+    category{j}.NaN=sum(isnan(idxTime{j}.Time));
+    category{j}.Never=sum(strcmp(class{j},'Never'));
+    category{j}.Early=sum(strcmp(class{j},'Early'));
+    category{j}.Mid=sum(strcmp(class{j},'Mid'));
+    category{j}.Late=sum(strcmp(class{j},'Late'));
     %%
     %Combine com3 and cc3 (network comm and network currents):
+    netDegree{j}=[Degree{:}];
+    netPathLength{j}=[AvgPath{:}];
     netCOMM{j}=[com3{:}];
     netCurrs{j}=[cc3{:}];
-    netsourceCurrent{j}=abs([sourceCurrent{:}]);
-    netdrainCurrent{j}=abs([drainCurrent{:}]);
-    netsourceBC{j}=[sourceBC{:}];
-    netdrainBC{j}=[drainBC{:}];
-    netsourcePCoeff{j}=[sourcePCoeff{:}];
-    netdrainPCoeff{j}=[drainPCoeff{:}];
-    netsourceMZ{j}=[sourceMZ{:}];
-    netdrainMZ{j}=[drainMZ{:}];
-    netsourceDEG{j}=[sourceDEG{:}];
-    netdrainDEG{j}=[drainDEG{:}];
-    netSourceIdx{j}=[idx{:}];
-    netDrainIdx{j}=[idx2{:}];
-    netSourceElec{j}=[sourceElec{:}];
-    netDrainElec{j}=[drainElec{:}];
+    netPCoeff{j}=vertcat(PCoeff{:});
+    netMZ{j}=vertcat(MZ{:});
+    netClust{j}=vertcat(Clust{:});
+    netBC{j}=[BC{:}];
+%     netsourceCurrent{j}=abs([sourceCurrent{:}]);
+%     netdrainCurrent{j}=abs([drainCurrent{:}]);
+%     netsourceBC{j}=[sourceBC{:}];
+%     netdrainBC{j}=[drainBC{:}];
+%     netsourcePCoeff{j}=[sourcePCoeff{:}];
+%     netdrainPCoeff{j}=[drainPCoeff{:}];
+%     netsourceMZ{j}=[sourceMZ{:}];
+%     netdrainMZ{j}=[drainMZ{:}];
+%     netsourceDEG{j}=[sourceDEG{:}];
+%     netdrainDEG{j}=[drainDEG{:}];
+%     netSourceIdx{j}=[idx{:}];
+%     netDrainIdx{j}=[idx2{:}];
+%     netSourceElec{j}=[sourceElec{:}];
+%     netDrainElec{j}=[drainElec{:}];
     %     netDistSource{j}=[DistSource{:}];
     %Means and Stds
     meanCOMM{j}=[meanCom3{:}];
@@ -372,8 +378,328 @@ for j = 1:length(Explore)
     clear meanCom3 stdCom3 meanCC3 stdCC3 com3 cc3 sourceCurrent sourceClust sourceBC sourcePCoeff sourceMZ sourceDEG idx idx2 sourceElec drainBC drainClust drainCurrent drainDEG drainElec drainMZ drainPCoeff
 end
 
-%% BINNING:
+% Firstly we compare different categories (early, mid, late & never) and
+% then we do for each square pulse individually
 
+%% Categorical Processing:
+logicalCategory.Early=strcmp(class{end},'Early');
+logicalCategory.Mid=strcmp(class{end},'Mid');
+logicalCategory.Late=strcmp(class{end},'Late');
+logicalCategory.Never=strcmp(class{end},'Never');
+
+%Degree:
+endTime.Degree{1}=[Degree{logicalCategory.Early}];
+endTime.Degree{2}=[Degree{logicalCategory.Mid}];
+endTime.Degree{3}=[Degree{logicalCategory.Late}];
+endTime.Degree{4}=[Degree{logicalCategory.Never}];
+
+fCategories=figure;
+edges=[0:max([endTime.Degree{:}])/7:max([endTime.Degree{:}])];
+for j = 1:length(endTime.Degree)
+    hCat=histogram(endTime.Degree{j},edges);
+    values(j,:)=hCat.Values;  
+end
+bCat=bar(values,'grouped');
+xticklabels({'Early','Mid','Late','Never'});
+ylabel('Frequency');
+title('Degree (Categories)');
+
+for i =1:length(edges)
+% set(b(i),'FaceColor',clrs{i})
+   
+    Legend{i}=strcat(num2str(edges(i)));
+end
+l=legend(Legend,'Location','NorthWest');
+title(l,'DEG');
+clear values Legend
+
+
+%Path Length:
+endTime.PathLength{1}=[AvgPath{logicalCategory.Early}];
+endTime.PathLength{2}=[AvgPath{logicalCategory.Mid}];
+endTime.PathLength{3}=[AvgPath{logicalCategory.Late}];
+endTime.PathLength{4}=[AvgPath{logicalCategory.Never}];
+
+fCat1=figure;
+edges=[0:max([endTime.PathLength{:}])/7:max([endTime.PathLength{:}])];
+for j = 1:length(endTime.PathLength)
+    hCat1=histogram(endTime.PathLength{j},edges);
+    values(j,:)=hCat1.Values;  
+end
+bCat1=bar(values,'grouped');
+xticklabels({'Early','Mid','Late','Never'});
+ylabel('Frequency');
+title('Avg Path Length (Categories)');
+
+for i =1:length(edges)
+% set(b(i),'FaceColor',clrs{i})
+   
+    Legend{i}=strcat(num2str(edges(i)));
+end
+l=legend(Legend,'Location','NorthWest');
+title(l,'Avg Path');
+
+clear values Legend
+
+%% Clustering Coeff:
+endTime.Clust{1}=vertcat(Clust{logicalCategory.Early});
+endTime.Clust{2}=vertcat(Clust{logicalCategory.Mid});
+endTime.Clust{3}=vertcat(Clust{logicalCategory.Late});
+endTime.Clust{4}=vertcat(Clust{logicalCategory.Never});
+
+fCat2=figure;
+edges=[0:max(vertcat(endTime.Clust{:}))/7:max(vertcat(endTime.Clust{:}))];
+for j = 1:length(endTime.Clust)
+    hCat2=histogram(endTime.Clust{j},edges);
+    values(j,:)=hCat2.Values;  
+end
+bCat2=bar(values,'grouped');
+xticklabels({'Early','Mid','Late','Never'});
+ylabel('Frequency');
+title('Clustering Coefficient (Categories)');
+
+for i =1:length(edges)
+% set(b(i),'FaceColor',clrs{i})
+   
+    Legend{i}=strcat(num2str(edges(i)));
+end
+l=legend(Legend,'Location','NorthWest');
+title(l,'Clust');
+
+clear values Legend
+
+
+%netPCoeff
+endTime.PCoeff{1}=vertcat(PCoeff{logicalCategory.Early});
+endTime.PCoeff{2}=vertcat(PCoeff{logicalCategory.Mid});
+endTime.PCoeff{3}=vertcat(PCoeff{logicalCategory.Late});
+endTime.PCoeff{4}=vertcat(PCoeff{logicalCategory.Never});
+
+fCat3=figure;
+subplot(2,1,1)
+edges=[0:max(vertcat(endTime.PCoeff{:}))/7:max(vertcat(endTime.PCoeff{:}))];
+for j = 1:length(endTime.PCoeff)
+    hCat3=histogram(endTime.PCoeff{j},edges);
+    values(j,:)=hCat3.Values;  
+end
+bCat3=bar(values,'grouped');
+xticklabels({'Early','Mid','Late','Never'});
+ylabel('Frequency');
+title('Participant Coefficient (Categories)');
+
+for i =1:length(edges)
+% set(b(i),'FaceColor',clrs{i})
+   
+    Legend{i}=strcat(num2str(edges(i)));
+end
+l=legend(Legend,'Location','NorthWest');
+title(l,'PCoeff');
+
+clear values Legend
+
+%netMZ
+endTime.MZ{1}=vertcat(MZ{logicalCategory.Early});
+endTime.MZ{2}=vertcat(MZ{logicalCategory.Mid});
+endTime.MZ{3}=vertcat(MZ{logicalCategory.Late});
+endTime.MZ{4}=vertcat(MZ{logicalCategory.Never});
+
+subplot(2,1,2)
+edges=[0:max(vertcat(endTime.MZ{:}))/7:max(vertcat(endTime.MZ{:}))];
+for j = 1:length(endTime.MZ)
+    hCat3=histogram(endTime.MZ{j},edges);
+    values(j,:)=hCat3.Values;  
+end
+bCat3=bar(values,'grouped');
+xticklabels({'Early','Mid','Late','Never'});
+ylabel('Frequency');
+title('Within-Module Degree z-Score (Categories)');
+
+for i =1:length(edges)
+% set(b(i),'FaceColor',clrs{i})
+   
+    Legend{i}=strcat(num2str(edges(i)));
+end
+l=legend(Legend,'Location','NorthWest');
+title(l,'MZ');
+
+
+
+%COMM
+fCat4=figure;
+endTime.COMM{1}=vertcat(com3{logicalCategory.Early});
+endTime.COMM{2}=vertcat(com3{logicalCategory.Mid});
+endTime.COMM{3}=vertcat(com3{logicalCategory.Late});
+endTime.COMM{4}=vertcat(com3{logicalCategory.Never});
+
+edges=[0:max(vertcat(endTime.COMM{:}))/7:max(vertcat(endTime.COMM{:}))];
+for j = 1:length(endTime.COMM)
+    hCat4=histogram(endTime.COMM{j},edges);
+    values(j,:)=hCat4.Values;  
+end
+bCat4=bar(values,'grouped');
+xticklabels({'Early','Mid','Late','Never'});
+ylabel('Frequency');
+title('Communicability (Categories)');
+
+for i =1:length(edges)
+% set(b(i),'FaceColor',clrs{i})
+   
+    Legend{i}=strcat(num2str(edges(i)));
+end
+l=legend(Legend,'Location','NorthWest');
+title(l,'COMM');
+
+clear values Legend
+
+
+%% Timestamps:
+
+%Scatter Colours:
+clrs={'r','g','b','c','m','y','k',[0.75 0.2 0.25],[0.3 0.75 0.55], [0.6 0.2 0.1], [0.4 0.75 0.2]};
+
+%Degree:
+f1=figure;
+edges=[0:max([netDegree{:}])/7:max([netDegree{:}])];
+for j = 1:length(netCurrs)
+    h1=histogram(netDegree{j},edges);
+    values(j,:)=h1.Values;  
+end
+b1=bar(values,'grouped');
+% b=plot(values,'o-')
+for i =1:length(edges)
+% set(b(i),'FaceColor',clrs{i})
+   
+    Legend{i}=strcat(num2str(edges(i)));
+end
+l=legend(Legend,'Location','NorthWest');
+title(l,'DEG');
+xlabel('Time');
+ylabel('Frequency');
+title('Degree');
+xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
+
+clear values h1 Legend
+
+%Path Length:
+f2=figure;
+edges=[0:max([netPathLength{:}])/7:max([netPathLength{:}])];
+for j = 1:length(netCurrs)
+    h1=histogram(netPathLength{j},edges);
+    values(j,:)=h1.Values;
+    
+end
+b2=bar(values,'grouped');
+% b=plot(values,'o-')
+for i =1:length(edges)
+% set(b(i),'FaceColor',clrs{i})
+   
+    Legend{i}=strcat(num2str(edges(i)));
+end
+l=legend(Legend,'Location','NorthWest');
+title(l,'Avg Path');
+xlabel('Time');
+ylabel('Frequency');
+title('Mean Path Length');
+xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
+
+clear values h1 Legend
+%Clustering Coeff:
+f3=figure;
+edges=[0:max(vertcat(netClust{:}))/7:max(vertcat(netClust{:}))];
+for j = 1:length(netCurrs)
+    h1=histogram(netClust{j},edges);
+    values(j,:)=h1.Values;
+    
+end
+b3=bar(values,'grouped');
+% b=plot(values,'o-')
+for i =1:length(edges)
+% set(b(i),'FaceColor',clrs{i})
+   
+    Legend{i}=strcat(num2str(edges(i)));
+end
+l=legend(Legend,'Location','NorthWest');
+title(l,'Clust');
+xlabel('Time');
+ylabel('Frequency');
+title('Clustering Coefficient');
+xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
+
+clear values h1 Legend
+
+
+%COMM
+f4=figure;
+edges=[0:max([netCOMM{:}])/7:max([netCOMM{:}])];
+for j = 1:length(netCurrs)
+    h1=histogram(netCOMM{j},edges);
+    values(j,:)=h1.Values;
+    
+end
+b4=bar(values,'grouped');
+% b=plot(values,'o-')
+for i =1:length(edges)
+% set(b(i),'FaceColor',clrs{i})
+   
+    Legend{i}=strcat(num2str(edges(i)));
+end
+l=legend(Legend,'Location','NorthWest');
+title(l,'COMM');
+xlabel('Time');
+ylabel('Frequency');
+title('Communicability');
+xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
+
+clear values h1 Legend
+
+%netPCoeff
+f5=figure;
+
+subplot(2,1,1)
+edges=[0:max(vertcat(netPCoeff{:}))/7:max(vertcat(netPCoeff{:}))];
+for j = 1:length(netCurrs)
+    h1=histogram(netPCoeff{j},edges);
+    values(j,:)=h1.Values;
+    
+end
+b5=bar(values,'grouped');
+% b=plot(values,'o-')
+for i =1:length(edges)
+% set(b(i),'FaceColor',clrs{i})
+   
+    Legend{i}=strcat(num2str(edges(i)));
+end
+l=legend(Legend,'Location','NorthWest');
+title(l,'PCoeff');
+xlabel('Time');
+ylabel('Frequency');
+title('Participant Coefficient');
+xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
+clear values h1 Legend
+
+
+%netMZ
+subplot(2,1,2)
+edges=[0:max(vertcat(netMZ{:}))/7:max(vertcat(netMZ{:}))];
+for j = 1:length(netCurrs)
+    h1=histogram(netMZ{j},edges);
+    values(j,:)=h1.Values;
+    
+end
+b6=bar(values,'grouped');
+% b=plot(values,'o-')
+for i =1:length(edges)
+% set(b(i),'FaceColor',clrs{i})
+   
+    Legend{i}=strcat(num2str(edges(i)));
+end
+l=legend(Legend,'Location','NorthWest');
+title(l,'MZ');
+xlabel('Time');
+ylabel('Frequency');
+title('Within-Module Degree z-Score');
+xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
+clear values h1 Legend                                                                                                                                     
 
 
 %% Plots:
@@ -384,6 +710,7 @@ end
 
 %% Plot NaN/Early/Mid/Late/Never:
 
+
 %Histogram of Times sampled
 % fnan=figure('Position',[0 0 1920 1080]);
 % for i = 1:length(num)
@@ -392,9 +719,10 @@ end
 % end 
 
 
-%Plot of early/mid/late:
-numMat=cell2mat(num);
-plot([1:11],[numMat.NaN]./length(idxTime{1}.Time),'o-')
+
+%Plot of Max Current (NaNs)
+categoryMat=cell2mat(category);
+plot([1:11],[categoryMat.NaN]./length(idxTime{1}.Time),'o-')
 xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
 ylabel('% Reached Max Current');
 xlabel('Square Pulse Time (mSec)'); 
@@ -413,8 +741,7 @@ xlabel('Seconds')
 ylabel('Source (V)');
 title([num2str(length(Explore{2}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Sim{2}.SimInfo.MaxV) 'V | Random Electrode Placement | Timeseries']);
 
-%Scatter Colours:
-clrs={'r','g','b','c','m','y','k',[0.75 0.2 0.25],[0.3 0.75 0.55], [0.6 0.6 0.1], [0.4 0.75 0.2]};
+
 
 %Plot Correlations at Edges:
 f=figure('Position',[0 0 1920 1080]);
@@ -483,148 +810,3 @@ end
 legend(LegendLog)
 
 
-
-% %% Plot correlation current vs Path Length
-%
-% %Plot Correlations at Edges:
-% fcurr=figure('Position',[0 0 1920 1080]);
-% scurr=scatter(netDistSource{i},netCurrs{i});
-% hcurr=lsline; %Linear Fit
-%
-% %Polynomial Fits -------
-% hpcurr=polyfit(netDistSource{i},netCurrs{i},2); %2nd Order Polynomial Fit
-% x2=min(netDistSource{i}):1:max(netDistSource{i});
-% y2=polyval(hpcurr,x2);
-% hold on
-% p2curr=plot(x2,y2,'g');
-%
-% hp3curr=polyfit(netDistSource{i},netCurrs{i},3); %3rd Order Polynomial Fit
-% x3=min(netDistSource{i}):1:max(netDistSource{i});
-% y3=polyval(hp3curr,x3);
-% hold on
-% p3curr=plot(x3,y3,'m');
-% % ------
-%
-% hcurr.Color='r';
-% xlabel('Path Length');
-% ylabel('Current (A)');
-% title([num2str(length(Explore{i}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Explore{i}{1}.IndexTime) ' sec | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Random Electrode Placement']);
-% hold on
-% legend([p2curr,p3curr, h],'2nd order Polynomial Fit','3rd order Polynomial Fit','Linear Fit');
-% [r.PATH,p.PATH]=corrcoef(netDistSource{i},netCurrs{i});
-
-% %% Plot correlation for mean and variance
-% fmean=figure('Position',[0 0 1920 1080]);
-% smean=scatter(meanCOMM{i},meanCurrs{i});
-% e=errorbar(meanCOMM{i},stdCOMM{i});
-% e.LineStyle='none';
-% e.Marker='o';
-% e2=errorbar(meanCurrs{i},stdCurrs{i});
-% e2.LineStyle='none';
-% e2.Marker='o';
-% hmean=lsline; %Linear Fit
-% % hpmean=polyfit(meanCOMM,netCurrs,3); %3rd Order Polynomial Fit
-% % x2=min(meanCOMM):0.25:max(meanCOMM);
-% % y2=polyval(hpmean,x2);
-% % hold on
-% % plot(x2,y2)
-% h.Color='r';
-% xlabel('Communicability');
-% ylabel('Current (A)');
-% title([num2str(length(Explore{i}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Explore{i}{1}.IndexTime) ' sec | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Mean & STD | Random Electrode Placement']);
-% [r{i}.COMM,p{i}.COMM]=corrcoef(meanCOMM{i},meanCurrs{i});
-
-%
-% %Plot Correlations at Source Nodes
-% % Betweenness Centrality
-% f1=figure('Position',[0 0 1920 1080]);
-% s1=scatter(netsourceBC{i},netsourceCurrent{i});
-% h1=lsline;
-% % hp=polyfit(netsourceBC,netsourceCurrent,1); %1st Order Polynomial Fit
-% h1.Color='r';
-% xlabel('Betweenness Centrality');
-% ylabel('Current (A) at Source');
-% title([num2str(length(Explore{i}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Explore{i}{1}.IndexTime) ' sec | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Source Electrode']);
-% [r{i}.BCsource]=corrcoef(netsourceBC{i},netsourceCurrent{i});
-% hold on
-%
-% labelpoints(netsourceBC{i},netsourceCurrent{i},netSourceIdx{i});
-%
-% % Degree
-% f2=figure('Position',[0 0 1920 1080]);
-% s2=scatter(netsourceDEG{i},netsourceCurrent{i});
-% h2=lsline;
-% h2.Color='r';
-% xlabel('Degree');
-% ylabel('Current (A)');
-% title([num2str(length(Explore{i}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Explore{i}{1}.IndexTime) ' sec | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Source Electrode']);
-% [r{i}.DEGsource]=corrcoef(netsourceDEG{i},netsourceCurrent{i});
-% hold on
-%
-% labelpoints(netsourceDEG{i},netsourceCurrent{i},netSourceIdx{i});
-%
-% % Participation Coefficient & Module Z
-% f3=figure('Position',[0 0 1920 1080]);
-% s3=scatter(netsourcePCoeff{i},netsourceCurrent{i});
-% h3=lsline;
-% h3.Color='r';
-% xlabel('Participant Coefficient');
-% ylabel('Current (A)');
-% title([num2str(length(Explore{i}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Explore{i}{1}.IndexTime) ' sec | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Source Electrode']);
-% [r{i}.Psource]=corrcoef(netsourcePCoeff{i},netsourceCurrent{i});
-% hold on
-% labelpoints(netsourcePCoeff{i},netsourceCurrent,netSourceIdx{i});
-%
-%
-%
-% %Plot Correlations at Drain Nodes
-% % Betweenness Centrality
-% f1=figure('Position',[0 0 1920 1080]);
-% s=scatter(netdrainBC{i},netdrainCurrent{i});
-% h2=lsline;
-% h2.Color='r';
-% xlabel('Betweenness Centrality');
-% ylabel('Current (A) at Drain');
-% title([num2str(length(Explore{i}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Explore{i}{1}.IndexTime) ' sec | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Drain Electrode']);
-% [r{i}.BCdrain]=corrcoef(netdrainBC{i},netdrainCurrent{i});
-% hold on
-% labelpoints(netdrainBC{i},netdrainCurrent{i},netDrainIdx{i});
-%
-%
-% % Degree
-% f2=figure('Position',[0 0 1920 1080]);
-% s2=scatter(netdrainDEG{i},netdrainCurrent{i});
-% h2=lsline;
-% h2.Color='r';
-% xlabel('Degree');
-% ylabel('Current (A)');
-% title([num2str(length(Explore{i}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Explore{i}{1}.IndexTime) ' sec | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Drain Electrode']);
-% [r{i}.DEGdrain]=corrcoef(netdrainDEG{i},netdrainCurrent{i});
-% labelpoints(netdrainDEG{i},netdrainCurrent,netDrainIdx{i});
-%
-% % Participation Coefficient & Module Z
-% % To do: scatter for each simulation independently and label drain from subgraph instead of
-% % drain from original graph
-% f3=figure('Position',[0 0 1920 1080]);
-% yyaxis left
-% s3=scatter(netdrainCurrent{i},netdrainPCoeff{i});
-% hold on
-% ConnectorHub=patch([0 0 2.2*1e-4 2.2*1e-4],[0.3 0.7 0.7 0.3],'blue','LineStyle','none','FaceAlpha',0.2);
-% xlim([0.2*1e-4 2.2*1e-4])
-% labelpoints(netdrainCurrent{i},netdrainPCoeff{i},netDrainIdx{i});
-% h3=lsline;
-% h3.Color='blue';
-% ylabel('Participant Coefficient')
-% yyaxis right
-% s3b=scatter(netdrainCurrent{i},netdrainMZ{i},'r');
-% labelpoints(netdrainCurrent{i},netdrainMZ{i},netDrainIdx{i});
-% h3b=lsline;
-% h3b.Color='r';
-% %Plot rectangles:
-%
-%
-% ylabel('Module z-Score')
-% xlabel('Current (A)');
-% title([num2str(length(Explore{i}{1}.GraphView.currents)) 'nw | ' num2str(length(Sim)) ' Simulations | ' num2str(Explore{i}{1}.IndexTime) ' sec | ' num2str(Sim{1}.SimInfo.MaxV) 'V | Drain Electrode']);
-% [r{i}.Pdrain]=corrcoef(netdrainPCoeff{i},netdrainCurrent{i});
-% end

@@ -22,9 +22,9 @@ Tar(j)=Dtar(i);
 j=j+1;
 end
 
-%If we want to save the currents
-path='D:\alon_\Research\PhD\CODE\Data\Associative Training Data\Output Data\';
-save([path reflist.Filename '.mat'],'reflist');
+% %If we want to save the currents
+% path='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Associative Training Data\Output Data\';
+% save([path reflist.Filename '.mat'],'reflist');
 
 if isequal(ScoreAlg,'Kmeans')
     [seq,col,centroids]=scorer(KData,Tar,ScoreAlg,Kchoose,Knumb);

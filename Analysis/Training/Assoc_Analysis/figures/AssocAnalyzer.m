@@ -139,7 +139,7 @@ function OpenButton_Callback(hObject, eventdata, handles)
 % hObject    handle to OpenButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-cd('D:\alon_\Research\PhD\CODE\Analysis\Training\Assoc_Analysis\figures\Training Data\');
+cd('Training Data\');
 [filename, pathname] = uigetfile('*.tdms', 'Select an AssocLearningFile');
 if isequal(filename,0)
    disp('User selected Cancel')
