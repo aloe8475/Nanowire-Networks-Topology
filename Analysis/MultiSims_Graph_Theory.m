@@ -18,6 +18,9 @@
 
 close all;
 
+set(0,'DefaultFigureVisible','on')
+
+
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2'
@@ -65,31 +68,31 @@ for j = 1:length(Explore)
             
         else
             idxTime{j}.Time(i)=NaN;
-%             if j==length(Explore)
-%                 if ~isnan(idxTime{j}.Time(i))
-%                     class{j}{i}='Never';
-%                 else
-%                     class{j}{i}=class{j-1}{i};
-%                 end
-%             elseif j<=3
-%                 if ~isnan(idxTime{j}.Time(i))
-%                     class{j}{i}='Early';
-%                 else
-%                     class{j}{i}=class{j-1}{i};
-%                 end
-%             elseif j>3 & j <7
-%                 if ~isnan(idxTime{j}.Time(i))
-%                     class{j}{i}='Mid';
-%                 else
-%                     class{j}{i}=class{j-1}{i};
-%                 end
-%             elseif j>=7 & j<length(Explore)
-%                 if ~isnan(idxTime{j}.Time(i))
-%                     class{j}{i}='Late';
-%                 else
-%                     class{j}{i}=class{j-1}{i};
-%                 end
-%             end
+            if j==length(Explore)
+                if ~isnan(idxTime{j}.Time(i))
+                    class{j}{i}='Never';
+                else
+                    class{j}{i}=class{j-1}{i};
+                end
+            elseif j<=3
+                if ~isnan(idxTime{j}.Time(i))
+                    class{j}{i}='Early';
+                else
+                    class{j}{i}=class{j-1}{i};
+                end
+            elseif j>3 & j <7
+                if ~isnan(idxTime{j}.Time(i))
+                    class{j}{i}='Mid';
+                else
+                    class{j}{i}=class{j-1}{i};
+                end
+            elseif j>=7 & j<length(Explore)
+                if ~isnan(idxTime{j}.Time(i))
+                    class{j}{i}='Late';
+                else
+                    class{j}{i}=class{j-1}{i};
+                end
+            end
             
         end
         
@@ -391,7 +394,7 @@ endTime.Degree{2}=[Degree{logicalCategory.Mid}];
 endTime.Degree{3}=[Degree{logicalCategory.Late}];
 endTime.Degree{4}=[Degree{logicalCategory.Never}];
 
-fCategories=figure;
+fCat=figure;
 edges=[0:max([endTime.Degree{:}])/7:max([endTime.Degree{:}])];
 for j = 1:length(endTime.Degree)
     hCat=histogram(endTime.Degree{j},edges);
@@ -507,7 +510,7 @@ for j = 1:length(endTime.MZ)
     hCat3=histogram(endTime.MZ{j},edges);
     values(j,:)=hCat3.Values;  
 end
-bCat3=bar(values,'grouped');
+bCat3a=bar(values,'grouped');
 xticklabels({'Early','Mid','Late','Never'});
 ylabel('Frequency');
 title('Within-Module Degree z-Score (Categories)');
@@ -520,23 +523,35 @@ end
 l=legend(Legend,'Location','NorthWest');
 title(l,'MZ');
 
-
+clear values Legend
 
 %COMM
 fCat4=figure;
-endTime.COMM{1}=vertcat(com3{logicalCategory.Early});
-endTime.COMM{2}=vertcat(com3{logicalCategory.Mid});
-endTime.COMM{3}=vertcat(com3{logicalCategory.Late});
-endTime.COMM{4}=vertcat(com3{logicalCategory.Never});
+endTime.COMM{1}=[com3{logicalCategory.Early}];
+endTime.COMM{2}=[com3{logicalCategory.Mid}];
+endTime.COMM{3}=[com3{logicalCategory.Late}];
+endTime.COMM{4}=[com3{logicalCategory.Never}];
 
-edges=[0:max(vertcat(endTime.COMM{:}))/7:max(vertcat(endTime.COMM{:}))];
 for j = 1:length(endTime.COMM)
+    endTime.COMM{j}(endTime.COMM{j}==Inf)=0;
+    edges=[0:max([endTime.COMM{:}])/7:max([endTime.COMM{:}])];
     hCat4=histogram(endTime.COMM{j},edges);
-    values(j,:)=hCat4.Values;  
+    values(j,:)=hCat4.Values;
+    switch j
+        case 1
+            values(j,:) = values(j,:)./category{end}.Early;
+        case 2
+            values(j,:) = values(j,:)./category{end}.Mid;
+        case 3
+            values(j,:) = values(j,:)./category{end}.Late;
+        case 4
+            values(j,:) = values(j,:)./category{end}.Never;
+    end
 end
+
 bCat4=bar(values,'grouped');
 xticklabels({'Early','Mid','Late','Never'});
-ylabel('Frequency');
+ylabel('Frequency / num sims');
 title('Communicability (Categories)');
 
 for i =1:length(edges)
@@ -549,155 +564,183 @@ title(l,'COMM');
 
 clear values Legend
 
+% %Currents - This needs to be slightly less than at the very end time
+% point
+% fCat5=figure;
+% endTime.Curr{1}=[cc3{logicalCategory.Early}];
+% endTime.Curr{2}=[cc3{logicalCategory.Mid}];
+% endTime.Curr{3}=[cc3{logicalCategory.Late}];
+% endTime.Curr{4}=[cc3{logicalCategory.Never}];
+% 
+% edges=[1e-7:max([endTime.Curr{:}])/7:max([endTime.Curr{:}])];
+% for j = 1:length(endTime.Curr)
+%     hCat5=histogram(endTime.Curr{j},edges);
+%     values(j,:)=hCat5.Values;  
+% end
+% bCat5=bar(values,'grouped');
+% xticklabels({'Early','Mid','Late','Never'});
+% ylabel('Frequency');
+% title('Current (Categories)');
+% 
+% for i =1:length(edges)
+% % set(b(i),'FaceColor',clrs{i})
+%    
+%     Legend{i}=strcat(num2str(edges(i)));
+% end
+% l=legend(Legend,'Location','NorthWest');
+% title(l,'Curr (A)');
+% 
+% clear values Legend
 
-%% Timestamps:
-
-%Scatter Colours:
-clrs={'r','g','b','c','m','y','k',[0.75 0.2 0.25],[0.3 0.75 0.55], [0.6 0.2 0.1], [0.4 0.75 0.2]};
-
-%Degree:
-f1=figure;
-edges=[0:max([netDegree{:}])/7:max([netDegree{:}])];
-for j = 1:length(netCurrs)
-    h1=histogram(netDegree{j},edges);
-    values(j,:)=h1.Values;  
-end
-b1=bar(values,'grouped');
-% b=plot(values,'o-')
-for i =1:length(edges)
-% set(b(i),'FaceColor',clrs{i})
-   
-    Legend{i}=strcat(num2str(edges(i)));
-end
-l=legend(Legend,'Location','NorthWest');
-title(l,'DEG');
-xlabel('Time');
-ylabel('Frequency');
-title('Degree');
-xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
-
-clear values h1 Legend
-
-%Path Length:
-f2=figure;
-edges=[0:max([netPathLength{:}])/7:max([netPathLength{:}])];
-for j = 1:length(netCurrs)
-    h1=histogram(netPathLength{j},edges);
-    values(j,:)=h1.Values;
-    
-end
-b2=bar(values,'grouped');
-% b=plot(values,'o-')
-for i =1:length(edges)
-% set(b(i),'FaceColor',clrs{i})
-   
-    Legend{i}=strcat(num2str(edges(i)));
-end
-l=legend(Legend,'Location','NorthWest');
-title(l,'Avg Path');
-xlabel('Time');
-ylabel('Frequency');
-title('Mean Path Length');
-xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
-
-clear values h1 Legend
-%Clustering Coeff:
-f3=figure;
-edges=[0:max(vertcat(netClust{:}))/7:max(vertcat(netClust{:}))];
-for j = 1:length(netCurrs)
-    h1=histogram(netClust{j},edges);
-    values(j,:)=h1.Values;
-    
-end
-b3=bar(values,'grouped');
-% b=plot(values,'o-')
-for i =1:length(edges)
-% set(b(i),'FaceColor',clrs{i})
-   
-    Legend{i}=strcat(num2str(edges(i)));
-end
-l=legend(Legend,'Location','NorthWest');
-title(l,'Clust');
-xlabel('Time');
-ylabel('Frequency');
-title('Clustering Coefficient');
-xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
-
-clear values h1 Legend
-
-
-%COMM
-f4=figure;
-edges=[0:max([netCOMM{:}])/7:max([netCOMM{:}])];
-for j = 1:length(netCurrs)
-    h1=histogram(netCOMM{j},edges);
-    values(j,:)=h1.Values;
-    
-end
-b4=bar(values,'grouped');
-% b=plot(values,'o-')
-for i =1:length(edges)
-% set(b(i),'FaceColor',clrs{i})
-   
-    Legend{i}=strcat(num2str(edges(i)));
-end
-l=legend(Legend,'Location','NorthWest');
-title(l,'COMM');
-xlabel('Time');
-ylabel('Frequency');
-title('Communicability');
-xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
-
-clear values h1 Legend
-
-%netPCoeff
-f5=figure;
-
-subplot(2,1,1)
-edges=[0:max(vertcat(netPCoeff{:}))/7:max(vertcat(netPCoeff{:}))];
-for j = 1:length(netCurrs)
-    h1=histogram(netPCoeff{j},edges);
-    values(j,:)=h1.Values;
-    
-end
-b5=bar(values,'grouped');
-% b=plot(values,'o-')
-for i =1:length(edges)
-% set(b(i),'FaceColor',clrs{i})
-   
-    Legend{i}=strcat(num2str(edges(i)));
-end
-l=legend(Legend,'Location','NorthWest');
-title(l,'PCoeff');
-xlabel('Time');
-ylabel('Frequency');
-title('Participant Coefficient');
-xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
-clear values h1 Legend
-
-
-%netMZ
-subplot(2,1,2)
-edges=[0:max(vertcat(netMZ{:}))/7:max(vertcat(netMZ{:}))];
-for j = 1:length(netCurrs)
-    h1=histogram(netMZ{j},edges);
-    values(j,:)=h1.Values;
-    
-end
-b6=bar(values,'grouped');
-% b=plot(values,'o-')
-for i =1:length(edges)
-% set(b(i),'FaceColor',clrs{i})
-   
-    Legend{i}=strcat(num2str(edges(i)));
-end
-l=legend(Legend,'Location','NorthWest');
-title(l,'MZ');
-xlabel('Time');
-ylabel('Frequency');
-title('Within-Module Degree z-Score');
-xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
-clear values h1 Legend                                                                                                                                     
+%% -----------------------------------------------------------------------
+% %% Timestamps:
+% 
+% %Scatter Colours:
+% clrs={'r','g','b','c','m','y','k',[0.75 0.2 0.25],[0.3 0.75 0.55], [0.6 0.2 0.1], [0.4 0.75 0.2]};
+% 
+% %Degree:
+% f1=figure;
+% edges=[0:max([netDegree{:}])/7:max([netDegree{:}])];
+% for j = 1:length(netCurrs)
+%     h1=histogram(netDegree{j},edges);
+%     values(j,:)=h1.Values;  
+% end
+% b1=bar(values,'grouped');
+% % b=plot(values,'o-')
+% for i =1:length(edges)
+% % set(b(i),'FaceColor',clrs{i})
+%    
+%     Legend{i}=strcat(num2str(edges(i)));
+% end
+% l=legend(Legend,'Location','NorthWest');
+% title(l,'DEG');
+% xlabel('Time');
+% ylabel('Frequency');
+% title('Degree');
+% xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
+% 
+% clear values h1 Legend
+% 
+% %Path Length:
+% f2=figure;
+% edges=[0:max([netPathLength{:}])/7:max([netPathLength{:}])];
+% for j = 1:length(netCurrs)
+%     h1=histogram(netPathLength{j},edges);
+%     values(j,:)=h1.Values;
+%     
+% end
+% b2=bar(values,'grouped');
+% % b=plot(values,'o-')
+% for i =1:length(edges)
+% % set(b(i),'FaceColor',clrs{i})
+%    
+%     Legend{i}=strcat(num2str(edges(i)));
+% end
+% l=legend(Legend,'Location','NorthWest');
+% title(l,'Avg Path');
+% xlabel('Time');
+% ylabel('Frequency');
+% title('Mean Path Length');
+% xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
+% 
+% clear values h1 Legend
+% %Clustering Coeff:
+% f3=figure;
+% edges=[0:max(vertcat(netClust{:}))/7:max(vertcat(netClust{:}))];
+% for j = 1:length(netCurrs)
+%     h1=histogram(netClust{j},edges);
+%     values(j,:)=h1.Values;
+%     
+% end
+% b3=bar(values,'grouped');
+% % b=plot(values,'o-')
+% for i =1:length(edges)
+% % set(b(i),'FaceColor',clrs{i})
+%    
+%     Legend{i}=strcat(num2str(edges(i)));
+% end
+% l=legend(Legend,'Location','NorthWest');
+% title(l,'Clust');
+% xlabel('Time');
+% ylabel('Frequency');
+% title('Clustering Coefficient');
+% xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
+% 
+% clear values h1 Legend
+% 
+% 
+% %COMM
+% f4=figure;
+% edges=[0:max([netCOMM{:}])/7:max([netCOMM{:}])];
+% for j = 1:length(netCurrs)
+%     h1=histogram(netCOMM{j},edges);
+%     values(j,:)=h1.Values;
+%     
+% end
+% b4=bar(values,'grouped');
+% % b=plot(values,'o-')
+% for i =1:length(edges)
+% % set(b(i),'FaceColor',clrs{i})
+%    
+%     Legend{i}=strcat(num2str(edges(i)));
+% end
+% l=legend(Legend,'Location','NorthWest');
+% title(l,'COMM');
+% xlabel('Time');
+% ylabel('Frequency');
+% title('Communicability');
+% xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
+% 
+% clear values h1 Legend
+% 
+% %netPCoeff
+% f5=figure;
+% 
+% subplot(2,1,1)
+% edges=[0:max(vertcat(netPCoeff{:}))/7:max(vertcat(netPCoeff{:}))];
+% for j = 1:length(netCurrs)
+%     h1=histogram(netPCoeff{j},edges);
+%     values(j,:)=h1.Values;
+%     
+% end
+% b5=bar(values,'grouped');
+% % b=plot(values,'o-')
+% for i =1:length(edges)
+% % set(b(i),'FaceColor',clrs{i})
+%    
+%     Legend{i}=strcat(num2str(edges(i)));
+% end
+% l=legend(Legend,'Location','NorthWest');
+% title(l,'PCoeff');
+% xlabel('Time');
+% ylabel('Frequency');
+% title('Participant Coefficient');
+% xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
+% clear values h1 Legend
+% 
+% 
+% %netMZ
+% subplot(2,1,2)
+% edges=[0:max(vertcat(netMZ{:}))/7:max(vertcat(netMZ{:}))];
+% for j = 1:length(netCurrs)
+%     h1=histogram(netMZ{j},edges);
+%     values(j,:)=h1.Values;
+%     
+% end
+% b6=bar(values,'grouped');
+% % b=plot(values,'o-')
+% for i =1:length(edges)
+% % set(b(i),'FaceColor',clrs{i})
+%    
+%     Legend{i}=strcat(num2str(edges(i)));
+% end
+% l=legend(Legend,'Location','NorthWest');
+% title(l,'MZ');
+% xlabel('Time');
+% ylabel('Frequency');
+% title('Within-Module Degree z-Score');
+% xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
+% clear values h1 Legend                                                                                                                                     
 
 
 %% Plots:
