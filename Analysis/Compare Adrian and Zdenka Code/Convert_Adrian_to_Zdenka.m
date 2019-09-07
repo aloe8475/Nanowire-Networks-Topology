@@ -4,7 +4,7 @@ clear all
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2' %if on desktop at uni - Alon
-                Sim='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only\Explore\100nw_03_25_2019 - size 20 length6 disp0\Subgraph Communicability\Net_Sx_20_NoW100_03_25-2019_11_23_38_Zdenka_Square_9SimsOnly_4_Sec_2Electrodes_Vmax_0.75_24-Jul-2019.mat';
+                Sim='C:\Users\aloe8475\Desktop\Net_Sx_20_NoW100_03_25-2019_11_23_38_Zdenka_10_Square_1SimsOnly_5_Sec_2Electrodes_Vmax_15_02-Sep-2019'%'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only\Explore\100nw_03_25_2019 - size 20 length6 disp0\Subgraph Communicability\Net_Sx_20_NoW100_03_25-2019_11_23_38_Zdenka_Square_9SimsOnly_4_Sec_2Electrodes_Vmax_0.75_24-Jul-2019.mat';
                 Net='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Net_Sx_20_NoW100_03_25-2019_11_23_38_.mat';
      
     case '' %if on linux
@@ -91,8 +91,8 @@ Connectivity2=getConnectivity(Connectivity2);
 %% Snapshots 2 figure:
 
 %Snapshots:
-
-
+% 
+% 
 for i =1:length(SelSims{currSim}.Time)
     frame.Timestamp=SelSims{currSim}.Time;    
     %Convert Current in wires to current in junctions:
@@ -111,37 +111,37 @@ for i =1:length(SelSims{currSim}.Time)
     snapshots{i}=frame;
 end
 
-SimulationOptions.ContactNodes=SelSims{currSim}.Electrodes.PosIndex;
-axesLimits.VoltageCbar=[0 1];%minimum voltage to maximum voltage
-    axesLimits.DissipationCbar = [0,5]; % (1pW*10^0 : 1pW*10^5)
-    axesLimits.CurrentArrowSacling = 10;
-whatToPlot = struct(...
-                        'Nanowires',    true, ...
-                        'Contacts',     true, ...
-                        'Dissipation',  true, ...
-                        'Currents',     false, ...
-                        'Voltages',     true  ...
-                        );
-snapshotFigure = snapshotToFigure(snapshots{floor(length(snapshots)/2)},SimulationOptions.ContactNodes,Connectivity,whatToPlot,axesLimits);  
+% SimulationOptions.ContactNodes=SelSims{currSim}.Electrodes.PosIndex;
+% axesLimits.VoltageCbar=[0 1];%minimum voltage to maximum voltage
+%     axesLimits.DissipationCbar = [0,5]; % (1pW*10^0 : 1pW*10^5)
+%     axesLimits.CurrentArrowSacling = 10;
+% whatToPlot = struct(...
+%                         'Nanowires',    true, ...
+%                         'Contacts',     true, ...
+%                         'Dissipation',  true, ...
+%                         'Currents',     false, ...
+%                         'Voltages',     true  ...
+%                         );
+% snapshotFigure = snapshotToFigure(snapshots{floor(length(snapshots)/2)},SimulationOptions.ContactNodes,Connectivity,whatToPlot,axesLimits);  
 
-%% Video:
-%Snapshot options:
-TimeVector = SelSims{currSim}.Time';
-numIterations=length(TimeVector);
-    snapshotPeriod   = 4*1e-3; % (sec) make it a multiple integer of dt
-    snapshotStep     = ceil(snapshotPeriod /1e-3);
-    snapshotsIdx     = 1:snapshotStep:numIterations;
-    
-v = VideoWriter('networkMovie','Motion JPEG AVI');
-
-        v.FrameRate = floor(1/snapshotPeriod/25);
-        
-        v.Quality = 100;
-        open(v);
-for i = 1 : length(snapshots)
-            progressBar(i,length(snapshots));
-            frameFig = snapshotToFigure(snapshots{i},SimulationOptions.ContactNodes,Connectivity,whatToPlot,axesLimits);
-            writeVideo(v,getframe(frameFig));
-            close(frameFig);
-end
-         close(v);
+% %% Video:
+% %Snapshot options:
+% TimeVector = SelSims{currSim}.Time';
+% numIterations=length(TimeVector);
+%     snapshotPeriod   = 4*1e-3; % (sec) make it a multiple integer of dt
+%     snapshotStep     = ceil(snapshotPeriod /1e-3);
+%     snapshotsIdx     = 1:snapshotStep:numIterations;
+%     
+% v = VideoWriter('networkMovie','Motion JPEG AVI');
+% 
+%         v.FrameRate = floor(1/snapshotPeriod/25);
+%         
+%         v.Quality = 100;
+%         open(v);
+% for i = 1 : length(snapshots)
+%             progressBar(i,length(snapshots));
+%             frameFig = snapshotToFigure(snapshots{i},SimulationOptions.ContactNodes,Connectivity,whatToPlot,axesLimits);
+%             writeVideo(v,getframe(frameFig));
+%             close(frameFig);
+% end
+%          close(v);

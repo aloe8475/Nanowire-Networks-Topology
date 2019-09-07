@@ -129,10 +129,19 @@ for currentSimulation=1:length(simulations)
             end 
 
             %% NEED TO FIGURE THIS OUT - WHY IS THE TIME NOT SAVING?
-            
-            for time=1:length(pulseCentres)
+            if isempty(pulseCentres)
+                fprintf(num2str(currentSimulation));
+            end 
+            MAX_PULSE_CENTRES=11;
+             for time=1:length(pulseCentres) %Alon to change to var
                 [TimeData(time).Explore{currentSimulation},TimeData(time).threshold{currentSimulation}]=explore_simulation(currentSim,network,network_load,simNum,currentPath,currentSimulation,simulations,pulseCentres,time);
-            end
+             end
+             if length(pulseCentres<11)
+                 for time=length(pulseCentres)+1:MAX_PULSE_CENTRES
+                     TimeData(time).Explore{currentSimulation}=[];
+                     TimeData(time).threshold{currentSimulation}=[];
+                 end
+             end
             %% Saving Explore
             if currentSimulation==length(simulations)
                 save_state=lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
@@ -565,6 +574,8 @@ Graph.MZ = module_degree_zscore(net_mat,Graph.Ci);
 %Ci from 'community_louvain.m'
 % fprintf('Module Z Score Complete \n');
 
+%Assortativity 
+assortativity_bin(net_mat,0);
 %save Adj Matrix
 Graph.AdjMat=net_mat;
 

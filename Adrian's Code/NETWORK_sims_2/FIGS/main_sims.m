@@ -202,18 +202,14 @@ end
 %% CAN LOAD A LIST OF ELECTRODE LOCATIONS HERE AND THEN LOOP THROUGH THEM
 % Alon + Mike - 29/08/2019
 
+%% ELECTRODES
 for j = 1:numEl
-%     elec(1).x=3;
-%     elec(1).y=12;
-%     elec(2).x=22;
-%     elec(2).y=12;
-elec(j).x=randi(round(mean(x_lim)+10),1); % IF WE WANT RANDOM
-% ELECTRODES
-% while existElec==1 & temp.x1 == elec.x1 & temp.y1 == elec.y1 %make sure x and y are not the same as last time
-%     elec.y1=randi(y_lim); %if they are the same, randomise y again
-% end 
-elec(j).y=randi(round(mean(y_lim)+10),1); % IF WE WANT RANDOM
-% ELECTRODES
+    elec(1).x=3;
+    elec(1).y=12;
+    elec(2).x=22;
+    elec(2).y=12;
+% elec(j).x=randi(round(mean(x_lim)+10),1); % IF WE WANT RANDOM
+% elec(j).y=randi(round(mean(y_lim)+10),1); % IF WE WANT RANDOM
 end
 
 [NewSim.Time,NewSim.Electrodes]=getELECTRODES(handles,NewSim.Settings,Network,elec);

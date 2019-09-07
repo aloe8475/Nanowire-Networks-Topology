@@ -35,8 +35,8 @@ function Components = initializeComponentsAdrian(V,Components,SimulationOptions)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     %initialises to default values if none are given 
-    default.onResistance  = 7.77e-5;
-    default.offResistance = 1e-7;
+    default.onResistance  = 1/7.77e-5;
+    default.offResistance = 1e7;
     default.filamentState = 0.0;
     %default.OnOrOff       = 0.0;
     default.setVoltage    = 0.3;%1e-2; %0.3
@@ -59,7 +59,7 @@ function Components = initializeComponentsAdrian(V,Components,SimulationOptions)
         % Components.identity      = [rand(E,1) <= p ; 0];
     Components.type          = Components.ComponentType; % type of active elements ('atomicSwitch' \ 'memristor' \ ...)
     Components.voltage       = zeros(V);             % (Volt)
-    Components.resistance    = ones(V)*1e-7;             % (Ohm) (memory allocation)
+    Components.resistance    = ones(V)*1e7;             % (Ohm) (memory allocation)
     Components.onResistance  = [ones(V)*Components.onResistance];   % (Ohm) 1/(12.9 kOhm) = conductance quantum
     Components.offResistance = [ones(V)*Components.offResistance]; %*1e7;   % (Ohm) literature values
     switch Components.ComponentType

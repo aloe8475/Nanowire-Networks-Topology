@@ -6,66 +6,66 @@ clear;
 rng(42)
 s = rng;
 load('AdriantoZdenka100nw.mat','adj_matrix');
-for count = 2:length(adj_matrix)
-if count ==1
-    break
-else
-    i=count-1;
-end 
+% for count = 2:length(adj_matrix)
+% if count ==1
+%     break
+% else
+%     i=count-1;
+% end 
 %% Plot and analysis output flags:
-SimulationOptions(i).takingSnapshots = true; % true \ false
-SimulationOptions(i).compilingMovie  = false; % true \ false 
-SimulationOptions(i).onlyGraphics    = false; % true \ false (no analysis is done and shown, only graphics (snapshots, movie) are generated).
+SimulationOptions.takingSnapshots = true; % true \ false
+SimulationOptions.compilingMovie  = false; % true \ false 
+SimulationOptions.onlyGraphics    = false; % true \ false (no analysis is done and shown, only graphics (snapshots, movie) are generated).
 
 %% Simulation general options:
-SimulationOptions(i).seed = s;    % save
-SimulationOptions(i).dt = 1e-3;   % (sec)
-SimulationOptions(i).T  = 4;    % (sec) duration of simulation
-SimulationOptions(i).TimeVector = (SimulationOptions(i).dt:SimulationOptions(i).dt:SimulationOptions(i).T)';
-SimulationOptions(i).NumberOfIterations = length(SimulationOptions(i).TimeVector);  
+SimulationOptions.seed = s;    % save
+SimulationOptions.dt = 1e-3;   % (sec)
+SimulationOptions.T  = 3;    % (sec) duration of simulation
+SimulationOptions.TimeVector = (SimulationOptions.dt:SimulationOptions.dt:SimulationOptions.T)';
+SimulationOptions.NumberOfIterations = length(SimulationOptions.TimeVector);  
 
 %% Simulation recording options:
-SimulationOptions(i).ContactMode  = 'preSet';    % 'farthest' \ 'specifiedDistance' \ 'random' (the only one relevant for 'randAdjMat' (no spatial meaning)) \ 'preSet'
-SimulationOptions(i).ContactNodes = [1, count]; % only really required for preSet, other modes will overwrite this
+SimulationOptions.ContactMode  = 'farthest';    % 'farthest' \ 'specifiedDistance' \ 'random' (the only one relevant for 'randAdjMat' (no spatial meaning)) \ 'preSet'
+% SimulationOptions.ContactNodes = [1, count]; % only really required for preSet, other modes will overwrite this
 
 %% Generate Connectivity:
-Connectivity(i).WhichMatrix       = 'nanoWires';    % 'nanoWires' \ 'randAdjMat'
-switch Connectivity(i).WhichMatrix
+Connectivity.WhichMatrix       = 'nanoWires';    % 'nanoWires' \ 'randAdjMat'
+switch Connectivity.WhichMatrix
     case 'nanoWires'
-        Connectivity(i).filename='AdriantoZdenka100nw.mat';
+        Connectivity.filename='AdriantoZdenka100nw.mat';
 %         Connectivity.filename = '2016-09-08-155153_asn_nw_00100_nj_00261_seed_042_avl_100.00_disp_10.00.mat';
         %Connectivity.filename = '2016-09-08-155044_asn_nw_00700_nj_14533_seed_042_avl_100.00_disp_10.00.mat';
     case 'randAdjMat'
         Connectivity.NumberOfNodes = 30;
         Connectivity.AverageDegree = 10;
 end
-temp = getConnectivity(Connectivity(i));
+temp = getConnectivity(Connectivity);
 clear Connectivity;
-Connectivity(i) = temp;
+Connectivity = temp;
 clear temp;
 %% Choose  contacts:
-if strcmp(SimulationOptions(i).ContactMode, 'specifiedDistance')
-    SimulationOptions(i).BiProbeDistance = 500; % (um)
+if strcmp(SimulationOptions.ContactMode, 'specifiedDistance')
+    SimulationOptions.BiProbeDistance = 500; % (um)
 end
-SimulationOptions(i) = selectContacts(Connectivity(i), SimulationOptions(i));
+SimulationOptions = selectContacts(Connectivity, SimulationOptions);
 
 %% Initialize dynamic components:
-Components(i).ComponentType       = 'atomicSwitch'; % 'atomicSwitch' \ 'memristor' \ 'resistor'
-temp= initializeComponents(Connectivity(i).NumberOfEdges,Components(i));
+Components.ComponentType       = 'atomicSwitch'; % 'atomicSwitch' \ 'memristor' \ 'resistor'
+temp= initializeComponents(Connectivity.NumberOfEdges,Components);
 clear Components;
-Components(i) = temp;
+Components = temp;
 clear temp;
 
 %% Initialize stimulus:
-Stimulus(i).BiasType              = 'DC';           % 'DC' \ 'AC' \ 'DCandWait' \ 'Ramp'
-switch Stimulus(i).BiasType
+Stimulus.BiasType              = 'DCandWait';           % 'DC' \ 'AC' \ 'DCandWait' \ 'Ramp'
+switch Stimulus.BiasType
     case 'DC'
-        Stimulus(i).Amplitude = 1.5;  % (Volt)
+        Stimulus.Amplitude = 1.5;  % (Volt)
     case 'AC'
         Stimulus.Frequency       = 1.0; % (Hz)
         Stimulus.Amplitude       = 3;   % (Volt)
     case 'DCandWait'
-        Stimulus.OffTime      = 1.9; % SimulationOptions.T/3; % (sec)
+        Stimulus.OffTime      = SimulationOptions.T/3; % (sec)
         Stimulus.AmplitudeOn  = 1.5;                   % (Volt)
         Stimulus.AmplitudeOff = 0.005;                 % (Volt)
     case 'Ramp'
@@ -73,37 +73,37 @@ switch Stimulus(i).BiasType
         Stimulus.AmplitudeMax = 5;    % (Volt)
 end
 
-temp= getStimulus(Stimulus(i), SimulationOptions(i));
+temp= getStimulus(Stimulus, SimulationOptions);
 clear Stimulus;
-Stimulus(i) = temp;
+Stimulus = temp;
 clear temp;
 %% Get Equations:
-Equations(i) = getEquations(Connectivity(i),SimulationOptions(i).ContactNodes);
+Equations = getEquations(Connectivity,SimulationOptions.ContactNodes);
 
 %% Initialize snapshot time stamps:
-if SimulationOptions(i).takingSnapshots
-    snapshotPeriod   = 4*SimulationOptions(i).dt; % (sec) make it a multiple integer of dt
-    snapshotStep     = ceil(snapshotPeriod / SimulationOptions(i).dt);
-    snapshotsIdx     = 1:snapshotStep:SimulationOptions(i).NumberOfIterations;
+if SimulationOptions.takingSnapshots
+    snapshotPeriod   = 4*SimulationOptions.dt; % (sec) make it a multiple integer of dt
+    snapshotStep     = ceil(snapshotPeriod / SimulationOptions.dt);
+    snapshotsIdx     = 1:snapshotStep:SimulationOptions.NumberOfIterations;
 end
 
 %% Simulate:
-if SimulationOptions(i).takingSnapshots
-    [Output{i}, temp, snapshot] = simulateNetwork(Equations(i), Components(i), Stimulus(i), SimulationOptions(i), snapshotsIdx); % (Ohm)
+if SimulationOptions.takingSnapshots
+    [Output, temp, snapshot] = simulateNetwork(Equations, Components, Stimulus, SimulationOptions, snapshotsIdx); % (Ohm)
 else % this discards the snaphots
-    [Output{i}, temp, snapshot] = simulateNetwork(Equations(i), Components(i), Stimulus(i), SimulationOptions(i)); % (Ohm)
+    [Output, temp, snapshot] = simulateNetwork(Equations, Components, Stimulus, SimulationOptions); % (Ohm)
 end
-snapshots{i}=snapshot;
+snapshots=snapshot;
 clear SimulationOptions
-SimulationOptions(i)=temp;
+SimulationOptions=temp;
 clear temp 
 %% Analysis and plot results:
-% if ~SimulationOptions(i).onlyGraphics
-%     plotResults(Output{i}.networkResistance,Output{i}.networkCurrent,Stimulus(i));
+% if ~SimulationOptions.onlyGraphics
+%     plotResults(Output.networkResistance,Output.networkCurrent,Stimulus);
 % end
 
 %% Graphics:
-if SimulationOptions(i).takingSnapshots
+if SimulationOptions.takingSnapshots
     % What to plot:
     whatToPlot = struct(...
                         'Nanowires',    true, ...
@@ -117,25 +117,25 @@ if SimulationOptions(i).takingSnapshots
     % Uniform scales:
     axesLimits.DissipationCbar = [0,5]; % (1pW*10^0 : 1pW*10^5)
     axesLimits.CurrentArrowSacling = 50; %0.25
-    switch Stimulus(i).BiasType
+    switch Stimulus.BiasType
         case 'DC'
-            if Stimulus(i).Signal(1) > 0
-                axesLimits.VoltageCbar = [0,Stimulus(i).Signal(1)]; % (V)
+            if Stimulus.Signal(1) > 0
+                axesLimits.VoltageCbar = [0,Stimulus.Signal(1)]; % (V)
             else
-                axesLimits.VoltageCbar = [Stimulus(i).Signal(1),0]; % (V)
+                axesLimits.VoltageCbar = [Stimulus.Signal(1),0]; % (V)
                 
             end
         case {'AC' , 'DCandWait' }
-            axesLimits.VoltageCbar = [min(Stimulus(i).Signal),max(Stimulus(i).Signal)]; % (V)
+            axesLimits.VoltageCbar = [min(Stimulus.Signal),max(Stimulus.Signal)]; % (V)
     end
 
 %     % Just for fun - extract a specific frame (from the middle):
 %     
-%     snapshotToFigure(snapshot{floor(length(snapshot)/2)},SimulationOptions(i).ContactNodes,Connectivity(i),whatToPlot,axesLimits);
-%     set(gcf, 'visible','on')
+    snapshotToFigure(snapshot{floor(length(snapshot)/2)},SimulationOptions.ContactNodes,Connectivity,whatToPlot,axesLimits);
+    set(gcf, 'visible','on')
 
     % Compile whole movie:
-    if SimulationOptions(i).compilingMovie 
+    if SimulationOptions.compilingMovie 
         fprintf('\nCompiling movie...\n');
         
         % Only Windows and MacOS >  10.7
@@ -149,7 +149,7 @@ if SimulationOptions(i).takingSnapshots
         open(v);
         for i = 1 : length(snapshots)
             progressBar(i,length(snapshots));
-            frameFig = snapshotToFigure(snapshots{i},SimulationOptions.ContactNodes,Connectivity,whatToPlot,axesLimits);
+            frameFig = snapshotToFigure(snapshots,SimulationOptions.ContactNodes,Connectivity,whatToPlot,axesLimits);
             writeVideo(v,getframe(frameFig));
             close(frameFig);
         end
@@ -158,6 +158,5 @@ if SimulationOptions(i).takingSnapshots
     end
 end
 
-fprintf(['\n ' num2str(i) '\n']);
 clear snapshot
-end 
+ 
