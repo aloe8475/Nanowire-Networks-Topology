@@ -23,18 +23,18 @@ function plotResults(resistance,current,Stimulus)
 % Authors:
 % Ido Marcus
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-    conductance = 1./resistance;
-    
+    cplot2 = true;
+    conductance = resistance;
+    figure;
     switch Stimulus.BiasType
 %        case {'DC'}
-        case {'DC', 'DCandWait'}
+        case {'DC', 'DCandWait', 'Square', 'AlonPulse'}
             subplot(1,2,1);
             % overplot C and V on same plot - use yyaxis instead of plotyy
             % (see below)
             yyaxis left; % activate left axis to plot C 
-            plot(Stimulus.TimeAxis,conductance);
-%            semilogy(Stimulus.TimeAxis,conductance);
+%            plot(Stimulus.TimeAxis,conductance);
+            semilogy(Stimulus.TimeAxis,conductance);
             title('Conductance time series');
             %ylim([min(conductance)-.01*min(conductance), max(conductance)+0.05*max(conductance)])            
             xlim([0, max(Stimulus.TimeAxis)]);
@@ -76,7 +76,7 @@ function plotResults(resistance,current,Stimulus)
             loglog(t_freq,PSDfit,'r');
 %            loglog(t_freq(t_freq>=0.2 & t_freq<=20),PSDfit(t_freq>=0.2 & t_freq<=20),'r');
             text(0.5,0.8,sprintf('\\beta=%.1f', -fitCoef(1)),'Units','normalized','Color','r','FontSize',18);
-            title('Conductance PSD');
+            title(strcat('Conductance PSD '));
             xlabel('Frequency (Hz)');
             ylabel('PSD');
             ylim([min(conductance_freq)/10,max(conductance_freq)*10]);
@@ -113,18 +113,18 @@ function plotResults(resistance,current,Stimulus)
 %             xlim([min(stability_hist_bin),max(stability_hist_bin)]);
 %             grid on;
             
-        case 'AC'
+        case {'AC', 'ACsaw'}
             subplot(2,1,1);
             [t_freq, extCur_freq] = fourier_analysis(Stimulus.TimeAxis, current);
             % use yyaxis instead of plotyy
             %[axesHandles, curLine, volLine] = plotyy(Stimulus.TimeAxis*Stimulus.Frequency,current,...
                                                      %Stimulus.TimeAxis*Stimulus.Frequency,Stimulus.Signal);
             yyaxis left % activate left axis to plot V
-            plot(Stimulus.TimeAxis*Stimulus.Frequency,Stimulus.Signal);
+            plot(Stimulus.TimeAxis,Stimulus.Signal);
             ylim([-5,5]);
             ylabel('Voltage (V)','FontSize',14);
             yyaxis right; % activate right axis to plot I 
-            plot(Stimulus.TimeAxis*Stimulus.Frequency,current);
+            plot(Stimulus.TimeAxis,current);
             %ylim([-2e-7,2e-7]);
             ylabel('Current (A)','FontSize',14);
 %            ylabel(axesHandles(1),'Voltage (V)');
@@ -154,7 +154,8 @@ function plotResults(resistance,current,Stimulus)
             xlabel('V','FontSize',14);
             ylabel('I','FontSize',14);
             
-         case {'DCandWait', 'Ramp'}
+         case {'Ramp'}
+             figure
 %              % plot C and V in separate plots:
 %              subplot(2,1,1);
 %              plot(Stimulus.TimeAxis,conductance);
@@ -199,7 +200,8 @@ function plotResults(resistance,current,Stimulus)
 %             xlim([0,Stimulus.OffTime/4]);
 %             ylim([0,Stimulus.AmplitudeOn]);
 
-        case 'Ramp'
+        case {'Ramp', 'AC', 'ACsaw'}
+            figure
             [axesHandles, ~, ~] = plotyy(Stimulus.TimeAxis,conductance,...
                                          Stimulus.TimeAxis,Stimulus.Signal);
             title('External voltage and conductance as function of time')
@@ -222,4 +224,54 @@ function plotResults(resistance,current,Stimulus)
             ylabel('Current [A]');
             title('Applied Voltage vs Output Current') 
     end
+    
+    %{
+    if cplot2
+        figure
+    %              % plot C and V in separate plots:
+    %              subplot(2,1,1);
+    %              plot(Stimulus.TimeAxis,conductance);
+    %              title('Network conductance time series')
+    %              xlabel('Time (sec)');
+    %              subplot(2,1,2);
+    %              plot(Stimulus.TimeAxis,Stimulus.Signal);
+    %              title('Input voltage signal')
+    %              xlabel('Time (sec)');
+    %              ylabel('Voltage (V)');
+         % plot C vs V and I vs V in same plots:
+         subplot(2,1,1);
+         yyaxis left; % activate left axis to plot C 
+         semilogy(Stimulus.TimeAxis,conductance);
+         title('Conductance time series');
+         xlim([0, max(Stimulus.TimeAxis)]);
+         xlabel('Time (sec)','FontSize',16);
+         ylabel('Conductance (S)','FontSize',16);
+         %grid on;
+         yyaxis right % activate right axis to plot V
+         plot(Stimulus.TimeAxis,Stimulus.Signal);
+         ylim([0,5]);
+         ylabel('Voltage (V)','FontSize',16);
+         subplot(2,1,2);
+         yyaxis left; % activate left axis to plot I 
+         semilogy(Stimulus.TimeAxis,current);
+         title('Current time series');
+         xlim([0, max(Stimulus.TimeAxis)]);
+         xlabel('Time (sec)','FontSize',16);
+         ylabel('Current (A)','FontSize',16);
+         %grid on;
+         yyaxis right % activate right axis to plot V
+         plot(Stimulus.TimeAxis,Stimulus.Signal);
+         ylim([0,5]);
+         ylabel('Voltage (V)','FontSize',16);
+        % add an inset to zoom into complex voltage pulses:
+    %               axes('Position',[0.58,0.6,0.3,0.3]);
+    %               box on;
+    %               %xlim([0,5]);
+    %               semilogy(Stimulus.TimeAxis,conductance);
+    %             plot(Stimulus.TimeAxis,Stimulus.Signal);
+    %             xlim([0,Stimulus.OffTime/4]);
+    %             ylim([0,Stimulus.AmplitudeOn]);
+    end
+    %}
+    
 end

@@ -2,6 +2,7 @@ function Stimulus = getStimulus(Stimulus, SimulationOptions)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Generates a structure with the details of an external voltage signal
 % applied to the network.
+
 %
 % ARGUMENTS: 
 % Stimulus - Structure containing the details of the required stimulus. It
@@ -41,6 +42,10 @@ function Stimulus = getStimulus(Stimulus, SimulationOptions)
 %                      .dt                          (duration of time-step)
 %           It is assumed that the units of all input fields are sec, Hz
 %           and Volt. Thus, the output fields are in sec and Volt.
+%
+
+
+
 % OUTPUT:
 % Stimulus - Structure with the details of the time axis and with the 
 %            external voltage signal. Fields:
@@ -80,15 +85,19 @@ function Stimulus = getStimulus(Stimulus, SimulationOptions)
     % External voltage signal:
     switch Stimulus.BiasType
         case 'DC'
-            Stimulus.Signal = Stimulus.Amplitude*ones(size(Stimulus.TimeAxis));
+            Stimulus.Signal = Stimulus.Amplitude*ones(size(Stimulus.TimeAxis));% + normrnd(0,0.2,size(Stimulus.TimeAxis));
+            Stimulus.stimName   = strcat(Stimulus.BiasType,num2str( Stimulus.Amplitude,3),'V');
         case 'AC'
-%            Stimulus.Signal = Stimulus.Amplitude*sin(2*pi*Stimulus.Frequency*Stimulus.TimeAxis);
+            Stimulus.Signal = Stimulus.Amplitude*sin(2*pi*Stimulus.Frequency*Stimulus.TimeAxis);
+            Stimulus.stimName = strcat(Stimulus.BiasType, num2str( Stimulus.Amplitude,3),'V_f',num2str(Stimulus.Frequency,3),'Hz');
+        case 'ACsaw'
+            Stimulus.stimName = strcat(Stimulus.BiasType, num2str( Stimulus.Amplitude,3),'V_f',num2str(Stimulus.Frequency,3),'Hz');
             Stimulus.Signal = Stimulus.Amplitude*sawtooth(2*pi*Stimulus.Frequency*(Stimulus.TimeAxis-0.75/Stimulus.Frequency) , 0.5);
         case 'DCandWait'
             % Standard boxcar:
             %Stimulus.Signal = Stimulus.AmplitudeOn*ones(size(Stimulus.TimeAxis));
             % rectangular pulse train:
-            Stimulus.Signal = max(Stimulus.AmplitudeOff,Stimulus.AmplitudeOn*square(1*pi*Stimulus.TimeAxis));
+            Stimulus.Signal = max(Stimulus.AmplitudeOff,Stimulus.AmplitudeOn*square(1*pi*Stimulus.TimeAxis/Stimulus.OffTime));
             % sawtooth (for I-V plots):
             %Stimulus.Signal = Stimulus.AmplitudeOn*sawtooth(2*pi*1.0*(Stimulus.TimeAxis-0.75/10.0) , 0.5);
 %            % Walsh functions:
@@ -101,7 +110,10 @@ function Stimulus = getStimulus(Stimulus, SimulationOptions)
 %            Stimulus.Signal = Stimulus.AmplitudeOff*ones(size(Stimulus.TimeAxis));
 %            Stimulus.Signal(Stimulus.TimeAxis >= 5) = max( Stimulus.AmplitudeOff, exp( -1.5*((Stimulus.TimeAxis(Stimulus.TimeAxis >= 5)/5)- 1) )*Stimulus.AmplitudeOn );
             %
-            Stimulus.Signal(Stimulus.TimeAxis > Stimulus.OffTime) = Stimulus.AmplitudeOff;
+            %Stimulus.Signal(Stimulus.TimeAxis > Stimulus.OffTime) = Stimulus.AmplitudeOff;
+            Stimulus.stimName   = strcat(Stimulus.BiasType,num2str(Stimulus.AmplitudeOn,3),'V_off',num2str(Stimulus.OffTime,3),'s');
+        case 'Square'
+            Stimulus.Signal = max(Stimulus.AmplitudeOff,Stimulus.AmplitudeOn*square(1*pi*Stimulus.TimeAxis/Stimulus.OffTime));
         case 'Ramp'
             Stimulus.Signal = linspace(Stimulus.AmplitudeMin, Stimulus.AmplitudeMax, length(Stimulus.TimeAxis))';
         case 'Custom'
@@ -111,5 +123,24 @@ function Stimulus = getStimulus(Stimulus, SimulationOptions)
             w  = SimulationOptions.T;
             scaling = abs(Stimulus.AmplitudeMax - Stimulus.AmplitudeMin);
             Stimulus.Signal = scaling * tripuls(t, w) + Stimulus.AmplitudeMin;
+            
+            
+        case 'AlonPulse'
+            Stimulus.Signal = max(Stimulus.AmplitudeOff,Stimulus.AmplitudeOn*square(2*pi*Stimulus.TimeAxis/Stimulus.Period));
+            Stimulus.Signal(Stimulus.TimeAxis >= Stimulus.NumPulse1*Stimulus.Period) = Stimulus.AmplitudeOff;
+            SecondSetStart =  Stimulus.NumPulse1*Stimulus.Period + Stimulus.LongWait; %second set of pulses starts here
+            Stim1          = max(Stimulus.AmplitudeOff,Stimulus.AmplitudeOn*square(2*pi*(Stimulus.TimeAxis-SecondSetStart)/Stimulus.Period));
+            SecondSetEnd   = SecondSetStart + Stimulus.NumPulse2*Stimulus.Period;
+            Stimulus.Signal(Stimulus.TimeAxis >= SecondSetStart) = Stim1(Stimulus.TimeAxis >= SecondSetStart);
+            Stimulus.Signal(Stimulus.TimeAxis >= SecondSetEnd)   = Stimulus.AmplitudeOff;
+            
+            
+        case 'SinglePulse'
+           Stimulus.Signal = Stimulus.AmplitudeOff*ones(size(Stimulus.TimeAxis));
+           Stimulus.Signal(Stimulus.TimeAxis > Stimulus.OnTime) = Stimulus.AmplitudeOn;
+           Stimulus.Signal(Stimulus.TimeAxis > Stimulus.OffTime) = Stimulus.AmplitudeOff;
+           
+           %
+            
     end
 end
