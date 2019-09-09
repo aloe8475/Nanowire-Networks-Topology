@@ -44,18 +44,18 @@ end
 
 %% Initialise Variables:
 numSimulations=length(Explore{1});
-gRemovedEdges=cell(length(Explore),numSimulations); 
+gRemovedEdges=cell(length(Explore),numSimulations);
 gOriginal=cell(length(Explore),numSimulations);
 netCurrs=cell(length(Explore),numSimulations);
 netDegree=cell(length(Explore),numSimulations);
 netPathLength=cell(length(Explore),numSimulations);
-    netCOMM=cell(length(Explore),numSimulations);
-    netCurrs=cell(length(Explore),numSimulations);
-    netPCoeff=cell(length(Explore),numSimulations);
-    netMZ=cell(length(Explore),numSimulations);
-    netClust=cell(length(Explore),numSimulations);
-    netBC=cell(length(Explore),numSimulations);
-    
+netCOMM=cell(length(Explore),numSimulations);
+netCurrs=cell(length(Explore),numSimulations);
+netPCoeff=cell(length(Explore),numSimulations);
+netMZ=cell(length(Explore),numSimulations);
+netClust=cell(length(Explore),numSimulations);
+netBC=cell(length(Explore),numSimulations);
+
 % For each time point
 for j = 1:length(Explore)
     
@@ -67,14 +67,20 @@ for j = 1:length(Explore)
         % Store the 'class' of time for the current time.
         if ~isempty(Explore{j}{i})
             idxTime{j}.Time(i)=Explore{j}{i}.IndexTime;
+            
+            %BINS
             if j<=(1/3)*length(Explore)
                 class{j}{i}='Early';
+                classNums{1}=[1:(1/3)*length(Explore)];
             elseif j>(1/3)*length(Explore) & j <(2/3)*length(Explore)
                 class{j}{i}='Mid';
+                classNums{2}=[round((1/3)*length(Explore)):round((2/3)*length(Explore))];
             elseif j>=(2/3)*length(Explore) & j<length(Explore)
                 class{j}{i}='Late';
+                classNums{3}=[round(2/3*length(Explore))+1:length(Explore)-1];
             elseif j == length(Explore)
                 class{j}{i}='Never';
+                classNums{4}=length(Explore);
             end
             
         else
@@ -102,8 +108,8 @@ for j = 1:length(Explore)
                     class{j}{i}='Late';
                 else
                     class{j}{i}=class{j-1}{i};
-                end        
-            end 
+                end
+            end
         end
         
         if ~isempty(thisExplore{i})
@@ -134,56 +140,56 @@ for j = 1:length(Explore)
             
             %
             %     %%
-            %     %Find index of electrodes: (as long as their 
+            %     %Find index of electrodes: (as long as their
             if sum(thisExplore{i}.GraphView.NodeIndices==thisExplore{i}.GraphView.ElectrodePosition(1))>0
-            [m, idx{i}]=max(thisExplore{i}.GraphView.NodeIndices==thisExplore{i}.GraphView.ElectrodePosition(1));
+                [m, idx{i}]=max(thisExplore{i}.GraphView.NodeIndices==thisExplore{i}.GraphView.ElectrodePosition(1));
             else
-            idx{i}=[];
-            end 
+                idx{i}=[];
+            end
             if sum(thisExplore{i}.GraphView.NodeIndices==thisExplore{i}.GraphView.ElectrodePosition(2))>0
-            [m, idx2{i}]=max(thisExplore{i}.GraphView.NodeIndices==thisExplore{i}.GraphView.ElectrodePosition(2));
+                [m, idx2{i}]=max(thisExplore{i}.GraphView.NodeIndices==thisExplore{i}.GraphView.ElectrodePosition(2));
             else
-            idx2{i}=[];
-            end 
+                idx2{i}=[];
+            end
             
             
             %% connect source to drain on a copy of the adj matrix - THIS IS JOEL'S
             %CODE HE IS A LEGEND
             
-%             if j > 0
-                if ~isempty(idx{i}) && ~isempty(idx2{i}) %if both electrodes aren't 'empty' we check if there is any extra paths on the main connected graph
-                    nonConnected(j,i)=0;
-                    toDelete = false(length(Adj),1);
-                    for count=1:length(Adj)
-                        tempAdj=Adj;
-                        g=graph(Adj);
-                        sp=shortestpath(g,count,idx{i});
-                        for count2=1:length(sp)-1
-                            g=g.rmedge(sp(count2),sp(count2+1));
-                        end
-                        sp2=shortestpath(g,count,idx2{i});
-                        if isempty(sp2)
-                            Adj(count,:)=0;
-                            Adj(:,count)=0;
-                        end
-                        clear tempAdj
+            %             if j > 0
+            if ~isempty(idx{i}) && ~isempty(idx2{i}) %if both electrodes aren't 'empty' we check if there is any extra paths on the main connected graph
+                nonConnected(j,i)=0;
+                toDelete = false(length(Adj),1);
+                for count=1:length(Adj)
+                    tempAdj=Adj;
+                    g=graph(Adj);
+                    sp=shortestpath(g,count,idx{i});
+                    for count2=1:length(sp)-1
+                        g=g.rmedge(sp(count2),sp(count2+1));
                     end
-                else
-                    % MAKE LIST + DELETE LATER
-                    nonConnected(j,i)=1;
+                    sp2=shortestpath(g,count,idx2{i});
+                    if isempty(sp2)
+                        Adj(count,:)=0;
+                        Adj(:,count)=0;
+                    end
+                    clear tempAdj
                 end
-%             end
+            else
+                % MAKE LIST + DELETE LATER
+                nonConnected(j,i)=1;
+            end
+            %             end
             % Save removed-edges Graphs
-            gRemovedEdges{j,i}=graph(Adj);           
+            gRemovedEdges{j,i}=graph(Adj);
             %Remove zero degree nodes:
             gRemovedEdges{j,i}=gRemovedEdges{j,i}.rmnode(find(gRemovedEdges{j,i}.degree==0));
-%             if largestcomponent
-%                 [bin,binsize] =conncomp(gRemovedEdges{j}{i});
-%                 id = binsize(bin) == max(binsize);
-%                 gRemovedEdges{j}{i} = subgraph(gRemovedEdges{j}{i}, id);
-%                 thisExplore{i}.GraphView.NodeIndices(~id)=[];
-%             end
-%             
+            %             if largestcomponent
+            %                 [bin,binsize] =conncomp(gRemovedEdges{j}{i});
+            %                 id = binsize(bin) == max(binsize);
+            %                 gRemovedEdges{j}{i} = subgraph(gRemovedEdges{j}{i}, id);
+            %                 thisExplore{i}.GraphView.NodeIndices(~id)=[];
+            %             end
+            %
             
             %     paths = allpaths(tempAdj, idx{i}, idx2{i});
             %
@@ -371,21 +377,21 @@ for j = 1:length(Explore)
             %     between3{i}=between(logical(between2));
             
             %Graphs:
-             
+            
         end %if ~isempty(thisExplore)
         
-            %Combine com3 and cc3 (network comm and network currents):
-    %     netMolularity{j}=[Module{:}];
-    netDegree{j,i}=Degree{i};
-    netPathLength{j,i}=AvgPath{i};
-    netCOMM{j,i}=com3{i};
-    netCOMM{j,i}(netCOMM{j,i}==Inf)=0; %NEED TO DISCUSS WITH MAC
-    netCurrs{j,i}=cc3{i};
-    netPCoeff{j,i}=PCoeff{i};
-    netMZ{j,i}=MZ{i};
-    netClust{j,i}=Clust{i};
-    netBC{j,i}=BC{i};
-    end %for loop 
+        %Combine com3 and cc3 (network comm and network currents):
+        %     netMolularity{j}=[Module{:}];
+        netDegree{j,i}=Degree{i};
+        netPathLength{j,i}=AvgPath{i};
+        netCOMM{j,i}=com3{i};
+        netCOMM{j,i}(netCOMM{j,i}==Inf)=0; %NEED TO DISCUSS WITH MAC
+        netCurrs{j,i}=cc3{i};
+        netPCoeff{j,i}=PCoeff{i};
+        netMZ{j,i}=MZ{i};
+        netClust{j,i}=Clust{i};
+        netBC{j,i}=BC{i};
+    end %for loop
     
     
     category{j}.NaN=sum(isnan(idxTime{j}.Time));
@@ -395,7 +401,7 @@ for j = 1:length(Explore)
     category{j}.Early=sum(strcmp(class{j},'Early'));
     category{j}.Mid=sum(strcmp(class{j},'Mid'));
     category{j}.Late=sum(strcmp(class{j},'Late'));
-     
+    
     progressBar(j,length(Explore));
 end
 
@@ -406,23 +412,34 @@ end
 NonConnectedTimes=sum(nonConnected,2);
 
 %% Categorical Processing:
-logicalCategory.Early=strcmp(class{end},'Early');
-logicalCategory.Mid=strcmp(class{end},'Mid');
-logicalCategory.Late=strcmp(class{end},'Late');
-logicalCategory.Never=strcmp(class{end},'Never');
-logicalCategory.NeverAndNotConnected=nonConnected(end,:)==1;
+logicalCategory.Early=strcmp(class{j},'Early');
+logicalCategory.Mid=strcmp(class{j},'Mid');
+logicalCategory.Late=strcmp(class{j},'Late');
+logicalCategory.Never=strcmp(class{j},'Never');
+logicalCategory.NeverAndNotConnected=nonConnected(j,:)==1;
 logicalCategory.NeverAndConnected=logical(logicalCategory.Never-logicalCategory.NeverAndNotConnected);
 
 %% Graphs
-categories.originalGraphs{1}={gOriginal{end,logicalCategory.Early}};
-categories.originalGraphs{2}={gOriginal{end,logicalCategory.Mid}};
-categories.originalGraphs{3}={gOriginal{end,logicalCategory.Late}};
-categories.originalGraphs{4}={gOriginal{end,logicalCategory.NeverAndConnected}};
+for i=1:length(classNums) %times
+    for j = 1:length(classNums{i})%number of simulations in each time
+        if i ==1
+            categories.originalGraphs.Early{j}={gOriginal{classNums{i}(j),logicalCategory.Early}};
+            categories.connectedGraphs.Early{j}={gRemovedEdges{classNums{i}(j),logicalCategory.Early}};
+        elseif i==2
+            categories.originalGraphs.Mid{j}={gOriginal{classNums{i}(j),logicalCategory.Mid}};
+            categories.connectedGraphs.Mid{j}={gRemovedEdges{classNums{i}(j),logicalCategory.Mid}};
+        elseif i==3
+            categories.originalGraphs.Late{j}={gOriginal{classNums{i}(j),logicalCategory.Late}};
+            categories.connectedGraphs.Late{j}={gRemovedEdges{classNums{i}(j),logicalCategory.Late}};
+        else
+            categories.originalGraphs.Never{j}={gOriginal{classNums{i}(j),logicalCategory.NeverAndConnected}};
+            categories.connectedGraphs.Never{j}={gRemovedEdges{classNums{i}(j),logicalCategory.NeverAndConnected}};
+        end
+    end
+end
+categories.originalGraphs.explanation="Each Cell Array represents the pulse number within the category";
+categories.connectedGraphs.explanation="Each Cell Array represents the pulse number within the category";
 
-categories.connectedGraphs{1}={gRemovedEdges{end,logicalCategory.Early}};
-categories.connectedGraphs{2}={gRemovedEdges{end,logicalCategory.Mid}};
-categories.connectedGraphs{3}={gRemovedEdges{end,logicalCategory.Late}};
-categories.connectedGraphs{4}={gRemovedEdges{end,logicalCategory.NeverAndConnected}};
 
 %% Degree at endTime
 categories.Degree{1}=[Degree{logicalCategory.Early}];
@@ -451,7 +468,7 @@ categories.Degree{3}=[Degree{logicalCategory.Late}];
 
 % for i =1:length(edges)
 %     % set(b(i),'FaceColor',clrs{i})
-%     
+%
 %     Legend{i}=strcat(num2str(edges(i)));
 % end
 % l=legend(Legend,'Location','NorthEast');
@@ -484,15 +501,15 @@ categories.PathLength{3}=[AvgPath{logicalCategory.Late}];
 % xticklabels({['Early (' num2str(sum(values(1,:))) ')'],['Mid (' num2str(sum(values(2,:))) ')'],['Late (' num2str(sum(values(3,:))) ')'],['Never (' num2str(sum(values(1,:))) ')']});
 % ylabel('Percentage');
 % title('Avg Path Length (Categories)');
-% 
+%
 % for i =1:length(edges)
 %     % set(b(i),'FaceColor',clrs{i})
-%     
+%
 %     Legend{i}=strcat(num2str(edges(i)));
 % end
 % l=legend(Legend,'Location','NorthEast');
 % title(l,'Avg Path');
-% 
+%
 % clear values Legend
 
 %% Clustering Coeff:
@@ -520,15 +537,15 @@ categories.Clust{3}=vertcat(Clust{logicalCategory.Late});
 % xticklabels({['Early (' num2str(sum(values(1,:))) ')'],['Mid (' num2str(sum(values(2,:))) ')'],['Late (' num2str(sum(values(3,:))) ')'],['Never (' num2str(sum(values(1,:))) ')']});
 % ylabel('Percentage');
 % title('Clustering Coefficient (Categories)');
-% 
+%
 % for i =1:length(edges)
 %     % set(b(i),'FaceColor',clrs{i})
-%     
+%
 %     Legend{i}=strcat(num2str(edges(i)));
 % end
 % l=legend(Legend,'Location','NorthEast');
 % title(l,'Clust');
-% 
+%
 % clear values Legend
 
 
@@ -558,15 +575,15 @@ categories.PCoeff{3}=vertcat(PCoeff{logicalCategory.Late});
 % xticklabels({['Early (' num2str(sum(values(1,:))) ')'],['Mid (' num2str(sum(values(2,:))) ')'],['Late (' num2str(sum(values(3,:))) ')'],['Never (' num2str(sum(values(1,:))) ')']});
 % ylabel('Percentage');
 % title('Participant Coefficient (Categories)');
-% 
+%
 % for i =1:length(edges)
 %     % set(b(i),'FaceColor',clrs{i})
-%     
+%
 %     Legend{i}=strcat(num2str(edges(i)));
 % end
 % l=legend(Legend,'Location','NorthEast');
 % title(l,'PCoeff');
-% 
+%
 % clear values Legend
 
 %% netMZ
@@ -594,15 +611,15 @@ categories.MZ{3}=vertcat(MZ{logicalCategory.Late});
 % xticklabels({['Early (' num2str(sum(values(1,:))) ')'],['Mid (' num2str(sum(values(2,:))) ')'],['Late (' num2str(sum(values(3,:))) ')'],['Never (' num2str(sum(values(1,:))) ')']});
 % ylabel('Percentage');
 % title('Within-Module Degree z-Score (Categories)');
-% 
+%
 % for i =1:length(edges)
 %     % set(b(i),'FaceColor',clrs{i})
-%     
+%
 %     Legend{i}=strcat(num2str(edges(i)));
 % end
 % l=legend(Legend,'Location','NorthEast');
 % title(l,'MZ');
-% 
+%
 % clear values Legend
 
 %% COMM
@@ -626,20 +643,20 @@ categories.COMM{3}=[com3{logicalCategory.Late}];
 %             valuesPct(j,:) = (values(j,:)./sum(values(j,:)))*100;
 %     end
 % end
-% 
+%
 % bCat4=bar(valuesPct,'grouped');
 % xticklabels({['Early (' num2str(sum(values(1,:))) ')'],['Mid (' num2str(sum(values(2,:))) ')'],['Late (' num2str(sum(values(3,:))) ')'],['Never (' num2str(sum(values(1,:))) ')']});
 % ylabel('Percentage');
 % title('Communicability (Categories)');
-% 
+%
 % for i =1:length(edges)
 %     % set(b(i),'FaceColor',clrs{i})
-%     
+%
 %     Legend{i}=strcat(num2str(edges(i)));
 % end
 % l=legend(Legend,'Location','NorthEast');
 % title(l,'COMM');
-% 
+%
 % clear values Legend
 
 %Currents - This needs to be slightly less than at the very end time point
@@ -647,7 +664,7 @@ categories.COMM{3}=[com3{logicalCategory.Late}];
 categories.Curr{1}=[cc3{logicalCategory.Early}];
 categories.Curr{2}=[cc3{logicalCategory.Mid}];
 categories.Curr{3}=[cc3{logicalCategory.Late}];
-% 
+%
 % edges=[1e-7:max([endTime.Curr{:}])/7:max([endTime.Curr{:}])];
 % for j = 1:length(endTime.Curr)
 %     hCat5=histogram(endTime.Curr{j},edges);
@@ -657,15 +674,15 @@ categories.Curr{3}=[cc3{logicalCategory.Late}];
 % xticklabels({'Early','Mid','Late/Never'});
 % ylabel('Frequency');
 % title('Current (Categories)');
-% 
+%
 % for i =1:length(edges)
 % % set(b(i),'FaceColor',clrs{i})
-% 
+%
 %     Legend{i}=strcat(num2str(edges(i)));
 % end
 % l=legend(Legend,'Location','NorthWest');
 % title(l,'Curr (A)');
-% 
+%
 % clear values Legend
 
 
@@ -685,6 +702,16 @@ b=lightblue(3):(-bdif)/(length(categories.COMM)-1):blue(3);
 
 % %Scatter Colours:
 clrs={[r; g; b]'};
+
+%Split colours into bins
+rdif=[lightblue(1)-blue(1)];
+r2=lightblue(1):(-rdif)/(length(categories.Clust)-1):blue(1);
+gdif=[lightblue(2)-blue(2)];
+g2=lightblue(2):(-gdif)/(length(categories.Clust)-1):blue(2);
+bdif=[lightblue(3)-blue(3)];
+b2=lightblue(3):(-bdif)/(length(categories.Clust)-1):blue(3);
+
+clrs2={[r2; g2; b2]'};
 %% Plot Graph
 % p = plot(Explore{end}.GraphView.Graph,'NodeLabel',Explore{end}.GraphView.NodeIndices);
 
@@ -724,7 +751,7 @@ clrs={[r; g; b]'};
 %% Plot of Max Current (NaNs)
 fnan=figure('Position',[0 0 1920 1080]);
 categoryMat=cell2mat(category);
-plot([1:11],[categoryMat.NaN]./length(idxTime{1}.Time),'o-')
+plot([1:length(Explore)],[categoryMat.NaN]./length(idxTime{1}.Time),'o-')
 xticklabels({'13','63','113','163','213','263','313','363','413','463','475'});
 ylabel('% Reached Max Current');
 xlabel('Square Pulse Time (mSec)');
@@ -744,19 +771,19 @@ for i = 1:length(categories.COMM)
     s(i)=scatter(categories.COMM{i},categories.Curr{i},[],clrs{1}(i,:));
     %     h=lsline; %Linear Fit
     
-    % %Polynomial Fits -------
-    % hp=polyfit(netCOMM{i},netCurrs{i},2); %2nd Order Polynomial Fit
-    % x2=min(netCOMM{i}):0.25:max(netCOMM{i});
-    % y2=polyval(hp,x2);
-    % hold on
-    % p2=plot(x2,y2,'g');
-    %
-    % hp3=polyfit(netCOMM{i},netCurrs{i},3); %3rd Order Polynomial Fit
-    % x3=min(netCOMM{i}):0.25:max(netCOMM{i});
-    % y3=polyval(hp3,x3);
-    % hold on
-    % p3=plot(x3,y3,'m');
-    % % ------
+%     %Polynomial Fits -------
+%     hp=polyfit(categories.COMM{i},categories.Curr{i},2); %2nd Order Polynomial Fit
+%     x2=min(categories.COMM{i}):0.25:max(categories.COMM{i});
+%     y2=polyval(hp,x2);
+%     hold on
+%     p2=plot(x2,y2,'g');
+%     
+%     hp3=polyfit(categories.COMM{i},categories.Curr{i},3); %3rd Order Polynomial Fit
+%     x3=min(categories.COMM{i}):0.25:max(categories.COMM{i});
+%     y3=polyval(hp3,x3);
+%     hold on
+%     p3=plot(x3,y3,'m');
+%     % % ------
     
     % h.Color='r';
     xlabel('Communicability');
@@ -769,13 +796,13 @@ for i = 1:length(categories.COMM)
     end
     hold on
     % legend([p2,p3, h],'2nd order Polynomial Fit','3rd order Polynomial Fit','Linear Fit');
-    [rCorrelation{i}.COMM,pCorrelation{i}.COMM]=corrcoef(netCOMM{i},netCurrs{i});
-%     Legend{i}=strcat([num2str(Explore{i}{3}.IndexTime) ' sec']);
+    [rCorrelation{i}.COMM,pCorrelation{i}.COMM]=corrcoef(categories.COMM{i},categories.Curr{i});
+    %     Legend{i}=strcat([num2str(Explore{i}{3}.IndexTime) ' sec']);
 end
 % legend(Legend)
 legend({'Early','Mid','Late'})
 
-% % log10 Current:
+%% log10 Current:
 % flog=figure('Position',[0 0 1920 1080]);
 % for i = 1:length(Explore)
 %     slog(i)=scatter(netCOMM{i},log10(netCurrs{i}),[],clrs{i});
@@ -851,15 +878,6 @@ s(1)=scatter(mean(watStr.cc),watStr.pl,[],[r3; g3; b3]');
 
 hold on
 
-%Split colours into bins
-rdif=[lightblue(1)-blue(1)];
-r2=lightblue(1):(-rdif)/(length(categories.Clust)-1):blue(1);
-gdif=[lightblue(2)-blue(2)];
-g2=lightblue(2):(-gdif)/(length(categories.Clust)-1):blue(2);
-bdif=[lightblue(3)-blue(3)];
-b2=lightblue(3):(-bdif)/(length(categories.Clust)-1):blue(3);
-
-clrs2={[r2; g2; b2]'};
 for i =1:length(categories.Clust)
     s(i+1)=scatter(mean(categories.Clust{i}),nanmean(categories.PathLength{i}),[],clrs2{1}(i,:));
     hold on
@@ -869,7 +887,7 @@ for i =1:length(categories.Clust)
     e1.Color=clrs2{1}(i,:);
 end
 
-l=legend(s,'Watss-Strogatz Distribution (Ordered to Random)','Early Subgraph','Mid Subgraph','Late Subgraph','location','NorthWest');
+l=legend(s,'Watss-Strogatz Distribution (Random to Ordered)','Early Subgraph','Mid Subgraph','Late Subgraph','location','NorthWest');
 ylabel('Avg Path Length');
 xlabel('Clustering Coefficient');
 
@@ -921,7 +939,6 @@ FigHandle = setdiff(allchild(groot), FigList);
 
 FClusttable=FigHandle(1);
 FClustbox=FigHandle(2);
-
 
 clear FigHandle FigList
 
