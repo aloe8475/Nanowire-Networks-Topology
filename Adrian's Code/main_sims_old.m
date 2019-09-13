@@ -12,11 +12,8 @@ function varargout = main_sims(varargin)
 %
 %
 %
-%   
+%
 % Write here updates to the code:
-% -08/04/2019 Alon - Added option to save and open Simulation files only.
-% This requires that you have the corresponding Network already loaded.
-% Will not work with a different network, or no network. 
 % -29-10/2018 Add Graph current visualization: 'GCurrent'
 % -30-10/2018 Correct video maker (resolution and aspect ratio)
 % -01-11/2018 Improve current visualization in graph layout (with custom
@@ -27,14 +24,13 @@ function varargout = main_sims(varargin)
 % either drain or source type (numbered)
 % -06-11 Add Zdenka model (discrete resistance, formation and break
 % lengths)
-% -04-01/2019 Update handles.SimulationSettings on opening loaded
-% simulations to properly resume electrodes in Simulation configuration
+% -
 % -
 % -
 
 %
-% Last Updated 08-04-2019
-% Last Modified by GUIDE v2.5 11-Jul-2019 11:01:52
+% Last Updated 10-26-2018
+% Last Modified by GUIDE v2.5 19-Oct-2018 09:37:04
 
 % MAIN_SIMS MATLAB code for main_sims.fig
 
@@ -141,6 +137,7 @@ ParNet.Simulations={};
 [handles.Networks,handles.NetList.String,handles.NetList.Value]=AddDeleteDataList('add',...
     handles.Networks,ParNet);
 
+
 guidata(hObject,handles);
 
 % --- Executes on selection change in NetList.
@@ -185,45 +182,7 @@ end
 
 NewSim.Settings=handles.SimulationSettings;
 
-%Get Electrodes with GUI
-
 [NewSim.Time,NewSim.Electrodes]=getELECTRODES(handles,NewSim.Settings,Network);
-if isempty(NewSim.Electrodes)
-    guidata(hObject,handles);
-    return;
-end
-
-NewSim.SelDomain=Network.Domains{NewSim.Electrodes.DomIndex(1)};
-NewSim.SelLayout=GetSelectedLayout(Network,NewSim.SelDomain);
-% 
-% % Get electrodes without GUI: %Alon 05/08/19
-% elinfo=NewSim.Settings.ElectrodesInfo;
-% numEl=length(elinfo);
-% AxHandle=gca;
-% y_lim=get(AxHandle,'YLim');
-% x_lim=get(AxHandle,'XLim');
-% if exist('elec','var')
-%     existElec=1;
-%     temp=elec;
-% else
-%     existElec = 0;
-% end 
-% %for 100nw - (need to change for others)
-
-%% CAN LOAD A LIST OF ELECTRODE LOCATIONS HERE AND THEN LOOP THROUGH THEM
-% Alon + Mike - 29/08/2019
-
-%% ELECTRODES
-for j = 1:numEl
-    elec(1).x=3;
-    elec(1).y=12;
-    elec(2).x=22;
-    elec(2).y=12;
-% elec(j).x=randi(round(mean(x_lim)+10),1); % IF WE WANT RANDOM
-% elec(j).y=randi(round(mean(y_lim)+10),1); % IF WE WANT RANDOM
-end
-
-[NewSim.Time,NewSim.Electrodes]=getELECTRODES(handles,NewSim.Settings,Network,elec);
 if isempty(NewSim.Electrodes)
     guidata(hObject,handles);
     return;
@@ -245,7 +204,7 @@ end
 
 tic;
 [NewSim.Data,NewSim.Name]=LaunchSimulation(NewSim);
-NewSim.DateCreated=date;
+
 
 handles.InfoText.String=strcat('Simulation completed. Elapsed time is',{' '},num2str(toc),{' '},'seconds');
 NewSim.SimInfo=GetSimInfo(NewSim.Data);
@@ -279,7 +238,7 @@ end
 
 IndexNet=handles.NetList.Value;
 IndexSim=handles.SimList.Value;
-    
+
 SelSim=handles.Networks{IndexNet}.Simulations{IndexSim};
 
 t=SelSim.Data.time;
@@ -450,157 +409,36 @@ handles.(TargetList).Value=1;
 
 guidata(hObject,handles);
 
-% --- Executes on button press in OpenButton
+% --- Executes on button press in OpenButton.
 function OpenButton_Callback(hObject, eventdata, handles)
-% Open a previous simulation/list of networks saved as a mat file
-computer=getenv('computername');
-switch computer
-    case 'W4PT80T2'
-        currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
-    case ''
-        currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks';
-    case 'LAPTOP-S1BV3HR7'
-        currentPath='D:\alon_\Research\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
-end
-cd(currentPath);
+% Open a previous network saved as a mat file, the network contains
+% all the previous simulations (that have not been deleted)
+
 [FileName,PathName] = uigetfile('*.mat','Select the Network saved data');
 f=fullfile(PathName,FileName);
 s=load(f);
 if ~isfield(s,'SelNet')
     return;
 end
-cd('..\FIGS');
-
 ParNet=s.SelNet;
 [handles.Networks,handles.NetList.String,handles.NetList.Value]=AddDeleteDataList('add',...
     handles.Networks,ParNet);
 
-if ~isempty(ParNet.Simulations)
-    handles.SimulationSettings=ParNet.Simulations{1}.Settings;
-end
-
 guidata(hObject,handles);
 
-%% Code to Save/Open Simulations only (Alon Code Start)
-% Note: this code works, however I need to change the NetList_Callback to
-% show all the loaded simulations, instead of those originally appended to
-% it.
 
-% --- ALON CODE 08/04/2019
-% --- Executes on button press in OpenButton.
-function handles = OpenButton_SimsCallback(hObject, eventdata, handles)
-% Open a previous network saved as a mat file, the network contains
-% all the previous simulations (that have not been deleted)
-computer=getenv('computername');
-switch computer
-    case 'W4PT80T2'
-        currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
-    case ''
-        currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks/Simulations Only';
-    case 'LAPTOP-S1BV3HR7'
-        currentPath='D:\alon_\Research\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
-end
-cd(currentPath);
-[FileName,PathName] = uigetfile('*.mat','Select the Simulation saved data');
-f=fullfile(PathName,FileName);
-s=load(f);
-if ~isfield(s,'SelSims') && ~isfield(s,'network')
-    return;
-end
-if isempty(handles.Networks) %if there is no current network saved, make an alert and then return
-    uialert(handles.figure1,'Please Load the Correct Network and Try Again','Error');
-    return;
-end
-cd('..\..\FIGS');
-IndNet=handles.NetList.Value; %need for the index
-if isfield(s,'SelSims')
-ParSims=s.SelSims;
-else
-ParSims=s.network.Simulations;
-end 
-if isempty(handles.Networks{IndNet}.Simulations)
-    temp=AddDeleteDataListNoName('add',...
-    handles.Networks{IndNet}.Simulations,ParSims);
-    handles.Networks{IndNet}.Simulations=temp{1};
-elseif size(handles.Networks{IndNet}.Simulations,2) >1 %if there are more than 1 simulations
-    temp=AddDeleteDataListNoName('add',...
-    handles.Networks{IndNet}.Simulations,ParSims);
-    handles.Networks{IndNet}.Simulations=temp; %temp is redundant - remove in next update
-else %if there is only 1 simulation 
-    handles.Networks{IndNet}.Simulations={handles.Networks{IndNet}.Simulations};
-    temp=AddDeleteDataListNoName('add',...
-    handles.Networks{IndNet}.Simulations,ParSims);
-    handles.Networks{IndNet}.Simulations=temp;
-end 
-clear temp 
 
-if ~isempty(ParSims)
-    handles.SimulationSettings=ParSims{1}.Settings;
-end
-
-guidata(hObject,handles);
-
-% --- Alon's code 08/04/19 - Added saving just simulations, to save space.
-% --- Executes on button press in SaveSimsButton
-function SaveButton_SimsCallback(hObject, eventdata, handles)
-% Save selected simulations in a mat file
-% in the folder that you choose
-computer=getenv('computername');
-switch computer
-    case 'W4PT80T2'
-        currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
-    case ''
-        currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks/Simulations Only';
-    case 'LAPTOP-S1BV3HR7'
-        currentPath='D:\alon_\Research\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
-end
-IndNet=handles.NetList.Value; %need for the index
-SelNet=handles.Networks{IndNet}; %need for the name
-SelSims=SelNet.Simulations;
-
-%Alon Code 08/04/19
-NameSims=[SelNet.Name SelSims{1}.Settings.Model '_' num2str(SelSims{1}.Settings.SetFreq) '_' SelSims{1}.Settings.SigType '_' num2str(length(SelSims)) 'SimsOnly_' num2str(SelSims{1}.Settings.Time) '_Sec_' num2str(height(SelSims{1}.Electrodes)) 'Electrodes_Vmax_' num2str(SelSims{1}.Settings.Vmax) '_' date];
-NameSims=strrep(NameSims,':','_');
-NameSims=strrep(NameSims,'/','_');
-NameSims=strrep(NameSims,'.','');
-NameSims=strcat(NameSims,'.mat');
-cd(currentPath);
-SelDir=uigetdir();
-if ~isequal(SelDir,0)
-    nameSims=fullfile(SelDir,NameSims); %Alon - Save simulations only
-    save(nameSims,'SelSims','-v7.3'); %Alon - Save simulations only
-else
-    return;
-end
-cd('..\..\FIGS');
 
 % --- Executes on button press in SaveButton.
-
-% --- Alon code end 
-%% 
 function SaveButton_Callback(hObject, eventdata, handles)
 % Save a selected network and its simulations as a mat file
 % in the folder that you choose
 IndNet=handles.NetList.Value;
 SelNet=handles.Networks{IndNet};
-% Will have to figure out how to load these another time (see commented out
-% code above).
-
-Name=[SelNet.Name '_Length_' num2str(SelNet.NetworkSettings.Length) '_Disp_' num2str(SelNet.NetworkSettings.Disp)];
+Name=SelNet.Name;
 Name=strrep(Name,':','_');
 Name=strrep(Name,'/','_');
 Name=strcat(Name,'.mat');
-
-computer=getenv('computername');
-switch computer
-    case 'W4PT80T2'
-        currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
-    case ''
-        currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks';
-    case 'LAPTOP-S1BV3HR7'
-        currentPath='D:\alon_\Research\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
-end
-cd(currentPath);
 SelDir=uigetdir();
 if ~isequal(SelDir,0)
     name=fullfile(SelDir,Name);
@@ -608,8 +446,6 @@ if ~isequal(SelDir,0)
 else
     return;
 end
-cd('..\FIGS');
-
 %uisave('SelNet',Name);
 
 
@@ -803,62 +639,3 @@ function NodeList_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in SaveScriptButton.
-% --- Executes on button press in SaveScriptButton.
-function SaveScriptButton_Callback(hObject, eventdata, handles)
-% hObject    handle to SaveScriptButton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-NetList_Callback(handles.NetList, eventdata, handles);
-Network=handles.Networks{handles.NetList.Value};
-Network.Domains=ConnectedDomains(Network.Graph);
-PlotNetwork(Network,'domains');
-
-handles.SimulationSettings=callSIMULATIONSETTINGS(handles.SimulationSettings);
-if isempty(handles.SimulationSettings)
-    return;
-end
-
-NewSim.Settings=handles.SimulationSettings;
-
-[NewSim.Time,NewSim.Electrodes]=getELECTRODES(handles,NewSim.Settings,Network);
-if isempty(NewSim.Electrodes)
-    guidata(hObject,handles);
-    return;
-end
-
-NewSim.SelDomain=Network.Domains{NewSim.Electrodes.DomIndex(1)};
-NewSim.SelLayout=GetSelectedLayout(Network,NewSim.SelDomain);
-
-
-
-if ~isequal(0,handles.ResumeCheck.Value) && ~isequal(handles.SimList.String,'SimList')
-    IndexNet=handles.NetList.Value;
-    IndexSim=handles.SimList.Value;
-    SelSim=handles.Networks{IndexNet}.Simulations{IndexSim};
-    NewSim.LastW=SelSim.Data.Wmat{end};%%if you want to resume previous simulation
-else
-    NewSim.LastW=[];
-end
-
-NewSim.Name='partialSim';
-%% adding just simulation parameters and electrodes to the simulations list
-[Network.Simulations,handles.SimList.String,handles.SimList.Value]=...
-    AddDeleteDataList('add',Network.Simulations,NewSim);
-
-%% saving in selection folder
-Name=Network.Name;
-Name=strrep(Name,':','_');
-Name=strrep(Name,'/','_');
-Name=strcat(Name,'.mat');
-SelDir=uigetdir();
-if ~isequal(SelDir,0)
-    name=fullfile(SelDir,Name);
-    save(name,'Network','-v7.3');
-else
-    return;
-end
-
-guidata(hObject,handles);
