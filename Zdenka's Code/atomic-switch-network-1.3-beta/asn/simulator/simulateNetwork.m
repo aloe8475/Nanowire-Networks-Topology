@@ -169,7 +169,7 @@ for ii = 1 : niterations
             % relevantEdge(end)
         end
         %Save Wire Currents and Voltages in Adrian's Structure
-        frame.WireVoltage{kk}=getAbsoluteVoltage(snapshots{kk}, Connectivity, SimulationOptions.ContactNodes);
+        frame.WireVoltage{kk}=getAbsoluteVoltage(frame, Connectivity, SimulationOptions.ContactNodes);
         frame.WireCurrents{kk}=wireCurrents;
         %Save Wire Currents and Voltages is normal Structure
         SelSims.Data.WireCurrents{kk}=wireCurrents;

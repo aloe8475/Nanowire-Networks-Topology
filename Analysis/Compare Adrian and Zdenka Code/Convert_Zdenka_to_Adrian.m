@@ -1,4 +1,4 @@
-function SelSims=Convert_Zdenka_to_Adrian(SelSims,snapshots)
+function SelSims=Convert_Zdenka_to_Adrian(SelSims,snapshots,SimulationOptions)
 
 for i = 1:length(snapshots)
 SelSims.Time= snapshots{i}.Timestamp;

@@ -107,7 +107,7 @@ else % this discards the snaphots
 end
 
 %Convert Zdenka's structure to Adrian's Structure:
-SelSims{i}=Convert_Zdenka_to_Adrian(SelSims{i},snapshots{i});
+SelSims{i}=Convert_Zdenka_to_Adrian(SelSims{i},snapshots{i},SimulationOptions{i});
 
 % Connectivity Edge Position for Network with Simulation
  %NEED TO CHANGE EDGE POISITION TO NODE POSITION 
