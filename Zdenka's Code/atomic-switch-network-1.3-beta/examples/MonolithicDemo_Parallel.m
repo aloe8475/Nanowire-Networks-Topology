@@ -107,30 +107,8 @@ else % this discards the snaphots
 end
 
 %Convert Zdenka's structure to Adrian's Structure:
-for j = 1:length(SelSims{i}.Data.WireVoltages) %for each timestep
-SelSims{i}.Electrodes=SimulationOptions{i}.ContactNodes; %this assumes the nodes are the same for each simulation
-SelSims{i}.Data.VSource1(j)=SelSims{i}.Data.WireVoltages{j}(SelSims{i}.Electrodes(1));
-SelSims{i}.Data.VDrain1(j)=SelSims{i}.Data.WireVoltages{j}(SelSims{i}.Electrodes(2));
-SelSims{i}.Data.ISource1(j)=SelSims{i}.Data.WireCurrents{j}{SelSims{i}.Electrodes(1)};
-SelSims{i}.Data.IDrain1(j)=SelSims{i}.Data.WireCurrents{j}{SelSims{i}.Electrodes(2)};
-end 
-SelSims{i}.SelLayout.AdjMat=Connectivity{i}.weights;
-connLength=length(Connectivity{i}.WireEnds);
-connLengthNodes=length(Connectivity{i}.VertexPosition);
-xa=Connectivity{i}.WireEnds(:,1);
-ya=Connectivity{i}.WireEnds(:,2);
-xb=Connectivity{i}.WireEnds(:,3);
-yb=Connectivity{i}.WireEnds(:,4);
-xc=Connectivity{i}.VertexPosition(:,1);
-yc=Connectivity{i}.VertexPosition(:,2);
-xi=Connectivity{i}.EdgePosition(1,:);
-yi=Connectivity{i}.EdgePosition(2,:);
-SelSims{i}.SelLayout.X1=sparse(xa);
-SelSims{i}.SelLayout.X2=sparse(xb);
-SelSims{i}.SelLayout.Y1=sparse(ya);
-SelSims{i}.SelLayout.Y2=sparse(yb);
+SelSims{i}=Convert_Zdenka_to_Adrian(SelSims{i},snapshots{i});
 
-clear xa xb ya yb xc yc xi yi connLength connLengthNodes
 % Connectivity Edge Position for Network with Simulation
  %NEED TO CHANGE EDGE POISITION TO NODE POSITION 
  % (i.e. inverse this:)
