@@ -33,14 +33,14 @@ function Components = initializeComponents(E,Components)
 % Ido Marcus
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    Components.identity      = [ones(E,1) ; 0];          % 0 for a passive resistor, 1 for an active element
+   Components.identity      = [ones(E,1) ; 0];          % 0 for a passive resistor, 1 for an active element
         % If one wants an element to be active with probability p,
         % Components.identity      = [rand(E,1) <= p ; 0];
     Components.type          = Components.ComponentType; % type of active elements ('atomicSwitch' \ 'memristor' \ ...)
     Components.voltage       = zeros(E+1,1);             % (Volt)
     Components.resistance    = zeros(E+1,1);             % (Ohm) (memory allocation)
-    Components.onResistance  = [ones(E,1) ; 1e-5]*1e4;   % (Ohm) 1/(12.9 kOhm) = conductance quantum
-    Components.offResistance = [ones(E,1) ; 1e-9]*1e7; %*1e7;   % (Ohm) literature values
+    Components.onResistance  = [ones(E,1) ; 1e-5]*1e4;   % (Ohm) conductance quantum
+    Components.offResistance = [ones(E,1) ; 1e-8]*1e7;   % (Ohm) literature values
     switch Components.ComponentType
         case 'memristor'
             Components.charge         = zeros(E+1,1);                                   % (Coulomb)

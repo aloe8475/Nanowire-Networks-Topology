@@ -185,9 +185,9 @@ function [network, network_load, simulations, sim_loaded, numNetworks, explore_n
 
 %% Load Data
 %Ask to load Zdenka or Adrian:
-network_load='a';%lower(input('Which Network do you want to analyse? Z - Zdenka, A - Adrian \n','s'));
+network_load=lower(input('Which Network do you want to analyse? Z - Zdenka, A - Adrian \n','s'));
 
-% if strcmp(network_load,'a')
+if strcmp(network_load,'a')
 %Get current network - Adrian
 [network,sim_loaded, explore_network, numNetworks]=Load_Adrian_Code();
 %unpack simulation data into simulation variable
@@ -213,13 +213,15 @@ else
     simulations=network.Simulations;
 end
 cd(currentPath);
-% elseif strcmp(network_load,'z')
-%Get network - Zdenka:
+elseif strcmp(network_load,'z')
+% Get network - Zdenka:
 % D:\alon_\Research\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
-%     network=Load_Zdenka_Code();
-%     cd(currentPath);
+    [network,sim_loaded, explore_network, numNetworks]=Load_Zdenka_Code();
+    simulations=network.Simulations;
+    cd(currentPath);
 % end
 end
+end 
 
 %Exploring Functions:
 function [Explore,threshold] = explore_simulation(Sim,network,network_load,simNum,currentPath,currentSimulation,simulations,times,time)

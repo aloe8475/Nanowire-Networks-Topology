@@ -1,4 +1,4 @@
-function [OutputDynamics, SimulationOptions, snapshots] = simulateNetwork(Equations, Components, Stimulus, SimulationOptions, varargin)
+function [OutputDynamics, SimulationOptions, snapshots, SelSims] = simulateNetwork(Connectivity, Components, Stimulus, SimulationOptions, varargin)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Simulates the network and finds the resistance between the two contacts
 % as a function of time.
@@ -49,16 +49,19 @@ function [OutputDynamics, SimulationOptions, snapshots] = simulateNetwork(Equati
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    
     %% Initialize:
-    compPtr       = ComponentsPtr(Components);        % using this matlab-style pointer to pass the Components structure by reference
-    niterations   = SimulationOptions.NumberOfIterations; 
-    testerVoltage = zeros(niterations, 1);                      % memory allocation for the voltage on the tester resistor as function of time
-    RHSZeros      = zeros(Equations.NumberOfEdges,1); % the first E entries in the RHS vector.
-    
-    %% Use sparse matrices:
-    Equations.KCLCoeff = sparse(Equations.KCLCoeff);
-    Equations.KVLCoeff = sparse(Equations.KVLCoeff);
-    RHSZeros           = sparse(RHSZeros);
-    
+    compPtr         = ComponentsPtr(Components);        % using this matlab-style pointer to pass the Components structure by reference
+    niterations     = SimulationOptions.NumberOfIterations; 
+    contactNodes    = SimulationOptions.ContactNodes;
+    E               = Connectivity.NumberOfEdges;
+    V               = Connectivity.NumberOfNodes;
+    edgeList        = Connectivity.EdgeList.';
+    RHS             = zeros(V+2,1); 
+     %% Output stuff
+    wireVoltage        = zeros(niterations, V);
+    networkCurrent     = zeros(niterations, 1);
+    junctionVoltage    = zeros(niterations, E);
+    junctionResistance = zeros(niterations, E);
+    junctionFilament   = zeros(niterations, E);
     %% If snapshots are requested, allocate memory for them:
     if ~isempty(varargin)
         snapshots           = cell(size(varargin{1}));
@@ -70,7 +73,7 @@ function [OutputDynamics, SimulationOptions, snapshots] = simulateNetwork(Equati
     end
     kk = 1; % Counter
     
-    %% Solve equation systems for every time step and update:
+   %% Solve equation systems for every time step and update:
     for ii = 1 : niterations
         % Show progress:
         progressBar(ii,niterations);
@@ -78,20 +81,50 @@ function [OutputDynamics, SimulationOptions, snapshots] = simulateNetwork(Equati
         % Update resistance values:
         updateComponentResistance(compPtr); 
         
+        componentConductance = 1./compPtr.comp.resistance(1:E);
         % Get LHS (matrix) and RHS (vector) of equation:
-        LHS = [Equations.KCLCoeff ./ compPtr.comp.resistance(:,ones(Equations.NumberOfNodes-1,1)).' ; ...
-               Equations.KVLCoeff];
-        RHS = [RHSZeros ; Stimulus.Signal(ii)];
+        Gmat = zeros(V,V);
+        % This line can be written in a more efficient vetorized way.
+        % Something like:
+        % Gmat(edgeList(:,1),edgeList(:,2)) = componentConductance;
+        % Gmat(edgeList(:,2),edgeList(:,1)) = componentConductance;
+        
+        for i = 1:E
+            Gmat(edgeList(i,1),edgeList(i,2)) = componentConductance(i);
+            Gmat(edgeList(i,2),edgeList(i,1)) = componentConductance(i);
+        end
+        
+        Gmat         = diag(sum(Gmat, 1)) - Gmat;
+        LHS          = zeros(V+2, V+2);
+        LHS(1:V,1:V) = Gmat;
+        
+        % Again, should be able to vectorize 
+        LHS(V+1, contactNodes(1)) = 1;
+        LHS(V+2, contactNodes(2)) = 1;
+        LHS(contactNodes(1), V+1) = 1;
+        LHS(contactNodes(2), V+2) = 1;
+        RHS(V+1) = Stimulus.Signal(ii);
         
         % Solve equation:
-        compPtr.comp.voltage = LHS\RHS;
-                
+        lhs = sparse(LHS);
+        rhs = sparse(RHS);
+        sol = lhs\rhs;
+        
+        %Wire Voltage
+        tempWireV = sol(1:V);
+        %Junction Voltage
+        compPtr.comp.voltage(1:E) = tempWireV(edgeList(:,1)) - tempWireV(edgeList(:,2));
+        
+        
         % Update element fields:
         updateComponentState(compPtr, Stimulus.dt);    % ZK: changed to allow retrieval of local values
         %[lambda_vals(ii,:), voltage_vals(ii,:)] = updateComponentState(compPtr, Stimulus.dt);
         
-        % Record tester voltage:
-        testerVoltage(ii) = compPtr.comp.voltage(end);
+        wireVoltage(ii,:)        = sol(1:V);
+        networkCurrent(ii)       = sol(end);
+        junctionVoltage(ii,:)    = compPtr.comp.voltage(1:E);
+        junctionResistance(ii,:) = compPtr.comp.resistance(1:E);
+        junctionFilament(ii,:)   = compPtr.comp.filamentState(1:E);
         
         % Record the activity of the whole network
         if find(snapshots_idx == ii) 
@@ -100,20 +133,66 @@ function [OutputDynamics, SimulationOptions, snapshots] = simulateNetwork(Equati
                 frame.Resistance = compPtr.comp.resistance;
                 frame.OnOrOff    = compPtr.comp.OnOrOff;
                 frame.filamentState = compPtr.comp.filamentState;
+                frame.Current=frame.Voltage./frame.Resistance;
                 snapshots{kk} = frame;
+                %Convert Zdenka code to Adrian Structure
+                %Wire Current
+          for currWire=1 : Connectivity.NumberOfNodes            
+            % Find the indices of edges (=intersections) relevant for this
+            % vertex (=wire):
+            relevantEdges = find(Connectivity.EdgeList(1,:) == currWire | Connectivity.EdgeList(2,:) == currWire);
+            
+            % Sort them according to physical location (left-to-right, or
+            % if the wire is vertical then bottom-up):
+            if Connectivity.WireEnds(currWire,1) ~= Connectivity.WireEnds(currWire,3)
+                [~,I] = sort(Connectivity.EdgePosition(relevantEdges,1));
+            else
+                [~,I] = sort(Connectivity.EdgePosition(relevantEdges,2));
+            end
+            relevantEdges = relevantEdges(I);
+            
+            % Calculate the current along each section of the wire:
+            direction = ((currWire ~= Connectivity.EdgeList(1,relevantEdges))-0.5)*2;       
+                % Using the convention that currents are defined to flow
+                % from wires with lower index to wires with higher index, 
+                % and that in the field EdgeList the upper row always 
+                % contains lower indices. 
+            wireCurrents{currWire} = cumsum(frame.Current(relevantEdges(1:end)).*direction(1:end)'); 
+                % The first element in wireCurrents is the current in the
+                % section between relevantEdge(1) and relevantEdge(2). We
+                % assume that between relevantEdge(1) and the closest wire
+                % end there's no current. Then, acording to a KCL
+                % equation, there's also no current from relevantEdge(end)
+                % to the other wire end (that's why the end-1 in the 
+                % expression). 
+                % The only two exceptions are the two contacts, where the 
+                % contact point is defined as the wire end closest to 
+                % relevantEdge(end)
+          end 
+                
+                SelSims.Time= frame.Timestamp; 
+                SelSims.Data.WireCurrents{kk}=wireCurrents; % Find values of currents
+                SelSims.Data.JunctionRmat{kk}=frame.Resistance;
+                SelSims.Data.JunctionCurrents{kk}=frame.Current;
+                SelSims.Data.JunctionVoltage{kk}=frame.Voltage;
+                SelSims.Data.WireVoltages{kk}=getAbsoluteVoltage(snapshots{kk}, Connectivity, SimulationOptions.ContactNodes);
                 kk = kk + 1;
         end
-    end
+    end    
     
     % Store some important fields
     SimulationOptions.SnapshotsIdx = snapshots_idx; % Save these to access the right time from .TimeVector.
 
+   % Store some important fields
+    SimulationOptions.SnapshotsIdx = snapshots_idx; % Save these to access the right time from .TimeVector.
+
     % Calculate network resistance and save:
-    OutputDynamics.testerVoltage     = testerVoltage;
-    OutputDynamics.networkCurrent    = testerVoltage ./ compPtr.comp.resistance(end);
-    OutputDynamics.networkResistance = (Stimulus.Signal ./ testerVoltage - 1).*compPtr.comp.resistance(end);
-    % ZK: also for local values:
-    %OutputDynamics.lambda = lambda_vals;
-    %OutputDynamics.storevoltage = voltage_vals;
+    
+    OutputDynamics.networkCurrent     = networkCurrent;
+    OutputDynamics.wireVoltage        = wireVoltage;
+    OutputDynamics.junctionVoltage    = junctionVoltage;
+    OutputDynamics.junctionResistance = junctionResistance;
+    OutputDynamics.junctionFilament   = junctionFilament;
+    
     
 end

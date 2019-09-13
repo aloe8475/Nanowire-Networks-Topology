@@ -24,7 +24,7 @@ function plotResults(resistance,current,Stimulus)
 % Ido Marcus
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     cplot2 = true;
-    conductance = resistance;
+    conductance = 1./resistance;
     figure;
     switch Stimulus.BiasType
 %        case {'DC'}
