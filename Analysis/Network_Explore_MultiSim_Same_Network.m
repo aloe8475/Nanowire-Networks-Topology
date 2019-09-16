@@ -29,7 +29,7 @@ switch computer
         %case '' %--- Add other computer paths (e.g. Mike)
 end
 cd(currentPath);
-load_data_question=lower(input('Load network data, Analysis Data Only or None? N - None, D - Network Data, A - Analysis Data\n','s'));
+load_data_question=lower(input('Load network data? N - None, D - Network Data\n','s'));
 
 if load_data_question=='d'
     clearvars -except load_data_question currentPath
@@ -82,14 +82,14 @@ for currentSimulation=1:length(simulations)
             fprintf(['Data Extracted \n\n\n']);
             analysis_type='e';%lower(input('Which analysis would you like to perform? G - graph, E - Explore Network,L - LDA, N - none \n','s'));
         elseif explore_network=='e' % we don't want to allow LDA if just exploring
-            analysis_type='e';%lower(input('Which analysis would you like to perform? G - graph, E - Explore Network, N - none \n','s'));
+            analysis_type=lower(input('Which analysis would you like to perform? T = Time b/w Pulses, E = Early/Mid/Late/Never \n','s'));
         end
         if analysis_type=='g'
             %% Graph Analysis
             [Graph,binarise_network]=graph_analysis(network(networkNum),network_load,currentSim,[]);
             %% Save Graph analysis data
             i=i+1;
-        elseif analysis_type=='e'
+        elseif analysis_type=='e' 
             %% Exploratary analysis of simulation
             
             %Choose a time to Explore Simulation:
@@ -153,7 +153,53 @@ for currentSimulation=1:length(simulations)
                 end
             end
             i=i+1;
+        elseif analysis_type == 't'
+            % TIME-BASED ANALYSIS USING ZDENKA'S CODE:
+            if network_load == 'z' %making sure zdenka's code is loaded
+                
+                %Choose a time to Explore Simulation:
+                
+                %Find pulse centres
+                if min(currentSim.Data.VSource1) < max(currentSim.Data.VSource1)
+                    V1 = currentSim.Data.VSource1 - min(currentSim.Data.VSource1);
+                else
+                    V1=currentSim.Data.VSource1;
+                end
+                pulseEnds    = [];
+                pulseStarts  = [];
+                
+                j = 1;
+                
+                isPulse = false;
+                
+                for i = 1:numel(V1)
+                    if V1(i) > 0 && ~isPulse
+                        pulseStarts(j) = i;
+                        isPulse = true;
+                    end
+                    
+                    if V1(i) <= 0 && isPulse
+                        pulseEnds(j) = i - 1;
+                        isPulse = false;
+                        j = j + 1;
+                    end
+                end
+                
+                if numel(pulseStarts) > numel(pulseEnds)
+                    pulseEnds(j) = numel(V1);
+                end
+                
+                pulseCentres = floor((pulseStarts + pulseEnds)/2);
+                %Find midpoint between the last pulse centre and the second
+                %last pulse centre.
+                pulseMid=floor((pulseCentres(end)+pulseCentres(end-1))/2);
+                pulseCentres=[pulseCentres pulseMid];
+            end
+            for time=1:length(pulseCentres) %Alon to change to var
+                [TimeData(time).Explore{currentSimulation},TimeData(time).threshold{currentSimulation}]=explore_simulation(currentSim,network,network_load,simNum,currentPath,currentSimulation,simulations,pulseCentres,time);
+            end
         end
+        
         if analysis_type=='g' || analysis_type=='n'
             %% Plotting Graph
             plot_state=lower(input('Would you like to plot Graph Analysis? y or n \n','s'));
@@ -237,7 +283,7 @@ NodeList.Value=1:height(Sim.Electrodes);
 %% Timeseries View
 %Plot Current
 % f=figure;
-drainIndex=find(contains(Sim.Electrodes.Name,'Drain'));
+drainIndex=find(contains(Sim.Electrodes.Name,'Drain')); 
 if isempty(drainIndex)
     drain_exist=0;
 end

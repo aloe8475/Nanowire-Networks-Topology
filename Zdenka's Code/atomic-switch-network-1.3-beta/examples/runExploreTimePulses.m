@@ -37,6 +37,7 @@ switch Connectivity{i}.WhichMatrix
         %Connectivity{i}.filename  = '2016-09-08-153543_asn_nw_02048_nj_11469_seed_042_avl_28.00_disp_10.00.mat';
         %Connectivity{i}.filename = '2016-09-08-155044_asn_nw_00700_nj_14533_seed_042_avl_100.00_disp_10.00.mat'; %700nw
 %         Connectivity{i}.filename = '2016-09-08-155153_asn_nw_00100_nj_00261_seed_042_avl_100.00_disp_10.00.mat';
+%         Connectivity{i}.DataType = 'Zdenka';
         %Connectivity{i}.filename = '2019-07-26-143006_asn_nw_05098_nj_11631_seed_042_avl_100.00_disp_10.00_gns_10.00_cdisp_1500.00.mat';
         %Connectivity{i}.filename = '2019-07-07-134601_asn_nw_00099_nj_00582_seed_501_avl_100.00_disp_10.00_gns_03.00_cdisp_100.00.mat';
     case 'randAdjMat'

@@ -5,7 +5,7 @@ function [NodeList,UserData]=GetNodeList(Sim)
    for k=1:length(i)
        NodeList{k}=strcat('Node_',num2str(j(k)),'_',num2str(i(k)));
    end
-   Electrodes=Sim.Settings.ElectrodesInfo;
+   Electrodes=Sim.Settings.ElectrodesInfo; %NEED TO FIX FOR ZDENKA to ADRIAN CODE
    i=length(Electrodes);
    ElList=cell(i,1);
    UserData.SelectedNodes=i;

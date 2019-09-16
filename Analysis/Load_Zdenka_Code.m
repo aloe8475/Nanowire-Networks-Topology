@@ -11,7 +11,7 @@ switch computer
     case ''
         dataPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks';
     case 'LAPTOP-S1BV3HR7'
-        dataPath='D:\alon_\Research\PhD\CODE\GitHub\CODE\Zdenka''s Code\atomic-switch-network-1.3-beta\examples';
+        dataPath='D:\alon_\Research\PhD\CODE\Zdenka''s Code\atomic-switch-network-1.3-beta\examples';
 end
 cd(dataPath)
 waitfor(msgbox('Select the Network saved data'));
