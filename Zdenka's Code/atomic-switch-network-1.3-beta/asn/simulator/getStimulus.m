@@ -84,6 +84,8 @@ function Stimulus = getStimulus(Stimulus, SimulationOptions)
     
     % External voltage signal:
     switch Stimulus.BiasType
+        case 'Drain'
+            Stimulus.Signal = zeros(size(Stimulus.TimeAxis));
         case 'DC'
             Stimulus.Signal = Stimulus.Amplitude*ones(size(Stimulus.TimeAxis));% + normrnd(0,0.2,size(Stimulus.TimeAxis));
             Stimulus.stimName   = strcat(Stimulus.BiasType,num2str( Stimulus.Amplitude,3),'V');

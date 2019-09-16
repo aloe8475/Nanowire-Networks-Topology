@@ -1,8 +1,10 @@
 % Make sure you have added the folder 'asn', including its subdiretories
 %close all;
+close all;
 
 numSims=100;
 % pool=parpool(6);
+
 for i = 1:numSims
 %% Set the seed for PRNGs for reproducibility:
 rng(42)

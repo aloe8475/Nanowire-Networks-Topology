@@ -95,11 +95,11 @@ function [Connectivity] = getConnectivity(Connectivity)
         Connectivity.NumberOfNodes = 42;
     end
     
-    if ~isfield(Connectivity,'Symmetric') || isempty(Connectivity.Symmetric)
+    if ~isfield(Connectivity,'Symmetric')
         Connectivity.Symmetric = true;
     end
     
-    if ~isfield(Connectivity,'WeightType') || isempty(Connectivity.WeightType)
+    if ~isfield(Connectivity,'WeightType')
         Connectivity.WeightType = 'binary';
     end
 
@@ -115,8 +115,13 @@ function [Connectivity] = getConnectivity(Connectivity)
             Connectivity.NumberOfNodes  = number_of_wires;
             Connectivity.weights        = adj_matrix;
             Connectivity.wireDistances  = wire_distances;
-            Connectivity.VertexPosition = [xc;yc].';
-            Connectivity.WireEnds       = [xa;ya;xb;yb].';
+           if strcmp(Connectivity.DataType,'Adrian')
+            Connectivity.VertexPosition = [full(xc),full(yc)];
+            Connectivity.WireEnds       = [full(xa),full(ya),full(xb),full(yb)];
+            else
+             Connectivity.WireEnds       = [full(xa);full(ya);full(xb);full(yb)].';
+             Connectivity.VertexPosition = [full(xc);full(yc)].';
+            end 
             Connectivity.EdgePosition   = [xi;yi].';
 
     %---------------------------------------------------------------------%  
@@ -313,37 +318,35 @@ function [Connectivity] = getConnectivity(Connectivity)
     end
  
     % Generate fields that are common to all matrices
-    if ~isfield(Connectivity,'EdgeList') || isempty(Connectivity.EdgeList)
+    if ~isfield(Connectivity,'EdgeList')
         [ii, jj] = find(tril(Connectivity.weights)); 
         Connectivity.EdgeList = [jj ii]'; 
         % (2XE matrix, must follow the conventions specified above)
     end
-
-
-    
+ 
     Connectivity.NumberOfEdges = size(Connectivity.EdgeList, 2);
  
-    if ~isfield(Connectivity,'speed') || isempty(Connectivity.speed)
+    if ~isfield(Connectivity,'speed')
         Connectivity.speed = 1.0; 
     end
     
-    if ~isfield(Connectivity,'dx') || isempty(Connectivity.dx)
+    if ~isfield(Connectivity,'dx')
         Connectivity.dx = 1.0; 
     end
     
-    if ~isfield(Connectivity,'NodeStr') || isempty(Connectivity.NodeStr)
+    if ~isfield(Connectivity,'NodeStr')
     % Generate nodes labels
         for ns = 1:Connectivity.NumberOfNodes
             Connectivity.NodeStr{ns} = num2str(ns);
         end
     end
 
-    if ~isfield(Connectivity,'VertexPosition') || isempty(Connectivity.VertexPosition)
+    if ~isfield(Connectivity,'VertexPosition')
         % Generate position
         Connectivity.VertexPosition = [(1:Connectivity.NumberOfNodes).' zeros(Connectivity.NumberOfNodes,2)];
     end
 
-    if ~isfield(Connectivity,'wireDistances') || isempty(Connectivity.wireDistances)
+    if ~isfield(Connectivity,'wireDistances')
         % Generate distance and delay matrix
         wireDistances = [0:Connectivity.NumberOfNodes/2  (Connectivity.NumberOfNodes/2-1):-1:1];
         for n=2:Connectivity.NumberOfNodes 
@@ -352,7 +355,7 @@ function [Connectivity] = getConnectivity(Connectivity)
         Connectivity.wireDistances = wireDistances.*Connectivity.dx;
     end
 
-    if ~isfield(Connectivity,'delay') || isempty(Connectivity.delay)
+    if ~isfield(Connectivity,'delay')
         Connectivity.delay =  Connectivity.wireDistances .* Connectivity.speed;
     end
  
