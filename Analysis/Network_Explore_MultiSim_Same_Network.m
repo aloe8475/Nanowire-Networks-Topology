@@ -125,7 +125,7 @@ for currentSimulation=1:length(simulations)
             
             pulseCentres = floor((pulseStarts + pulseEnds)/2);
             if length(pulseCentres)==currentSim.Settings.SetFreq
-                pulseCentres=[pulseCentres pulseEnds(end)];
+                pulseCentres=[pulseCentres pulseEnds(end-1)]; %take the second last pulse time 
             end 
 
             %% NEED TO FIGURE THIS OUT - WHY IS THE TIME NOT SAVING?
