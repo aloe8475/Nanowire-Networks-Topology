@@ -42,6 +42,8 @@ SelSims.SelLayout.X1=sparse(xa);
 SelSims.SelLayout.X2=sparse(xb);
 SelSims.SelLayout.Y1=sparse(ya);
 SelSims.SelLayout.Y2=sparse(yb);
+SelSims.SelLayout.CX=sparse(xc);
+SelSims.SelLayout.CY=sparse(yc);
 
 %Settings:
 SelSims.Settings.IniRes = Components.offResistance;

@@ -121,11 +121,8 @@ for j = 1:length(Explore)
             %
             %if we want to extract the largest connected component:
             
-            if j > 0
-                largestcomponent=1;
-            else
-                largestcomponent=0;
-            end
+ 
+
             
             if largestcomponent
                 [bin,binsize] =conncomp(thisExplore{i}.GraphView.Graph);
@@ -396,8 +393,8 @@ for j = 1:length(Explore)
     
     category{j}.NaN=sum(isnan(idxTime{j}.Time));
     category{j}.Never=sum(strcmp(class{j},'Never'));
-    category{j}.NeverNotConnected=sum(nonConnected(j,:));
-    category{j}.NeverConnected=category{j}.Never-category{j}.NeverNotConnected;
+%     category{j}.NeverNotConnected=sum(nonConnected(j,:));
+%     category{j}.NeverConnected=category{j}.Never-category{j}.NeverNotConnected;
     category{j}.Early=sum(strcmp(class{j},'Early'));
     category{j}.Mid=sum(strcmp(class{j},'Mid'));
     category{j}.Late=sum(strcmp(class{j},'Late'));
@@ -416,8 +413,8 @@ logicalCategory.Early=strcmp(class{j},'Early');
 logicalCategory.Mid=strcmp(class{j},'Mid');
 logicalCategory.Late=strcmp(class{j},'Late');
 logicalCategory.Never=strcmp(class{j},'Never');
-logicalCategory.NeverAndNotConnected=nonConnected(j,:)==1;
-logicalCategory.NeverAndConnected=logical(logicalCategory.Never-logicalCategory.NeverAndNotConnected);
+% logicalCategory.NeverAndNotConnected=nonConnected(j,:)==1;
+% logicalCategory.NeverAndConnected=logical(logicalCategory.Never-logicalCategory.NeverAndNotConnected);
 
 %% Graphs
 for i=1:length(classNums) %times
@@ -432,8 +429,8 @@ for i=1:length(classNums) %times
             categories.originalGraphs.Late{j}={gOriginal{classNums{i}(j),logicalCategory.Late}};
             categories.connectedGraphs.Late{j}={gRemovedEdges{classNums{i}(j),logicalCategory.Late}};
         else
-            categories.originalGraphs.Never{j}={gOriginal{classNums{i}(j),logicalCategory.NeverAndConnected}};
-            categories.connectedGraphs.Never{j}={gRemovedEdges{classNums{i}(j),logicalCategory.NeverAndConnected}};
+            categories.originalGraphs.Never{j}={gOriginal{classNums{i}(j),logicalCategory.Never}};
+            categories.connectedGraphs.Never{j}={gRemovedEdges{classNums{i}(j),logicalCategory.Never}};
         end
     end
 end
@@ -445,6 +442,7 @@ categories.connectedGraphs.explanation="Each Cell Array represents the pulse num
 categories.Degree{1}=[Degree{logicalCategory.Early}];
 categories.Degree{2}=[Degree{logicalCategory.Mid}];
 categories.Degree{3}=[Degree{logicalCategory.Late}];
+categories.Degree{4}=[Degree{logicalCategory.Never}];
 % fCat=figure('Position',[0 0 1920 1080]);
 % edges=[0:max([endTime.Degree{:}])/7:max([endTime.Degree{:}])];
 % for j = 1:length(endTime.Degree)
@@ -480,7 +478,7 @@ categories.Degree{3}=[Degree{logicalCategory.Late}];
 categories.PathLength{1}=[AvgPath{logicalCategory.Early}];
 categories.PathLength{2}=[AvgPath{logicalCategory.Mid}];
 categories.PathLength{3}=[AvgPath{logicalCategory.Late}];
-
+categories.PathLength{4}=[AvgPath{logicalCategory.Never}];
 % fCat1=figure('Position',[0 0 1920 1080]);
 % edges=[0:max([endTime.PathLength{:}])/7:max([endTime.PathLength{:}])];
 % for j = 1:length(endTime.PathLength)
@@ -516,6 +514,7 @@ categories.PathLength{3}=[AvgPath{logicalCategory.Late}];
 categories.Clust{1}=vertcat(Clust{logicalCategory.Early});
 categories.Clust{2}=vertcat(Clust{logicalCategory.Mid});
 categories.Clust{3}=vertcat(Clust{logicalCategory.Late});
+categories.Clust{4}=vertcat(Clust{logicalCategory.Never});
 
 % fCat2=figure('Position',[0 0 1920 1080]);
 % edges=[0:max(vertcat(endTime.Clust{:}))/7:max(vertcat(endTime.Clust{:}))];
@@ -553,6 +552,7 @@ categories.Clust{3}=vertcat(Clust{logicalCategory.Late});
 categories.PCoeff{1}=vertcat(PCoeff{logicalCategory.Early});
 categories.PCoeff{2}=vertcat(PCoeff{logicalCategory.Mid});
 categories.PCoeff{3}=vertcat(PCoeff{logicalCategory.Late});
+categories.PCoeff{4}=vertcat(PCoeff{logicalCategory.Never});
 
 % fCat3=figure('Position',[0 0 1920 1080]);
 % subplot(2,1,1)
@@ -590,6 +590,7 @@ categories.PCoeff{3}=vertcat(PCoeff{logicalCategory.Late});
 categories.MZ{1}=vertcat(MZ{logicalCategory.Early});
 categories.MZ{2}=vertcat(MZ{logicalCategory.Mid});
 categories.MZ{3}=vertcat(MZ{logicalCategory.Late});
+categories.MZ{4}=vertcat(MZ{logicalCategory.Never});
 
 % subplot(2,1,2)
 % edges=[0:max(vertcat(endTime.MZ{:}))/7:max(vertcat(endTime.MZ{:}))];
@@ -627,6 +628,8 @@ categories.MZ{3}=vertcat(MZ{logicalCategory.Late});
 categories.COMM{1}=[com3{logicalCategory.Early}];
 categories.COMM{2}=[com3{logicalCategory.Mid}];
 categories.COMM{3}=[com3{logicalCategory.Late}];
+categories.COMM{4}=[com3{logicalCategory.Never}];
+
 % for j = 1:length(endTime.COMM)
 %     endTime.COMM{j}(endTime.COMM{j}==Inf)=0;
 %     edges=[0:max([endTime.COMM{:}])/7:max([endTime.COMM{:}])];
@@ -664,6 +667,8 @@ categories.COMM{3}=[com3{logicalCategory.Late}];
 categories.Curr{1}=[cc3{logicalCategory.Early}];
 categories.Curr{2}=[cc3{logicalCategory.Mid}];
 categories.Curr{3}=[cc3{logicalCategory.Late}];
+categories.Curr{4}=[cc3{logicalCategory.Never}];
+
 %
 % edges=[1e-7:max([endTime.Curr{:}])/7:max([endTime.Curr{:}])];
 % for j = 1:length(endTime.Curr)
@@ -800,7 +805,7 @@ for i = 1:length(categories.COMM)
     %     Legend{i}=strcat([num2str(Explore{i}{3}.IndexTime) ' sec']);
 end
 % legend(Legend)
-legend({'Early','Mid','Late'})
+legend({'Early','Mid','Late','Never'})
 
 %% log10 Current:
 % flog=figure('Position',[0 0 1920 1080]);

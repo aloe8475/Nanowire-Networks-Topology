@@ -1,0 +1,418 @@
+\documentclass[preprint,10pt, authoryear, a4]{elsarticle}
+\usepackage{booktabs, dcolumn, rotating, longtable}               % nice tables
+\newcolumntype{d}[1]{D{.}{.}{#1}}    
+\usepackage{tabularx}               % even nicer tabular environments
+\usepackage{color}
+\usepackage{url}
+\usepackage{listings} 
+\usepackage{epstopdf}
+\renewcommand{\lstlistingname}{Code}
+\usepackage{setspace}
+\usepackage[latin1]{inputenc}
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\definecolor{Code}{rgb}{0,0,0}
+\definecolor{Decorators}{rgb}{0.5,0.5,0.5}
+\definecolor{Numbers}{rgb}{0.5,0,0}
+\definecolor{MatchingBrackets}{rgb}{0.25,0.5,0.5}
+\definecolor{Keywords}{rgb}{0,0,1}
+\definecolor{self}{rgb}{0,0,0}
+\definecolor{Strings}{rgb}{0,0.63,0}
+\definecolor{Comments}{rgb}{0.42,0.42,0.42}
+\definecolor{Backquotes}{rgb}{0,0,0}
+\definecolor{Classname}{rgb}{0,0,0}
+\definecolor{FunctionName}{rgb}{0,0,0}
+\definecolor{Operators}{rgb}{0,0,0}
+\definecolor{Background}{rgb}{0.95,0.95,0.95
+}
+\lstnewenvironment{python}[1][]{
+\lstset{
+numbers=left,
+numberstyle=\tiny,
+numbersep=1em,
+xleftmargin=1em,
+framextopmargin=2em,
+framexbottommargin=2em,
+showspaces=false,
+showtabs=false,
+showstringspaces=false,
+frame=l,
+tabsize=4,
+% Basic
+basicstyle=\ttfamily\tiny{1},
+backgroundcolor=\color{Background},
+language=Python,
+% Comments
+commentstyle=\color{Comments}\slshape,
+% Strings
+stringstyle=\color{Strings},
+morecomment=[s][\color{Strings}]{"""}{"""},
+morecomment=[s][\color{Strings}]{'''}{'''},
+% keywords
+morekeywords={import,from,class,def,for,while,if,is,in,elif,else,not,and,or,print,break,continue,return,True,False,None,access,as,,del,except,exec,finally,global,import,lambda,pass,print,raise,try,assert},
+keywordstyle={\color{Keywords}\bfseries},
+% additional keywords
+morekeywords={[2]@invariant},
+keywordstyle={[2]\color{Decorators}\slshape},
+emph={self},
+emphstyle={\color{self}\slshape},
+%
+}}{}
+
+
+%% if you use PostScript figures in your article
+%% use the graphics package for simple commands
+%% \usepackage{graphics}
+%% or use the graphicx package for more complicated commands
+\usepackage{graphicx}
+\graphicspath{{figures/}{../connectivity/connectivity_data/}{/home/paula/Dropbox/AtomicSwitchNetworks/figures/}}
+
+%% or use the epsfig package if you prefer to use the old commands
+%% \usepackage{epsfig}
+
+%% The amssymb package provides various useful mathematical symbols
+\usepackage{amssymb}
+%% The amsthm package provides extended theorem environments
+\usepackage{amsthm}
+\usepackage{amsmath}
+
+%\usepackage{subequations}
+
+% The lineno packages adds line numbers. Start line numbering with
+% \begin{linenumbers}, end it with \end{linenumbers}. Or switch it on
+% for the whole article with \linenumbers after \end{frontmatter}.
+\usepackage{lineno}
+
+\usepackage{booktabs, dcolumn, rotating, longtable}               % nice tables
+\newcolumntype{d}[1]{D{.}{.}{#1}}    
+\usepackage{tabularx}               % even nicer tabular environments
+
+%% natbib.sty is loaded by default. However, natbib options can be
+%% provided with \biboptions{...} command. Following options are
+%% valid:
+
+%%   round  -  round parentheses are used (default)
+%%   square -  square brackets are used   [option]
+%%   curly  -  curly braces are used      {option}
+%%   angle  -  angle brackets are used    <option>
+%%   semicolon  -  multiple citations separated by semi-colon
+%%   colon  - same as semicolon, an earlier confusion
+%%   comma  -  separated by comma
+%%   numbers-  selects numerical citations
+%%   super  -  numerical citations as superscripts
+%%   sort   -  sorts multiple citations according to order in ref. list
+%%   sort&compress   -  like sort, but also compresses numerical citations
+%%   compress - compresses without sorting
+%%
+%% \biboptions{comma,round}
+
+% \biboptions{}
+
+
+\begin{document}
+
+\begin{frontmatter}
+ 
+%% Title, authors and addresses
+
+%% use the tnoteref command within \title for footnotes;
+%% use the tnotetext command for the associated footnote;
+%% use the fnref command within \author or \address for footnotes;
+%% use the fntext command for the associated footnote;
+%% use the corref command within \author for corresponding author footnotes;
+%% use the cortext command for the associated footnote;
+%% use the ead command for the email address,
+%% and the form \ead[url] for the home page:
+%%
+%% \title{Title\tnoteref{label1}}
+%% \tnotetext[label1]{}
+%% \author{Name\corref{cor1}\fnref{label2}}
+%% \ead{email address}
+%% \ead[url]{home page}
+%% \fntext[label2]{}
+%% \cortext[cor1]{}
+%% \address{Address\fnref{label3}}
+%% \fntext[label3]{}
+
+\title{Notes On Modelling Atomic Switch Networks: Structure and Dynamics}
+
+
+%% use optional labels to link authors explicitly to addresses:
+%% \author[label1,label2]{<author name>}
+%% \address[label1]{<address>}
+%% \address[label2]{<address>}
+
+\author[a]{Ido Marcus}
+\author[b]{Paula Sanz-Leon}
+\author[b]{Zdenka Kuncik}
+
+\address[a]{Weizmann Institute of Science, Rehovot, 7610001, Israel}
+\address[b]{School of Physics, University of Sydney, NSW 2006, Australia}
+
+\journal{IM, PSL, ZK}
+
+\begin{abstract}
+This document succinctly describes how to model the structure and collective
+dynamics of atomic switch networks (ASNs). Here, we propose (i) a model for
+generating the distribution of the nanowires and memristive-like junctions;
+(ii) a graph representation of the network and the link to the elements of the
+physical system; and, (iii) a system of equations for the dynamics of the
+atomic switches. The evolution equations are based resistive networks theory
+and are physically realistic since they follow Kirchoff's circuit laws.
+Simulations are performed using networks of homogeneous elements (e.g., all
+atomic switches have the same properties), in the presence of an external DC
+voltage bias and without noise.  The network's conductance measured between
+two contact points exhibits switching behaviour and its power spectrum seems
+to approximately follow a $1/f$ decay. These dynamics are qualitatively
+comparable to those measured in experimental settings.
+\end{abstract}
+
+\begin{keyword}
+atomic switch networks \sep memristors \sep silver nanowires \sep modelling
+\end{keyword}
+
+\end{frontmatter}
+
+\linenumbers
+
+\section{Motivation}
+\label{sec:why}
+
+% Why? Why??? Why????
+The goal of this project is to develop a mathematical and computational model
+to generate the structure and dynamics of polymer-coated silver (Ag) nanonwire
+networks as reported and measured in experimental settings. These networks are
+regarded as atomic switch networks (ASNs).
+
+\section{Methods}
+\label{sec:methods}
+
+% Outline of this document
+In this section, we discuss the methods to capture the main properties of ASNs
+structure. Section~\ref{sec:needles} presents a mathematical model  to
+generate the distribution of nanowires junctions on a 2D lattice (i.e., the
+device). Section~\ref{sec:graph} describes the link the between an ASN and its
+graph representation, while Sec.~\ref{sec:dynamics} presents the general considerations
+used to describe dynamical quantities such as voltage, current and
+conductance. Lastly, Sec.~\ref{sec:results} presents preliminary results of
+the network dynamics simulated with our implementation.
+
+% The smallest ASN unit that can be studied is one junction (equivalent to a two
+% node graph with a memristive element in between).
+
+
+\subsection{Generative model for ASN structure}
+\label{sec:needles}
+
+In this section we present a method for producing a distribution of
+nanowires and junctions. This method is motivated by the properties of the
+physical system. The nominal values for the physical properties of the Ag
+nanowire network are presented in Table~\ref{table:nominalparameters}.
+
+\begin{table}[htbp]
+\begin{center}
+\begin{tabular}{lccr}
+\toprule
+{\bf Property}     & \bf{Symbol}    & {\bf Value}  & {\bf Units}  \\
+\midrule
+Area                  &  $A$   & 9  & mm$^{2}$ \\
+Nanowire av. length   &  $l$   & 14 & $\mu$m \\
+Junction av size*     &  $s$   & 4  & $\mu$m$^{2}$ \\ 
+Horizontal length*    &  $L_x$ & 3  & mm      \\
+Vertical length*      &  $L_y$ & 3  & mm      \\ 
+Horizontal spacing*   &  $dx$  & 2  & $\mu$m \\ 
+Vertical spacing*     &  $dy$  & 2  & $\mu$m \\ 
+Number of (biased) junctions   & $N_{R}$ & 10$^{4}$ & n.a \\
+\bottomrule
+\end{tabular}
+\caption{
+Representative parameter values for the Ag nanowire network taken from
+\citep{Higuchi_2016, Bellew2014}. The parameters marked with a star are those for which an
+exact measurement was not given in the papers. Their values have been derived
+from other properties/parameters.}
+\label{table:nominalparameters}
+\end{center}
+\end{table}
+
+The steps here consist of (i) positioning nanowires on a grid that represents
+the wafer and (ii) determining all the points at which any two nanowires
+intersect. Thus, each nanowire is characterized by its:
+
+\begin{itemize}
+\item $x, y$ coordinates on a 2D lattice;
+\item orientation $\theta$; and,
+\item length.
+\end{itemize}
+
+Nanowires centres and orientations are uniformly distributed. The lengths are
+sampled from a gamma distribution. This distribution is motivated from
+experimental measurements presented in \citet{Bellew2014}.  An exemplary 
+network is presented in Fig.~\ref{fig:wires} where red markers are the centres
+of the nanowires and the blue markers represent the biased junctions.
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.8\textwidth]{nanowires_distribution}
+
+\includegraphics[width=0.8\textwidth]{nanowires_distribution_zoom}
+\caption{Distribution of nanowires and junctions. This network was generated by sampling the nanowires centres (red dots) and orientations from a uniform distribution. The intersections are marked by blue dots. The yellow square represents the extent of the device (wafer) on which the nanowires are grown. Physical units are in micrometres.}
+\label{fig:wires}
+\end{center}
+\end{figure}
+
+\subsection{Graph representation of an ASN}
+\label{sec:graph}
+
+An abstract representation of a nanowire network can be done using graphs,
+which are mathematical objects consisting of a set of vertices (nodes) and
+edges (connecting elements). Graphs are then converted into adjacency matrices
+and used to perform simulations of the network.
+
+The basic physical unit we need to map into edges an vertices is a pair of
+nanowires connected through a junction. An illustration of such an unit is
+shown in a 3D diagram in Fig.~\ref{fig:two_wires}. Notice that this 3D
+representation is only for illustrative purposes since the depth of the device
+is negligible. In practice, all the nanowires lie on the same 2D grid.
+
+\pagebreak
+The
+convention used here to map the physical network onto its graph representation
+is as follows:
+\begin{itemize}
+\item the nanowires are the vertices; and 
+\item the junctions are the edges of the graph.
+\end{itemize}
+
+This convention is derived from electrical circuit theory where any two points
+are connected through an element across which there is a voltage drop. Each
+nanowire is an equipotential object (i.e., the voltage is the same along the
+nanowire itself) and thus the whole conductor can be shrunk to a point
+element. This point is mapped to a vertex in the graph. The junctions become
+the elements through which current flows between two contact points and are
+therefore mapped to the edges of the graph.
+
+From the graph representation an adjacency matrix is built. This matrix
+determines the structural connectivity (i.e., the presence or absence of a
+junction). The adjacency matrix $\mathbf{A}$ has $V$ vertices and $E$ nonzero
+edges.
+
+% \item is binary (unweighted graph);
+% \item is symmetric (undirected graph);
+% \item has zero diagonal (no self-loops);
+% \item cannot be permuted into a block-diagonal form with more than one block (it must be a connecte
+% d graph);
+% \end{itemize}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.5\textwidth]{two_wires_case_b_isometric_view}%
+\includegraphics[width=0.5\textwidth]{two_wires_case_b_xy_view}
+\caption{
+Diagram of the basic structural unit of an ASN. Two intersecting nanowires (gray tubes) are connected through a junction (blue tube). Lower panel, the same unit is seen from the top.
+The blue dot is the junction position and the red dot is the nanowire's centre.}
+\label{fig:two_wires}
+\end{center}
+\end{figure}
+
+
+\subsection{Behaviour of an Atomic Switch}
+\label{sec:dynamics}
+
+Unipolar resistive switching has been observed in Ag|PVP|Ag metal-insulator-metal 
+interfaces. Here, a simplified model is proposed, which qualitatively
+captures the dynamics of filament formation and dissolution at the interface.
+
+\paragraph{Bistability} A switch has two possible resistance values: (i) $R_{\mbox{on}}$  in the
+presence of a conducting filament; and (ii) $R_{\mbox{off}}$ in the absence of
+a conducting filament. 
+
+\paragraph{Filament formation} The formation of a filament is determined by $V_{\mbox{set}}$ above which
+cations migrate and gradually form a filament. The direction of migration
+depends on polarity.  A filament starts forming when
+$\left|V\right|>V_{\mbox{set}}$ at a rate of migration proportional to the
+difference $\left|V\right|-V_{\mbox{set}}$.
+
+\paragraph{Filament dissolution} In a similar way, a filament has characteristic reset voltage $V_{\mbox{reset}}$
+after which it gradually dissolves. When $\left|V\right|<V_{\mbox{reset}}$,
+the filament starts dissolving regardless of polarity (i.e., it is dependent on
+the absence of voltage). The difference 
+$V_{\mbox{reset}}-\left|V\right|$ determines the rate of dissolution.
+
+\paragraph{Flux-linkage} The current state of an atomic switch is represented in a variable
+$\lambda$that has flux-linkage dimensions
+$\left[\lambda\right]=\mbox{voltage}\cdot\mbox{time}$. This variable embodies
+the mechanisms of filaments formation/dissolution over time due to the
+presence/ absence of voltage and can be regarded as a variable proportional to
+the current physical length of the filament.  Positive values of $\lambda$
+represent cation migration from vertex $A$ towards vertex $B$, and vise-versa.
+
+% A switch has two flux-linkage scales: (i) $\lambda_{\mbox{crit}}$ such that
+% switching occurs when $\left|\lambda\right|$; and, (ii) $\lambda_{\mbox{strong}}$
+% quantifies the strongest filament and serves as an upper bound for 
+% $\left|\lambda\right|$
+
+
+
+\section{Simulations and Results}
+\label{sec:results}
+
+The switch described in the previous sections is intended to be used for
+simulations of electrical activity in a network with $E$ such atomic switches.
+At any point in time, the resistances of each switch can be obtained, and the
+network can be treated as resistive. Resistive networks are then solved using
+Kirchhoff's circuit equations where the unknown are the voltages or currents.
+Thus, the state of the system (e.g., voltage/currents) is determined by
+solving a system of linear equations.
+
+In the simulations, the edges of the connectivity matrix have a weight representing resistance
+between any given pair of vertices. If $R\rightarrow0$, the path
+between two nodes is highly conductive and we can expect an increase of the
+current. 
+
+
+Two vertices are chosen as the contacts of the network for the application of
+external voltage. The network's conductance/resistance can be measured by
+connecting a tester resistor in series to the external voltage source and to
+the network itself. These source/drain contact points are illustrated in
+Fig.~\ref{fig:snapshots}. The upper panel is a snapshot of the network's state
+at one specific point in time.  The lower panel displays a zoomed version of
+the network close to the drain point. Finally, in Fig.~\ref{fig:analysis}(a)
+we present the simulated time-series of the network's conductance; and, in
+Fig.~\ref{fig:analysis}(b) its power spectrum. The latter follows
+approximately a $1/f$ decay and qualitatively resembles to the spectra shown
+in \citet{Higuchi_2016}.
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{2016-09-14_snapshotDemo(1)}
+
+
+\includegraphics[width=\textwidth]{2016-09-14_snapshotDemo(1)_zoom}
+\caption{A pair of source (green star) and drain (red star) contact points are shown for this network.
+The junctions are illustrated with different markers: (i) a diamond for junctions in an OFF state; and, a circle for junctions in conducting state. The colormap represents for heat dissipation (in units of power). The currents are illustrated as blue arrows. The lower panel is a zoomed version in the neighbourhood of the drain point.}
+\label{fig:snapshots}
+\end{center}
+\end{figure}
+
+
+\begin{sidewaysfigure}
+\begin{center}
+\includegraphics[width=\textwidth]{2016-09-14_T=1e2_dt=1e-4_upper_panels}
+\caption{Electrical activity and spectral analysis of the network's dynamics.
+In (a) the network's conductance is shown as a function of time. All the switches start from an OFF state and open up. While the curve looks very smooth, there are small amplitude high frequency fluctuations (e.g, switching). In the inset we show this switching behaviour for the interval in highlighted gray.
+}
+\label{fig:analysis}
+\end{center}
+\end{sidewaysfigure}
+
+% Bibliography
+\pagebreak
+\section{References}
+\bibliographystyle{apalike}
+\bibliography{asn_bibliography}
+\end{document}
+}

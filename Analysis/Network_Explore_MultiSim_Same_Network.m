@@ -193,7 +193,7 @@ for currentSimulation=1:length(simulations)
                 %Find midpoint between the last pulse centre and the second
                 %last pulse centre.
                 pulseMid=floor((pulseCentres(end)+pulseCentres(end-1))/2);
-                pulseCentres=[pulseCentres pulseMid];
+                pulseCentres=[pulseCentres(1:end-1) pulseMid pulseCentres(end)]; %find the middle of the third pulse and the 4th pulse (i.e. the time difference)
             end
             for time=1:length(pulseCentres) %Alon to change to var
                 [TimeData(time).Explore{currentSimulation},TimeData(time).threshold{currentSimulation}]=explore_simulation(currentSim,network,network_load,simNum,currentPath,currentSimulation,simulations,pulseCentres,time);
@@ -277,20 +277,30 @@ function [Explore,threshold] = explore_simulation(Sim,network,network_load,simNu
 % Binarise Threshold = Only low resistence junctions + wires
 % Full Graph = all degrees, all resistences
 
-[NodeList.String,NodeList.UserData]=GetNodeList(Sim);
+[NodeList.String,NodeList.UserData]=GetNodeList(Sim,network_load);
+if network_load=='a'
 NodeList.Value=1:height(Sim.Electrodes);
+else
+NodeList.Value=1:length(Sim.Electrodes);
+end 
 
 %% Timeseries View
 %Plot Current
 % f=figure;
-drainIndex=find(contains(Sim.Electrodes.Name,'Drain')); 
+if network_load=='a'
+    drainIndex=find(contains(Sim.Electrodes.Name,'Drain'));
+    sourceIndex=find(contains(Sim.Electrodes.Name,'Source'));
+else
+    drainIndex=find(contains({Sim.Electrodes.Name},'Drain'));
+    sourceIndex=find(contains({Sim.Electrodes.Name},'Source'));
+
+end
 if isempty(drainIndex)
     drain_exist=0;
 end
-sourceIndex=find(contains(Sim.Electrodes.Name,'Source'));
 if isempty(sourceIndex)
-    source_exist=0;
-end
+        source_exist=0;
+end 
 for i = 1:length(sourceIndex)
     if ismember(['ISource' num2str(i)], fieldnames(Sim.Data))
         source(:,i)=full(Sim.Data.(['ISource' num2str(i)]));
