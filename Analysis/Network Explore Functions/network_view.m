@@ -2,7 +2,7 @@
 % This function plots the network view of current, voltage and resistance
 % for the chosen Sim at the given timestamp (IndexTime)
 
-function [f1, f2, Adj, NumEl, Explore]= network_view(Sim, IndexTime, NodeList)
+function [f1, f2, Adj, NumEl, Explore]= network_view(Sim, IndexTime, NodeList,network_load)
 
 Layout=Sim.SelLayout;
 
@@ -16,8 +16,11 @@ Y=full([y1' ; y2']); % Y = Wires 'y' value
 [~,~,Cx]=find(Layout.CX); %CX = Junctions 'x' value
 [~,~,Cy]=find(Layout.CY); % CY = Junctions 'y' value
 Adj=triu(Layout.AdjMat); % Adjacency matrix
+if network_load == 'a'
 NumEl=height(Sim.Electrodes); %Number of electrodes
-
+else
+NumEl=length({Sim.Electrodes}); %Number of electrodes
+end 
 %Plot Network:
 f1=figure;
 currAx=gca; %current axis
@@ -27,7 +30,12 @@ scatter(currAx,Cx,Cy,2,'r'); %scatterplot junctions
 hold(currAx,'on');
 
 %PlotElectrodes
+if network_load=='a'
 IdxEl=Sim.Electrodes.PosIndex(NodeList.Value(NodeList.Value<=NumEl)); %Find Electrode Junction Position
+else
+    temp = [Sim.Electrodes.PosIndex];
+    IdxEl=temp(NodeList.Value(NodeList.Value<=NumEl)); %Find Electrode Junction Position
+end 
 Xe=X(:,IdxEl);Ye=Y(:,IdxEl); %Find X and Y (wires) for electrode
 Cxe=(x2(IdxEl)+x1(IdxEl))./2;Cye=(y1(IdxEl)+y2(IdxEl))./2; %Find X and Y (junctions) for electrode
 text(currAx,Cxe-1.7,Cye+0.7,'Electrode'); %Write 'Electrode' where it is placed
@@ -38,13 +46,13 @@ Imat=full(abs(currs)); %full current matrix (instead of sparse double) + absolut
 Cx=Layout.CX(Adj~=0); %'x' coordinates for junctions that are 1 in the Adj matrix
 Cy=Layout.CY(Adj~=0);%'y' coordinates for junctions that are 1 in the Adj matrix
 Ilist=Imat(Adj~=0); % current list for junctions that are 1 in the Adj matrix
-I=linspace(0,Sim.SimInfo.MaxI,10*length(Ilist)); %generates 10*length(Ilist)) points between 0 and max current
+I=linspace(0,max(Ilist),10*length(Ilist)); %generates 10*length(Ilist)) points between 0 and max current
 cmap=jet(10*length(Ilist)); %creates jet colormap with 10*length(Ilist) colorvalues
 c=interp1(I,cmap,full(Ilist)); % %creates interpolation table with colormap - not sure what this is
 PlotNetworkAux(currAx,X,Y,Cx,Cy,'curr',c);
 labels=strsplit(num2str(1:length(Ilist))); %all junctions
 % text(Cx,Cy,labels,'HorizontalAlignment','left');%label each junction with its number
-clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI]; %minimum and maximum currents
+clim=[min(Ilist) max(Ilist)]; %minimum and maximum currents
 
 %colorbar
 colormap(currAx,cmap);
@@ -61,22 +69,36 @@ scatter(currAx,Cx,Cy,2,'r'); %scatterplot junctions
 hold(currAx,'on');
 
 %PlotElectrodes
-IdxEl=Sim.Electrodes.PosIndex(NodeList.Value(NodeList.Value<=NumEl)); %Find Electrode Junction Position
 Xe=X(:,IdxEl);Ye=Y(:,IdxEl); %Find X and Y (wires) for electrode
 Cxe=(x2(IdxEl)+x1(IdxEl))./2;Cye=(y1(IdxEl)+y2(IdxEl))./2; %Find X and Y (junctions) for electrode
 text(currAx,Cxe-1.7,Cye+0.7,'Electrode'); %Write 'Electrode' where it is placed
 
 
 %Plot Resistance
+if network_load=='a'
 Rmat=triu(Sim.Data.Rmat{IndexTime});
+else
+    tempRes=Sim.Data.Voltages{IndexTime}./Sim.Data.Currents{IndexTime};
+    Rmat=triu(tempRes);
+    clear tempRes
+end 
 Cx=Layout.CX(Adj~=0);
 Cy=Layout.CY(Adj~=0);
 Rlist=Rmat(Adj~=0);
+if network_load=='a'
 R=linspace(min([Sim.Settings.Roff Sim.Settings.Ron]),max([Sim.Settings.Roff Sim.Settings.Ron]),10*length(Rlist));
+else
+  R=linspace(min([Sim.Settings.Roff; Sim.Settings.Ron]),max([Sim.Settings.Roff; Sim.Settings.Ron]),10*length(Rlist));
+end 
 cmap=flipud(copper(10*length(Rlist)));
 c=interp1(R,cmap,full(Rlist));
 PlotNetworkAux(currAx,X,Y,Cx,Cy,'curr',c);
+if network_load=='a'
 clim=[min([Sim.Settings.Roff Sim.Settings.Ron]) max([Sim.Settings.Roff Sim.Settings.Ron])];
+else
+    clim=[min([Sim.Settings.Roff; Sim.Settings.Ron]) max([Sim.Settings.Roff; Sim.Settings.Ron])];
+end 
+
 %colorbar
 colormap(currAx,cmap);
 colorbar(currAx);

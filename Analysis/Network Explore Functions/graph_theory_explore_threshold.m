@@ -2,7 +2,7 @@
 % This function plots graph theory parameters overlayed on graph view of
 % currents for the chosen Sim at the given timestamp (IndexTime)
 
-function [f6, f7, f8, f9, f10, f11, f12,f13, Explore, sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj, Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices,drain_exist,source_exist)
+function [f6, f7, f8, f9, f10, f11, f12,f13, Explore, sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj, Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices,drain_exist,source_exist,network_load)
 %% Find Source and Drain Electrodes:
 
 %NOTE: This only works with 1 source and 1 drain:
@@ -13,7 +13,7 @@ elseif ~source_exist & drain_exist
 else
     %this works as many sources/drains as required
     for i = 1:length(new_electrodes)
-        electrodes_cell(i)=new_electrodes(i).Name;%% ALON TO FIX  06/08/19
+        electrodes_cell{i}=new_electrodes(i).Name;%% ALON TO FIX  06/08/19
     end
 end
 if ~isempty(new_electrodes)
@@ -33,10 +33,10 @@ if ~isempty(new_electrodes)
     end
     
     if ~isempty(sourceElec) & ~isempty(drainElec)
-            noPath=0; %if we have both source and drain - we do have a path, so noPath = 0; 
+        noPath=0; %if we have both source and drain - we do have a path, so noPath = 0;
     elseif isempty(sourceElec) | isempty(drainElec)
         noPath=1;
-    end 
+    end
     
     for i =1:length(sourceElec)
         if source_exist
@@ -69,7 +69,11 @@ p3.NodeLabel={};
 %Plot Currents
 p3.MarkerSize=1.5;
 p3.LineWidth=1.5;
-Adj=(Sim.Data.AdjMat{IndexTime});%we need to keep a copy of the original Adj matrix (unthresholded) to find all the currents
+if network_load=='a'
+    Adj=(Sim.Data.AdjMat{IndexTime});%we need to keep a copy of the original Adj matrix (unthresholded) to find all the currents - this is the NON BINARISED Adj matrix
+else
+    Adj=Sim.SelLayout.AdjMat;
+end
 Adj2=Adj(threshold,threshold);
 currs=(abs(Sim.Data.Currents{IndexTime}));
 currs=currs(threshold,threshold);
@@ -89,7 +93,11 @@ end
 
 %Find CURRENTS in network
 cc3=cc(logical(cc2));
-clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
+if network_load=='a'
+    clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
+else
+    clim=[min(min(Sim.Data.Currents{IndexTime})) max(max(Sim.Data.Currents{IndexTime}))];
+end
 p3.EdgeCData=cc3;
 colormap(currAx,gcurrmap);%gcurrmap
 colorbar(currAx);
@@ -105,6 +113,8 @@ if ~noPath
     p3.MarkerSize=bins2;
     
     %Label Source
+    
+    
     labelnode(p3,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
 end
 %Need to figure out how to change colormap for Nodes seperately.
@@ -124,7 +134,11 @@ p4.NodeLabel={};
 %Plot Currents
 p4.MarkerSize=1.5;
 p4.LineWidth=1.5;
-Adj=(Sim.Data.AdjMat{IndexTime});%we need to keep a copy of the original Adj matrix (unthresholded) to find all the currents
+if network_load=='a'
+    Adj=(Sim.Data.AdjMat{IndexTime});%we need to keep a copy of the original Adj matrix (unthresholded) to find all the currents - this is the NON BINARISED Adj matrix
+else
+    Adj=Sim.SelLayout.AdjMat;
+end
 Adj2=Adj(threshold,threshold);
 currs=(abs(Sim.Data.Currents{IndexTime}));
 currs=currs(threshold,threshold);
@@ -144,7 +158,11 @@ end
 
 %Find currents in network
 cc3=cc(logical(cc2));
-clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
+if network_load=='a'
+    clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
+else
+    clim=[min(min(Sim.Data.Currents{IndexTime})) max(max(Sim.Data.Currents{IndexTime}))];
+end
 p4.EdgeCData=cc3;
 colormap(currAx,gcurrmap);%gcurrmap
 colorbar(currAx);
@@ -179,7 +197,11 @@ p5.NodeLabel={};
 %Plot Currents
 p5.MarkerSize=1.5;
 p5.LineWidth=1.5;
-Adj=(Sim.Data.AdjMat{IndexTime});%we need to keep a copy of the original Adj matrix (unthresholded) to find all the currents
+if network_load=='a'
+    Adj=(Sim.Data.AdjMat{IndexTime});%we need to keep a copy of the original Adj matrix (unthresholded) to find all the currents - this is the NON BINARISED Adj matrix
+else
+    Adj=Sim.SelLayout.AdjMat;
+end
 Adj2=Adj(threshold,threshold);
 currs=(abs(Sim.Data.Currents{IndexTime}));
 currs=currs(threshold,threshold);
@@ -199,7 +221,11 @@ end
 
 %Find currents in network
 cc3=cc(logical(cc2));
-clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
+if network_load=='a'
+    clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
+else
+    clim=[min(min(Sim.Data.Currents{IndexTime})) max(max(Sim.Data.Currents{IndexTime}))];
+end
 p5.EdgeCData=cc3;
 colormap(currAx,gcurrmap);%gcurrmap
 colorbar(currAx);
@@ -271,7 +297,11 @@ if ~noPath
         %Plot Currents
         p8.MarkerSize=1.5;
         p8.LineWidth=1.5;
-        Adj=(Sim.Data.AdjMat{IndexTime});%we need to keep a copy of the original Adj matrix (unthresholded) to find all the currents
+        if network_load=='a'
+            Adj=(Sim.Data.AdjMat{IndexTime});%we need to keep a copy of the original Adj matrix (unthresholded) to find all the currents - this is the NON BINARISED Adj matrix
+        else
+            Adj=Sim.SelLayout.AdjMat;
+        end
         Adj2=Adj(threshold,threshold);
         currs=(abs(Sim.Data.Currents{IndexTime}));
         currs=currs(threshold,threshold);
@@ -292,7 +322,11 @@ if ~noPath
         
         
         cc3=cc(logical(cc2));
-        clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
+        if network_load=='a'
+            clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
+        else
+            clim=[min(min(Sim.Data.Currents{IndexTime})) max(max(Sim.Data.Currents{IndexTime}))];
+        end
         p8.EdgeCData=cc3;
         colormap(currAx,gcurrmap);%gcurrmap
         colorbar(currAx);
@@ -340,7 +374,11 @@ for k=1:length(j)
 end
 
 % extract lower triangular part of Adjacency matrix of network
-Adj2=(Sim.Data.AdjMat{IndexTime});%convert 498x498 matrix to EdgeCData ~(1x6065)
+if network_load=='a'
+    Adj2=(Sim.Data.AdjMat{IndexTime});%we need to keep a copy of the original Adj matrix (unthresholded) to find all the currents - this is the NON BINARISED Adj matrix
+else
+    Adj2=Sim.SelLayout.AdjMat;
+end
 Adj2=Adj2(threshold,threshold);
 [j,i,~]=find(tril(Adj2));
 com2=zeros(1,length(j));
@@ -363,7 +401,7 @@ if ~noPath
     highlight(p9,highlightElec,'NodeColor','green','Marker','o'); %change simulation number
 end
 %Overlay Shortest Path
-if ~noPath  
+if ~noPath
     hold on
     p10=plot(currAx,G);
     set(gcf, 'InvertHardCopy', 'off'); %make sure to keep background color
@@ -401,7 +439,7 @@ if ~noPath
     labelnode(p11,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
     labelnode(p11,highlightElec,[new_electrodes(:).Name]);
 end
-if ~noPath  
+if ~noPath
     %Overlay Shortest Path
     hold on
     p12=plot(currAx,G);

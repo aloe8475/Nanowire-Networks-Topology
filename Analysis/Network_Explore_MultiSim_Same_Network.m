@@ -82,14 +82,15 @@ for currentSimulation=1:length(simulations)
             fprintf(['Data Extracted \n\n\n']);
             analysis_type='e';%lower(input('Which analysis would you like to perform? G - graph, E - Explore Network,L - LDA, N - none \n','s'));
         elseif explore_network=='e' % we don't want to allow LDA if just exploring
-            analysis_type=lower(input('Which analysis would you like to perform? T = Time b/w Pulses, E = Early/Mid/Late/Never \n','s'));
+            %% CHANGE BETWEEN T AND E HERE
+            analysis_type='t'; %lower(input('Which analysis would you like to perform? T = Time b/w Pulses, E = Early/Mid/Late/Never \n','s'));
         end
         if analysis_type=='g'
             %% Graph Analysis
             [Graph,binarise_network]=graph_analysis(network(networkNum),network_load,currentSim,[]);
             %% Save Graph analysis data
             i=i+1;
-        elseif analysis_type=='e' 
+        elseif analysis_type=='e'
             %% Exploratary analysis of simulation
             
             %Choose a time to Explore Simulation:
@@ -125,35 +126,42 @@ for currentSimulation=1:length(simulations)
             
             pulseCentres = floor((pulseStarts + pulseEnds)/2);
             if length(pulseCentres)==currentSim.Settings.SetFreq
-                pulseCentres=[pulseCentres pulseEnds(end-1)]; %take the second last pulse time 
-            end 
-
+                pulseCentres=[pulseCentres pulseEnds(end-1)]; %take the second last pulse time
+            end
+            
             %% NEED TO FIGURE THIS OUT - WHY IS THE TIME NOT SAVING?
             if isempty(pulseCentres)
                 fprintf(num2str(currentSimulation));
-            end 
+            end
             MAX_PULSE_CENTRES=11;
-             for time=1:length(pulseCentres) %Alon to change to var
+            for time=1:length(pulseCentres) %Alon to change to var
                 [TimeData(time).Explore{currentSimulation},TimeData(time).threshold{currentSimulation}]=explore_simulation(currentSim,network,network_load,simNum,currentPath,currentSimulation,simulations,pulseCentres,time);
-             end
-             if length(pulseCentres<11)
-                 for time=length(pulseCentres)+1:MAX_PULSE_CENTRES
-                     TimeData(time).Explore{currentSimulation}=[];
-                     TimeData(time).threshold{currentSimulation}=[];
-                 end
-             end
+            end
+            if length(pulseCentres<11)
+                for time=length(pulseCentres)+1:MAX_PULSE_CENTRES
+                    TimeData(time).Explore{currentSimulation}=[];
+                    TimeData(time).threshold{currentSimulation}=[];
+                end
+            end
             %% Saving Explore
             if currentSimulation==length(simulations)
                 save_state=lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
                 if save_state=='y'
                     Explore={TimeData.Explore};
                     threshold={TimeData.threshold};
-                    save_explore(Explore,network(networkNum),network_load,currentPath,simNum,threshold,simulations);
+                    save_explore(Explore,network(networkNum),network_load,currentPath,simNum,threshold,simulations,analysis_type);
                     i=i+1; %get out of while loop this loop finishes
                 end
             end
             i=i+1;
         elseif analysis_type == 't'
+            %% ALON 25/09/19
+            % BIN PATH LENGTHS ACROSS PAIRINGS OF ELECTRODES FOR TIME DELAY ANALYSIS
+            % Write code using the same 150 simulations as 'e' analysis
+            % above
+            
+            
+            
             % TIME-BASED ANALYSIS USING ZDENKA'S CODE:
             if network_load == 'z' %making sure zdenka's code is loaded
                 
@@ -172,14 +180,14 @@ for currentSimulation=1:length(simulations)
                 
                 isPulse = false;
                 
-                for i = 1:numel(V1)
-                    if V1(i) > 0 && ~isPulse
-                        pulseStarts(j) = i;
+                for m = 1:numel(V1)
+                    if V1(m) > 0 && ~isPulse
+                        pulseStarts(j) = m;
                         isPulse = true;
                     end
                     
-                    if V1(i) <= 0 && isPulse
-                        pulseEnds(j) = i - 1;
+                    if V1(m) <= 0 && isPulse
+                        pulseEnds(j) = m - 1;
                         isPulse = false;
                         j = j + 1;
                     end
@@ -192,12 +200,24 @@ for currentSimulation=1:length(simulations)
                 pulseCentres = floor((pulseStarts + pulseEnds)/2);
                 %Find midpoint between the last pulse centre and the second
                 %last pulse centre.
-                pulseMid=floor((pulseCentres(end)+pulseCentres(end-1))/2);
-                pulseCentres=[pulseCentres(1:end-1) pulseMid pulseCentres(end)]; %find the middle of the third pulse and the 4th pulse (i.e. the time difference)
-            end
+                pulseTimeMid=floor((pulseCentres(end)+pulseCentres(end-1))/2); %find the middle of the third pulse and the 4th pulse (i.e. the time difference)
+                pulseTimeEnd=pulseStarts(end)-1; %the time just before the last pulse
+                pulseCentres=[pulseCentres(1:end-1) pulseTimeMid pulseTimeEnd pulseCentres(end)];end
             for time=1:length(pulseCentres) %Alon to change to var
                 [TimeData(time).Explore{currentSimulation},TimeData(time).threshold{currentSimulation}]=explore_simulation(currentSim,network,network_load,simNum,currentPath,currentSimulation,simulations,pulseCentres,time);
             end
+                progressBar(currentSimulation,length(simulations));
+             %% Saving Explore
+            if currentSimulation==length(simulations)
+                save_state=lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
+                if save_state=='y'
+                    Explore={TimeData.Explore};
+                    threshold={TimeData.threshold};
+                    save_explore(Explore,network(networkNum),network_load,currentPath,simNum,threshold,simulations,analysis_type);
+                    i=i+1; %get out of while loop this loop finishes
+                end
+            end
+            i=i+1;  
         end
         
         if analysis_type=='g' || analysis_type=='n'
@@ -218,7 +238,6 @@ for currentSimulation=1:length(simulations)
         % -------------------------------
         % -------------------------------
     end
-    progressBar(currentSimulation,length(simulations));
 end
 
 %--------------------------------------------------------------------------
@@ -234,40 +253,40 @@ function [network, network_load, simulations, sim_loaded, numNetworks, explore_n
 network_load=lower(input('Which Network do you want to analyse? Z - Zdenka, A - Adrian \n','s'));
 
 if strcmp(network_load,'a')
-%Get current network - Adrian
-[network,sim_loaded, explore_network, numNetworks]=Load_Adrian_Code();
-%unpack simulation data into simulation variable
-if sim_loaded==1
-    if explore_network=='t' %if we have training and testing simulations
-        tempSim=network.Simulations{2};
-        %         tempSim=num2cell(tempSim);
-        %         network.Simulations(2) = [];
-        %         network.Simulations=[network.Simulations tempSim];
-        
-        %number of training + number of testing:
-        
-        fprintf(['Your Training Simulations are Simulations 1 - ' num2str(network.numTrainingSims) '\n']);
-        fprintf(['Your Testing Simulations are Simulations ' num2str(network.numTrainingSims +1) ' - ' num2str(network.numTestingSims) '\n']);
-        
-        fprintf('\n -------------------------- \nStart Analysis: \n');
-        
+    %Get current network - Adrian
+    [network,sim_loaded, explore_network, numNetworks]=Load_Adrian_Code();
+    %unpack simulation data into simulation variable
+    if sim_loaded==1
+        if explore_network=='t' %if we have training and testing simulations
+            tempSim=network.Simulations{2};
+            %         tempSim=num2cell(tempSim);
+            %         network.Simulations(2) = [];
+            %         network.Simulations=[network.Simulations tempSim];
+            
+            %number of training + number of testing:
+            
+            fprintf(['Your Training Simulations are Simulations 1 - ' num2str(network.numTrainingSims) '\n']);
+            fprintf(['Your Testing Simulations are Simulations ' num2str(network.numTrainingSims +1) ' - ' num2str(network.numTestingSims) '\n']);
+            
+            fprintf('\n -------------------------- \nStart Analysis: \n');
+            
+        end
+        for i = 1:length(network.Simulations)
+            simulations(i)=network.Simulations(i);
+        end
+    else
+        simulations=network.Simulations;
     end
-    for i = 1:length(network.Simulations)
-        simulations(i)=network.Simulations(i);
-    end
-else
-    simulations=network.Simulations;
-end
-cd(currentPath);
+    cd(currentPath);
 elseif strcmp(network_load,'z')
-% Get network - Zdenka:
-% D:\alon_\Research\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
+    % Get network - Zdenka:
+    % D:\alon_\Research\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
     [network,sim_loaded, explore_network, numNetworks]=Load_Zdenka_Code();
     simulations=network.Simulations;
     cd(currentPath);
-% end
+    % end
 end
-end 
+end
 
 %Exploring Functions:
 function [Explore,threshold] = explore_simulation(Sim,network,network_load,simNum,currentPath,currentSimulation,simulations,times,time)
@@ -279,10 +298,10 @@ function [Explore,threshold] = explore_simulation(Sim,network,network_load,simNu
 
 [NodeList.String,NodeList.UserData]=GetNodeList(Sim,network_load);
 if network_load=='a'
-NodeList.Value=1:height(Sim.Electrodes);
+    NodeList.Value=1:height(Sim.Electrodes);
 else
-NodeList.Value=1:length(Sim.Electrodes);
-end 
+    NodeList.Value=1:length(Sim.Electrodes);
+end
 
 %% Timeseries View
 %Plot Current
@@ -293,14 +312,14 @@ if network_load=='a'
 else
     drainIndex=find(contains({Sim.Electrodes.Name},'Drain'));
     sourceIndex=find(contains({Sim.Electrodes.Name},'Source'));
-
+    
 end
 if isempty(drainIndex)
     drain_exist=0;
 end
 if isempty(sourceIndex)
-        source_exist=0;
-end 
+    source_exist=0;
+end
 for i = 1:length(sourceIndex)
     if ismember(['ISource' num2str(i)], fieldnames(Sim.Data))
         source(:,i)=full(Sim.Data.(['ISource' num2str(i)]));
@@ -347,7 +366,7 @@ IndexTime=times(time); %choose the last timestamp
 
 %% Network View
 % Function that plots network view of current and resistance
-[f2, f3, Adj, NumEl, Explore] = network_view(Sim,IndexTime, NodeList);
+[f2, f3, Adj, NumEl, Explore] = network_view(Sim,IndexTime, NodeList,network_load);
 % fprintf('Network Analysis Complete \n');
 
 %% Overlay Graph Theory:
@@ -373,14 +392,14 @@ end
 %% Graph View
 % Function that plots graphical view of current, voltage and resistance
 if threshold_network=='t'
-    [f4, f5, f6, G, Adj, Adj2, Explore, highlightElec, new_electrodes] = graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold, drain_exist,source_exist,node_indices);
+    [f4, f5, f6, G, Adj, Adj2, Explore, highlightElec, new_electrodes] = graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold, drain_exist,network_load,node_indices);
 else
     [f4, f5, f6, G, Adj, Explore, highlightElec, new_electrodes] = graph_view(Sim,IndexTime,Explore,G, threshold_network,drain_exist,source_exist,node_indices);
 end
 %% Graph Theory View
 % Function that plots graph theory overlayed on graph view of currents
 if threshold_network=='t'
-    [f7, f8, f9, f10, f11, f12,f13,f14, Explore,sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj,Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices,drain_exist,source_exist);
+    [f7, f8, f9, f10, f11, f12,f13,f14, Explore,sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj,Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices,drain_exist,source_exist,network_load);
     %     fprintf('Graph Theory Complete \n');
     
 else
@@ -393,7 +412,7 @@ end
 %% Save
 %Save Variables
 Explore.IndexTime=IndexTime;
-Explore.Name=Sim.Name;
+Explore.Name=Sim.Settings.Name;
 Graph.CircuitRank = numedges(G) - (numnodes(G) - 1);
 Explore.GraphTheory=Graph;
 Explore.GraphTheory.Definitions={'GE = Global Efficiency','LE = Local Efficiency', 'COMM = Communicability', 'Ci = Community/Cluster Affiliation',...
@@ -412,7 +431,7 @@ Explore.GraphView.NodeIndices=node_indices;
 %     cd(currentPath)
 %     save_directory='..\Data\Figures\Explore Analysis\';
 %     network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
-%     
+%
 %     if save_explore_plots=='y'
 %         if threshold_network~='t'
 %             % NOTE: 05/06 - for simulations created after this date, we need to
@@ -448,7 +467,7 @@ Explore.GraphView.NodeIndices=node_indices;
 %             print(f13,'-painters','-dpdf','-bestfit','-r600',[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_ShortestPath_Overlay_Communicability_Timestamp' num2str(IndexTime) '.pdf']);
 %             saveas(f14,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_ShortestPath_Overlay_Cluster_Timestamp' num2str(IndexTime)],'jpg');
 %             print(f14,'-painters','-dpdf','-bestfit','-r600',[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_GraphView_ShortestPath_Overlay_Cluster_Timestamp' num2str(IndexTime) '.pdf']);
-%             
+%
 %         elseif threshold_network=='t'
 %             saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_NetworkView_Currents_Timestamp' num2str(IndexTime)],'jpg');
 %             print(f2,'-painters','-dpdf','-bestfit','-r600',[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_SourceElectrode_' num2str(Explore.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLD_NetworkView_Currents_Timestamp' num2str(IndexTime) '.pdf']);
@@ -479,53 +498,67 @@ Explore.GraphView.NodeIndices=node_indices;
 %         end
 %     end
 % else
-    close all
+close all
 % end
 
 end
 
-function save_explore(Explore,network,network_load,currentPath,simNum,threshold,Sim)
+function save_explore(Explore,network,network_load,currentPath,simNum,threshold,Sim,analysis_type)
 cd(currentPath);
 save_directory='..\Data\Explore Analysis\';
-if strcmp(network_load,'z')%Zdenka Code:
-    save([save_directory 'Zdenka_' num2str(network.number_of_wires) 'nw_Exploration_Analysis_' date],'Explore');
-elseif strcmp(network_load,'a') %adrian code
-    network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
-    save([save_directory 'Adrian_' num2str(network.Name) '_Sim_' num2str(simNum) '_LastSim_SourceElectrode_' num2str(Explore{1}{simNum}.GraphView.ElectrodePosition(1)) '_DrainElectrode_' num2str(Explore{1}{simNum}.GraphView.ElectrodePosition(2)) '_Exploration_Analysis_ Timestamp_' num2str(Explore{1}{simNum}.IndexTime) '_' date],'Explore','threshold','network','Sim','-v7.3');
+network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
+if strcmp(network_load,'a') %adrian code
+    if analysis_type=='e'
+    save([save_directory 'Adrian_' num2str(network.Name) '_Sim_' num2str(simNum) '_Time+Category_Analysis_Timestamp_' num2str(Explore{1}{simNum}.IndexTime) '_' date],'Explore','threshold','network','Sim','analysis_type','-v7.3');
+    else
+    save([save_directory 'Adrian_' num2str(network.Name) '_Sim_' num2str(simNum) '_Time+Memory_Analysis_Timestamp_' num2str(Explore{1}{simNum}.IndexTime) '_' date],'Explore','threshold','network','Sim','analysis_type','-v7.3');
+    end 
+    else
+ if analysis_type=='e'
+    save([save_directory 'Zdenka' num2str(network.Name) '_Sim_' num2str(simNum) '_Time+Category_Analysis_Timestamp_' num2str(Explore{1}{simNum}.IndexTime) '_' date],'Explore','threshold','network','Sim','analysis_type','-v7.3');
+    else
+    save([save_directory 'Zdenka' num2str(network.Name) '_Sim_' num2str(simNum) '_Time+Memory_Analysis_Timestamp_' num2str(Explore{1}{simNum}.IndexTime) '_' date],'Explore','threshold','network','Sim','analysis_type','-v7.3');
+ end
 end
 end
 
 %Graph Functions
 function [Graph, binarise_network]=graph_analysis(network,network_load,currentSim,IndexTime)
 %% Mac's Analysis: (Graph)
-if strcmp(network_load,'z')%Zdenka Code:
-    net_mat=network.adj_matrix; %symmetrical matrix
-elseif strcmp(network_load,'a') %adrian code
-    if isempty(IndexTime)
-        IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(size(currentSim.Data,1)) '\n']); %CHOOSE TIMESTAMP
-    end
-    %this gives a resistance matrix for the network used for a chosen simulation at a specific timestamp
-    binarise_network='y';%input('Do you want to view the network thresholded/binarised ONLY with low Resistance? \n','s');
-    if binarise_network=='y' %Binarise so we can use Resistance for graph theory analysis
-        
-        %what we are doing here is creating a matrix of 0 and 1 (high and
-        %low resistence), so that we can plot ONLY those nodes/edges that
-        %have low resistence and are relevant.
-        %         fprintf('Binarising... \n');
-        a= full(currentSim.Data.Rmat{IndexTime});
-        a(a==5000)=1; %if resistance is low, we make it 1 (on)
-        a(a==5000000)=0;  %if it is high we make it 0 (off)
-        net_mat=a;
-        Graph.binarised='Yes - Using Resistance';
-        %         fprintf('Binarisation Complete \n');
-    else
-        fprintf('Binarising... \n');
-        net_mat=currentSim.SelLayout.AdjMat; %use standard adjacency matrix
-        Graph.binarised='No';
-        %         fprintf('Binarisation Complete \n');
-    end
-    %    net_mat=full(simulations(simNum).Data.AdjMat{IndexTime}); %this gives an adj matrix for the network used for a chosen simulation at a specific timestamp
+if isempty(IndexTime)
+    IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(size(currentSim.Data,1)) '\n']); %CHOOSE TIMESTAMP
 end
+%this gives a resistance matrix for the network used for a chosen simulation at a specific timestamp
+binarise_network='y';%input('Do you want to view the network thresholded/binarised ONLY with low Resistance? \n','s');
+if binarise_network=='y' %Binarise so we can use Resistance for graph theory analysis
+    
+    %what we are doing here is creating a matrix of 0 and 1 (high and
+    %low resistence), so that we can plot ONLY those nodes/edges that
+    %have low resistence and are relevant.
+    %         fprintf('Binarising... \n');
+
+    a= full(currentSim.Data.Rmat{IndexTime});
+        a(isnan(a))=0;
+        if network_load=='a'
+    a(a>0 & a<5000000)=1; %if resistance is low, we make it 1 (on) - need to code it this way because for some reason matlab was showing more than one unique value for each of ON & OFF
+    a(a>5000)=0;  %if it is high we make it 0 (off)
+        else
+    a(a>0 & a<1000000)=1; %if resistance is low, we make it 1 (on)
+    a(a>10000)=0;  %if it is high we make it 0 (off)
+        end 
+
+    net_mat=a;
+    Graph.binarised='Yes - Using Resistance';
+    %         fprintf('Binarisation Complete \n');
+else
+    fprintf('Binarising... \n');
+    net_mat=currentSim.SelLayout.AdjMat; %use standard adjacency matrix
+    Graph.binarised='No';
+    %         fprintf('Binarisation Complete \n');
+end
+
+net_mat(isnan(net_mat))=0;
+%    net_mat=full(simulations(simNum).Data.AdjMat{IndexTime}); %this gives an adj matrix for the network used for a chosen simulation at a specific timestamp
 logicalAdj=logical(net_mat);
 Graph.BinarisedCurrents=currentSim.Data.Currents{IndexTime}(logicalAdj);
 
@@ -632,7 +665,7 @@ Graph.MZ = module_degree_zscore(net_mat,Graph.Ci);
 %Ci from 'community_louvain.m'
 % fprintf('Module Z Score Complete \n');
 
-%Assortativity 
+%Assortativity
 assortativity_bin(net_mat,0);
 %save Adj Matrix
 Graph.AdjMat=net_mat;

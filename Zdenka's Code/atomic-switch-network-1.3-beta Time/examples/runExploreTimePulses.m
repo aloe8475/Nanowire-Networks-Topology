@@ -23,8 +23,8 @@ SimulationOptions{i}.TimeVector = (SimulationOptions{i}.dt:SimulationOptions{i}.
 SimulationOptions{i}.NumberOfIterations = length(SimulationOptions{i}.TimeVector);  
 
 %% Simulation recording options:
-SimulationOptions{i}.ContactMode  = 'farthest';    % 'farthest' \ 'specifiedDistance' \ 'random' (the only one relevant for 'randAdjMat' (no spatial meaning)) \ 'preSet'
-% SimulationOptions{i}.ContactNodes = [73, 51]; % only really required for preSet, other modes will overwrite this
+SimulationOptions{i}.ContactMode  = 'preSet';    % 'farthest' \ 'specifiedDistance' \ 'random' (the only one relevant for 'randAdjMat' (no spatial meaning)) \ 'preSet'
+SimulationOptions{i}.ContactNodes = [87, 27]; % only really required for preSet, other modes will overwrite this
 %SimulationOptions{i}.isSource     = []; %only required for contacts with index >= 3
 
 
@@ -32,7 +32,7 @@ SimulationOptions{i}.ContactMode  = 'farthest';    % 'farthest' \ 'specifiedDist
 Connectivity{i}.WhichMatrix       = 'nanoWires';    % 'nanoWires' \ 'randAdjMat' \ 'lattice'
 switch Connectivity{i}.WhichMatrix
     case 'nanoWires'
-        Connectivity{i}.filename = 'AdriantoZdenka100nw.mat';%'2016-09-08-155153_asn_nw_00100_nj_00261_seed_042_avl_100.00_disp_10.00.mat'; %100nw
+        Connectivity{i}.filename = 'AdriantoZdenka100nw_simulation1.mat';%'2016-09-08-155153_asn_nw_00100_nj_00261_seed_042_avl_100.00_disp_10.00.mat'; %100nw
         Connectivity{i}.DataType = 'Adrian';
         %Connectivity{i}.filename  = '2016-09-08-153543_asn_nw_02048_nj_11469_seed_042_avl_28.00_disp_10.00.mat';
         %Connectivity{i}.filename = '2016-09-08-155044_asn_nw_00700_nj_14533_seed_042_avl_100.00_disp_10.00.mat'; %700nw
@@ -81,7 +81,7 @@ switch Stimulus{i}.BiasType
         Stimulus{i}.AmplitudeMax = 3;    % (Volt)   
         
     case 'AlonPulse'
-        Stimulus{i}.AmplitudeOn  = 1.5;
+        Stimulus{i}.AmplitudeOn  = 3;
         Stimulus{i}.AmplitudeOff = 1e-3;
         Stimulus{i}.Period       = 3; %period of the short pulses
         Stimulus{i}.LongWait     = i*0.05; %Waiting time between the first set and second set of pulses
@@ -136,7 +136,7 @@ SelSims{i}=Convert_Zdenka_to_Adrian(SelSims{i},snapshots{i},SimulationOptions{i}
 fprintf(' \n');
 end
 % Joel Hochstetter 15:52
-save('VariableTime.mat','SelSims','Stimulus','Output');%% Graphics:
+save('VariableTime.mat','SelSims','Stimulus','-v7.3');%% Graphics:
 % if SimulationOptions.takingsnapshots
 %     % What to plot:
 %     whatToPlot = struct(...

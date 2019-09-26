@@ -73,6 +73,8 @@ else
 end
 kk = 1; % Counter
 
+Imat            = cell(1,length(varargin{1}));
+
 %% Solve equation systems for every time step and update:
 for ii = 1 : niterations
     % Show progress:
@@ -133,7 +135,9 @@ for ii = 1 : niterations
         frame.Resistance = compPtr.comp.resistance;
         frame.OnOrOff    = compPtr.comp.OnOrOff;
         frame.filamentState = compPtr.comp.filamentState;
-        frame.Current=frame.Voltage./frame.Resistance;
+        frame.JunctionCurrent=frame.Voltage./frame.Resistance;
+        WireCurrMat = zeros(Connectivity.NumberOfNodes);
+        
         %Convert Zdenka code to Adrian Structure
         %Wire Current
         for currWire=1 : Connectivity.NumberOfNodes
@@ -141,6 +145,7 @@ for ii = 1 : niterations
             % vertex (=wire):
             relevantEdges = find(Connectivity.EdgeList(1,:) == currWire | Connectivity.EdgeList(2,:) == currWire);
             
+            wirePairings=Connectivity.EdgeList(:,relevantEdges);
             % Sort them according to physical location (left-to-right, or
             % if the wire is vertical then bottom-up):
             if Connectivity.WireEnds(currWire,1) ~= Connectivity.WireEnds(currWire,3)
@@ -156,7 +161,8 @@ for ii = 1 : niterations
             % from wires with lower index to wires with higher index,
             % and that in the field EdgeList the upper row always
             % contains lower indices.
-            wireCurrents{currWire} = cumsum(frame.Current(relevantEdges(1:end)).*direction(1:end)');
+            
+            wireCurrents{currWire} = cumsum(frame.JunctionCurrent(relevantEdges(1:end)).*direction(1:end)');
             % The first element in wireCurrents is the current in the
             % section between relevantEdge(1) and relevantEdge(2). We
             % assume that between relevantEdge(1) and the closest wire
@@ -174,8 +180,31 @@ for ii = 1 : niterations
         %Save Wire Currents and Voltages is normal Structure
         SelSims.Data.WireCurrents{kk}=wireCurrents;
         SelSims.Data.WireVoltages{kk}= frame.WireVoltage{kk};
-        snapshots{kk} = frame;
+        snapshots{kk} = frame;        
+        
+        % Find Currents at Each Junction in a Wire x Wire matrix
+        currents = frame.JunctionCurrent;
+        connectivity = Connectivity;
+        NewEdgeList = connectivity.EdgeList;
+        Imat{kk}=zeros(connectivity.NumberOfNodes, connectivity.NumberOfNodes);
+        index = sub2ind(size(Imat{kk}), NewEdgeList(1,:),NewEdgeList(2,:));
+        Imat{kk}(index) = currents;
+        Imat{kk} = Imat{kk} + Imat{kk}.';  
+        SelSims.Data.Currents{kk}=Imat{kk};
+
+        % Find Voltage at Each Junction in a Wire x Wire matrix
+        voltages = frame.Voltage;
+        connectivity = Connectivity;
+        NewEdgeList = connectivity.EdgeList;
+        Vmat{kk}=zeros(connectivity.NumberOfNodes, connectivity.NumberOfNodes);
+        index = sub2ind(size(Vmat{kk}), NewEdgeList(1,:),NewEdgeList(2,:));
+        Vmat{kk}(index) = voltages;
+        Vmat{kk} = Vmat{kk} + Vmat{kk}.';  
+        SelSims.Data.Voltages{kk}=Vmat{kk};
+        %Resistance
+        SelSims.Data.Rmat{kk}=Vmat{kk}./Imat{kk};       
         kk = kk + 1;
+        
     end
 end
 

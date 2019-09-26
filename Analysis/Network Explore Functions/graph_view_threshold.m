@@ -1,7 +1,7 @@
 %% Graph View
 % This function plots graph parameters such as current, voltage and
 % resistance for the chosen Sim at the given timestamp (IndexTime)
-function [f3, f4, f5, G, Adj, Adj2, Explore,  highlightElec, new_electrodes]= graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold, drain_exist,source_exist,node_indices)
+function [f3, f4, f5, G, Adj, Adj2, Explore,  highlightElec, new_electrodes]= graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold, drain_exist,network_load,node_indices)
 if threshold_network~='t'
     return
     fprintf('Error in graph_view_threshold - you should not be seeing this');
@@ -19,7 +19,11 @@ p.NodeLabel={};
 %% Plot Currents
 p.MarkerSize=1.5;
 p.LineWidth=1.5;
+if network_load=='a'
 Adj=(Sim.Data.AdjMat{IndexTime});%we need to keep a copy of the original Adj matrix (unthresholded) to find all the currents - this is the NON BINARISED Adj matrix
+else
+    Adj=Sim.SelLayout.AdjMat;
+end 
 Adj2=Adj(threshold,threshold); %this is a different adj mat (unbinarised) compared to Graph.AdjMat (binarised by resistance)
 if ~drain_exist %if no drains
     currs=log10(abs(Sim.Data.Currents{IndexTime}));
@@ -49,7 +53,11 @@ end
 cc3=cc(logical(cc2));
 
 
+if network_load=='a'
 clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
+else
+    clim=[min(min(Sim.Data.Currents{IndexTime})) max(max(Sim.Data.Currents{IndexTime}))];
+end 
 p.EdgeCData=cc3;
 colormap(currAx,gcurrmap);%gcurrmap
 colorbar(currAx);
@@ -58,11 +66,18 @@ caxis(currAx,clim);
 %Highlight Electrodes:
 node_indices=find(threshold==1); %find nodes with threshold == 1
 count=0;
-for i=1:size(Sim.Electrodes.PosIndex,1)
-    if ~isempty(find(node_indices==Sim.Electrodes.PosIndex(i))) 
+if network_load=='z'
+    ElecPosIndexVec=cell2mat({Sim.Electrodes.PosIndex});
+    ElecNameCell={Sim.Electrodes.Name};
+else
+    ElecPosIndexVec=Sim.Electrodes.PosIndex;
+    ElecNameCell={Sim.Electrodes.Name};
+end 
+for i=1:length(ElecPosIndexVec)
+    if ~isempty(find(node_indices==ElecPosIndexVec(i))) 
         count=count+1;
-        new_electrodes(count).PosIndex=find(node_indices==Sim.Electrodes.PosIndex(i));
-        new_electrodes(count).Name=Sim.Electrodes.Name(i);
+        new_electrodes(count).PosIndex=find(node_indices==ElecPosIndexVec(i));
+        new_electrodes(count).Name=ElecNameCell{i};
         noPath=0;
     else
         noPath=1;
@@ -111,7 +126,7 @@ for k=1:length(j)
 end
 wd3=wd(logical(wd2));
 
-clim=[min([Sim.Settings.Roff Sim.Settings.Ron]) max([Sim.Settings.Roff Sim.Settings.Ron])];
+clim=[min(min([Sim.Settings.Roff Sim.Settings.Ron])) max(max([Sim.Settings.Roff Sim.Settings.Ron]))];
 p1.EdgeCData=wd3;
 colormap(currAx,flipud(gcurrmap));%flipud(gray);
 colorbar(currAx);
@@ -134,27 +149,27 @@ p2.NodeColor='red';
 p2.EdgeColor='black';
 p2.NodeLabel={};
 
-%%Plot Voltage (log10)
-if ~drain_exist %if no drains
-    vlist=log10(Sim.Data.Voltages{IndexTime});
-else
-    vlist=Sim.Data.Voltages{IndexTime};
-end
-p2.NodeCData=full(vlist(threshold));
-p2.MarkerSize=3;
-colormap(currAx,hot);
-colorbar(currAx);
-caxis([Sim.SimInfo.MinV Sim.SimInfo.MaxV]);
-if ~noPath
-labelnode(p2,highlightElec,[new_electrodes(:).Name]);
-end 
-title(['Voltage Graph View |T= ' num2str(IndexTime)]);
+% %%Plot Voltage (log10)
+% if ~drain_exist %if no drains
+%     vlist=log10(Sim.Data.Voltages{IndexTime});
+% else
+%     vlist=Sim.Data.Voltages{IndexTime};
+% end
+% p2.NodeCData=full(vlist(threshold));
+% p2.MarkerSize=3;
+% colormap(currAx,hot);
+% colorbar(currAx);
+% caxis([Sim.SimInfo.MinV Sim.SimInfo.MaxV]);
+% if ~noPath
+% labelnode(p2,highlightElec,[new_electrodes(:).Name]);
+% end 
+% title(['Voltage Graph View |T= ' num2str(IndexTime)]);
 
 Explore.GraphView.currents=Sim.Data.Currents{IndexTime};
 Explore.GraphView.resistance=Sim.Data.Rmat{IndexTime};
 Explore.GraphView.Nodes=G.Nodes;
 Explore.GraphView.Edges=G.Edges;
-Explore.GraphView.ElectrodePosition=Sim.Electrodes.PosIndex;
+Explore.GraphView.ElectrodePosition=ElecPosIndexVec;
 Explore.GraphView.AdjMat=Adj;
 Explore.GraphView.Graph=G;
 end

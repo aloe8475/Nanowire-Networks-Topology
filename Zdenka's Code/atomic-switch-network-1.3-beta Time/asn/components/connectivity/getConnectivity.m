@@ -115,13 +115,8 @@ function [Connectivity] = getConnectivity(Connectivity)
             Connectivity.NumberOfNodes  = number_of_wires;
             Connectivity.weights        = adj_matrix;
             Connectivity.wireDistances  = wire_distances;
-           if strcmp(Connectivity.DataType,'Adrian')
-            Connectivity.VertexPosition = [full(xc),full(yc)];
-            Connectivity.WireEnds       = [full(xa),full(ya),full(xb),full(yb)];
-            else
              Connectivity.WireEnds       = [full(xa);full(ya);full(xb);full(yb)].';
              Connectivity.VertexPosition = [full(xc);full(yc)].';
-            end 
             Connectivity.EdgePosition   = [xi;yi].';
 
     %---------------------------------------------------------------------%  

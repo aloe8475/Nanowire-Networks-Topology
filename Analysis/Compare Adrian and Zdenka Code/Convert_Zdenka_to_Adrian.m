@@ -4,7 +4,7 @@ function SelSims=Convert_Zdenka_to_Adrian(SelSims,snapshots,SimulationOptions,Co
 for i = 1:length(snapshots)
     SelSims.Time= snapshots{i}.Timestamp;
     SelSims.Data.JunctionRmat{i}=snapshots{i}.Resistance;
-    SelSims.Data.JunctionCurrents{i}=snapshots{i}.Current;
+    SelSims.Data.JunctionCurrents{i}=snapshots{i}.JunctionCurrent;
     SelSims.Data.JunctionVoltage{i}=snapshots{i}.Voltage;
 end
 
@@ -22,8 +22,8 @@ for j = 1:length(SelSims.Data.WireVoltages) %for each timestep
     end
     SelSims.Data.VSource1(j)=SelSims.Data.WireVoltages{j}(SelSims.Electrodes(1).PosIndex);
     SelSims.Data.VDrain1(j)=SelSims.Data.WireVoltages{j}(SelSims.Electrodes(2).PosIndex);
-    SelSims.Data.ISource1(j)=SelSims.Data.WireCurrents{j}{SelSims.Electrodes(1).PosIndex};
-    SelSims.Data.IDrain1(j)=SelSims.Data.WireCurrents{j}{SelSims.Electrodes(2).PosIndex};
+    SelSims.Data.ISource1{j}=SelSims.Data.WireCurrents{j}{SelSims.Electrodes(1).PosIndex};
+    SelSims.Data.IDrain1{j}=SelSims.Data.WireCurrents{j}{SelSims.Electrodes(2).PosIndex};
 end
 
 %Adj Matrix & Wire Positions
@@ -34,8 +34,23 @@ xa=Connectivity.WireEnds(:,1);
 ya=Connectivity.WireEnds(:,2);
 xb=Connectivity.WireEnds(:,3);
 yb=Connectivity.WireEnds(:,4);
-xc=Connectivity.VertexPosition(:,1);
-yc=Connectivity.VertexPosition(:,2);
+        
+        x = Connectivity.EdgePosition(:,1);
+        connectivity = Connectivity;
+        NewEdgeList = connectivity.EdgeList;
+        temp=zeros(connectivity.NumberOfNodes, connectivity.NumberOfNodes);
+        index = sub2ind(size(temp), NewEdgeList(1,:),NewEdgeList(2,:));
+        temp(index) = x;
+        temp = temp + temp.';  
+        xc=temp;
+        
+        y = Connectivity.EdgePosition(:,2);
+        tempy=zeros(connectivity.NumberOfNodes, connectivity.NumberOfNodes);
+        index = sub2ind(size(tempy), NewEdgeList(1,:),NewEdgeList(2,:));
+        tempy(index) = x;
+        tempy = tempy + tempy.';  
+        yc=tempy;
+
 xi=Connectivity.EdgePosition(1,:);
 yi=Connectivity.EdgePosition(2,:);
 SelSims.SelLayout.X1=sparse(xa);

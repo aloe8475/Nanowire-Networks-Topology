@@ -1,4 +1,4 @@
-function absoluteVoltage = getAbsoluteVoltage(snapshot, connectivity, contact)
+function absoluteVoltage = getAbsoluteVoltage(snapshot, connectivity, contact,network_load)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Calculates the absolute voltage on wires by integrating the voltage drops
 % along paths that start from the grounded wire (contact(2)).

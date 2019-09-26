@@ -1,0 +1,33 @@
+# Ignore tex auxiliary files
+*.log
+*.spl
+*.bbl
+*.aux
+*.blg
+
+# Ignore matlab temp files, workspace files, figures and movies
+*.asv
+*.mat
+*.avi
+*.fig
+*.m~
+*.swp
+*.zip
+
+# Ignore presentations
+*.ppsx
+*.odp
+
+# Ignore python temp files
+*.pyc
+
+# Ignore python binary files
+*.npy
+*.npz
+*.pkl
+
+# Ignore output of pbs
+*.o*
+
+# Ignore data folder
+data/

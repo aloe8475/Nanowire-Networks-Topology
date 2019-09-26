@@ -188,6 +188,7 @@ function snapshotFigure = snapshotToFigure(snapshot, contacts, connectivity, wha
             % positive cosine value, and vise versa.
    
         % Wire by wire:
+                
         for currWire=1 : connectivity.NumberOfNodes            
             % Find the indices of edges (=intersections) relevant for this
             % vertex (=wire):
