@@ -3,7 +3,7 @@
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2'
-        dataPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
+        dataPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Adrian Only';
     case ''
         dataPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks/Simulations Only';
     case 'LAPTOP-S1BV3HR7'

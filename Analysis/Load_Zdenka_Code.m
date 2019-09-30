@@ -7,7 +7,8 @@ function [network, sim_loaded, explore_network, numNetworks] = Load_Zdenka_Code(
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2'
-        dataPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Zdenka''s Code\atomic-switch-network-1.3-beta Time\examples';
+        dataPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Networks\Zdenka Networks';
+        simPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka';
     case ''
         dataPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks';
     case 'LAPTOP-S1BV3HR7'
@@ -128,6 +129,7 @@ if sims_load=='y'
             clear SelSims
         end
     else
+        cd(simPath)
         waitfor(msgbox('Select the Simulation saved data'))
         [FileName,PathName] = uigetfile('*.mat','Select the Simulation saved data');
         f_explore=fullfile(PathName,FileName);

@@ -99,7 +99,7 @@ else %if we're not looping
     else
         currentSim=network(networkNum).Simulations{simNum};
     end
-    fprintf(['Simulation: ' network(networkNum).Name currentSim.Name ' selected \n\n\n']);
+    fprintf(['Simulation: ' network(networkNum).Name  ' selected \n\n\n']); %currentSim.Name
     
     
     %% No Looping through networks
@@ -184,47 +184,60 @@ function [network, network_load, simulations, sim_loaded, numNetworks, explore_n
 
 %% Load Data
 %Ask to load Zdenka or Adrian:
-network_load='a';%lower(input('Which Network do you want to analyse? Z - Zdenka, A - Adrian \n','s'));
+network_load=lower(input('Which Network do you want to analyse? Z - Zdenka, A - Adrian \n','s'));
+
 if ~loop
-    % if strcmp(network_load,'a')
-    %Get current network - Adrian
-    [network,sim_loaded, explore_network, numNetworks]=Load_Adrian_Code();
-    %unpack simulation data into simulation variable
-    if sim_loaded==1
-        if explore_network=='t' %if we have training and testing simulations
-            tempSim=network.Simulations{2};
-            %         tempSim=num2cell(tempSim);
-            %         network.Simulations(2) = [];
-            %         network.Simulations=[network.Simulations tempSim];
-            
-            %number of training + number of testing:
-            
-            fprintf(['Your Training Simulations are Simulations 1 - ' num2str(network.numTrainingSims) '\n']);
-            fprintf(['Your Testing Simulations are Simulations ' num2str(network.numTrainingSims +1) ' - ' num2str(network.numTestingSims) '\n']);
-            
-            fprintf('\n -------------------------- \nStart Analysis: \n');
-            
+    if strcmp(network_load,'a')
+        
+        % if strcmp(network_load,'a')
+        %Get current network - Adrian
+        [network,sim_loaded, explore_network, numNetworks]=Load_Adrian_Code();
+        %unpack simulation data into simulation variable
+        if sim_loaded==1
+            if explore_network=='t' %if we have training and testing simulations
+                tempSim=network.Simulations{2};
+                %         tempSim=num2cell(tempSim);
+                %         network.Simulations(2) = [];
+                %         network.Simulations=[network.Simulations tempSim];
+                
+                %number of training + number of testing:
+                
+                fprintf(['Your Training Simulations are Simulations 1 - ' num2str(network.numTrainingSims) '\n']);
+                fprintf(['Your Testing Simulations are Simulations ' num2str(network.numTrainingSims +1) ' - ' num2str(network.numTestingSims) '\n']);
+                
+                fprintf('\n -------------------------- \nStart Analysis: \n');
+                
+            end
+            for i = 1:length(network.Simulations)
+                simulations(i)=network.Simulations(i);
+            end
+        else
+            simulations=network.Simulations;
         end
-        for i = 1:length(network.Simulations)
-            simulations(i)=network.Simulations(i);
-        end
-    else
+        cd(currentPath);
+        % elseif strcmp(network_load,'z')
+        %Get network - Zdenka:
+        % D:\alon_\Research\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
+        %     network=Load_Zdenka_Code();
+        %     cd(currentPath);
+        % end
+        
+    elseif strcmp(network_load,'z')
+        % Get network - Zdenka:
+        % D:\alon_\Research\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
+        [network,sim_loaded, explore_network, numNetworks]=Load_Zdenka_Code();
         simulations=network.Simulations;
+        cd(currentPath);
+        % end
     end
-    cd(currentPath);
-    % elseif strcmp(network_load,'z')
-    %Get network - Zdenka:
-    % D:\alon_\Research\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
-    %     network=Load_Zdenka_Code();
-    %     cd(currentPath);
-    % end
+    
 else
     % Load all data from specified folder:
     currMultiNet=input('Which size Network would you like to load iterations from? 100, 500, 1000 or 2000? \n');
     computer=getenv('computername');
     switch computer
         case 'W4PT80T2'
-            dataPath=['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\' num2str(currMultiNet) 'nw Alternate NWs\'];
+            dataPath=['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Networks\Adrian Networks\' num2str(currMultiNet) 'nw Alternate NWs\'];
         case ''
             dataPath=['/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks/' num2str(currMultiNet) 'nw Alternate NWs/'];
         case 'LAPTOP-S1BV3HR7'
@@ -237,13 +250,19 @@ else
         thisfile = dinfo(K).name;
         destfile = fullfile(dataPath, thisfile);
         temp = load(thisfile); %load file into network variable
-        network(K)=temp.SelNet;
+        if strcmp(network_load,'a') %if adrian's data structure
+            network(K)=temp.SelNet;
+        elseif strcmp(network_load,'z') %if zdenka's data structure
+            network(K)=temp;
+        end
         simulations(K)=network(K).Simulations;
+        clear temp
     end
     numNetworks=length(network); %number of networks
     sim_loaded=1; %yes we are loading simulations
     explore_network='e'; %explore
 end
+
 
 end
 function [LDA_Analysis] = load_LDA_data(currentPath)
@@ -399,53 +418,19 @@ function Explore = explore_simulation(Sim,network,network_load,simNum,currentPat
 % Full Graph = all degrees, all resistences
 
 [NodeList.String,NodeList.UserData]=GetNodeList(Sim);
-NodeList.Value=1:height(Sim.Electrodes);
+NodeList.Value=1:length([Sim.Electrodes.PosIndex]);
 
 %% Timeseries View
 %Plot Current
 f=figure;
-drainIndex=find(contains(Sim.Electrodes.Name,'Drain'));
+drainIndex=find(contains(NodeList.String,'Drain'));
 if isempty(drainIndex)
     drain_exist=0;
 end
-sourceIndex=find(contains(Sim.Electrodes.Name,'Source'));
+sourceIndex=find(contains(NodeList.String,'Source'));
 for i = 1:length(sourceIndex)
-    source(:,i)=full(Sim.Data.(['ISource' num2str(i)]));
-end
-for i = 1:length(drainIndex)
-    if ismember(['IDrain' num2str(i)], fieldnames(Sim.Data))
-        drain(:,i)=full(Sim.Data.(['IDrain' num2str(i)]));
-        drain_exist=1;
-    end
-end
-if drain_exist
-    subplot(1,2,1)
-    plot(source)
-    title('Source')
-    xlabel('Timestamp (0.01sec)')
-    ylabel('Current (A)');
-    subplot(1,2,2)
-    plot(drain)
-    title('Drain');
-    xlabel('Timestamp (0.01sec)')
-    ylabel('Current (A)');
-else
-    plot(source)
-    title('Source')
-    xlabel('Timestamp (0.01sec)')
-    ylabel('Current (A)');
-end
-
-%Plot conductance
-f1=figure;
-drainIndex=find(contains(Sim.Electrodes.Name,'Drain'));
-if isempty(drainIndex)
-    drain_exist=0;
-end
-sourceIndex=find(contains(Sim.Electrodes.Name,'Source'));
-for i = 1:length(sourceIndex)
-    source(:,i)=full(Sim.Data.(['ISource' num2str(i)]));
-    sourceV(:,i)=full(Sim.Data.(['VSource' num2str(i)]));
+        source(:,i)=full(Sim.Data.(['ISource' num2str(i)]));
+        sourceV(:,i)=full(Sim.Data.(['VSource' num2str(i)]));
 end
 for i = 1:length(drainIndex)
     if ismember(['IDrain' num2str(i)], fieldnames(Sim.Data))
@@ -454,13 +439,33 @@ for i = 1:length(drainIndex)
         drain_exist=1;
     end
 end
-plot(source./sourceV)
+if drain_exist
+    subplot(1,2,1)
+    plot(-source)
+    title('Source')
+    xlabel('Timestamp (0.01sec)')
+    ylabel('Current (A)');
+    subplot(1,2,2)
+    plot(-drain)
+    title('Drain');
+    xlabel('Timestamp (0.01sec)')
+    ylabel('Current (A)');
+else
+    plot(-source)
+    title('Source')
+    xlabel('Timestamp (0.01sec)')
+    ylabel('Current (A)');
+end
+
+%Plot conductance
+f1=figure;
+plot(-source./sourceV)
 title('Source')
 xlabel('Timestamp (0.01sec)')
 ylabel('Conductance');
 
 %Choose a time to Explore Simulation:
-IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(size(Sim.Data,1)) '\n']); %CHOOSE TIMESTAMP
+IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(length(Sim.Time)) '\n']); %CHOOSE TIMESTAMP
 
 %% Network View
 % Function that plots network view of current and resistance

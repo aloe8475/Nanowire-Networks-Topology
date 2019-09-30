@@ -22,77 +22,30 @@ or,
 """    
 
 import wires
-import argparse
+
+nwires = 995
+centroid_dispersion = 700
+mean_length = 100.0
+std_length = 10.0
+seed = 42
+Lx   = 3000
+Ly   = 3000
+
+plot_network = 0
 
 import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
 
-# Create parser for options
-parser = argparse.ArgumentParser(
-    description='Handle parameters to generate a network of nanowires and junctions.')
-
-parser.add_argument('--nwires',
-    type    = int,
-    default = 16384,
-    help    = 'The number of nanowires in the network.')
-
-parser.add_argument('--mean_length', 
-    type    = float, 
-    default = 15.0,
-    help    = 'The mean length of the nanowires. Passed to the gamma distribution.')
-
-parser.add_argument('--std_length', 
-    type    = float, 
-    default = 20.0,
-    help    = 'The standard deviation of nanowires length. Passed to the gamma distribution.')
-
-parser.add_argument('--seed',
-    type    = int, 
-    default = 42,
-    help    ='The seed for the random number generator.')
-
-parser.add_argument('--Lx',
-    dest    = 'Lx', 
-    type    = float, 
-    default = 3e3,
-    help    ='The horizontal length of the network''s physical substrate in micrometres.')
-
-parser.add_argument('--Ly',
-    type    = float,
-    default = 3e3,
-    help    ='The vertical length of the network''s physical substrate in micrometres.')
-
-parser.add_argument('--filename', 
-    type    = str, 
-    default = None,
-    help    ='The name of the mat and pkl files where the output dictionary will be stored.')
-
-parser.add_argument('--plot', 
-    dest    = 'plot_network', 
-    action  = 'store_true',
-    default = False, 
-    help    = 'Flag to plot the figure.')
-
-parser.add_argument('--no-plot', 
-    dest    = 'plot_network', 
-    action  = 'store_false',
-    default = False,
-    help    = 'Flag to not plot the figure (default).')
-
-parser.set_defaults(plot_network=False)
-
-args = parser.parse_args()
-
 
 # Generate the network
-wires_dict = wires.generate_wires_distribution(number_of_wires = args.nwires,
-                                         wire_av_length = args.mean_length,
-                                         wire_dispersion = args.std_length,
+wires_dict = wires.generate_wires_distribution(number_of_wires = nwires,
+                                         wire_av_length = mean_length,
+                                         wire_dispersion = std_length,
                                          gennorm_shape = 3,
-                                         centroid_dispersion=700.0,
-                                         this_seed = args.seed,
-                                         Lx = args.Lx,
-                                         Ly = args.Ly)
+                                         centroid_dispersion=centroid_dispersion,
+                                         this_seed = seed,
+                                         Lx = Lx,
+                                         Ly = Ly)
 
 # Get junctions list and their positions
 wires.detect_junctions(wires_dict)
@@ -107,7 +60,7 @@ if not wires.check_connectedness(wires_dict):
     logging.info("The graph is connected. Will save it to mat file.")
     wires.export_to_matlab(wires_dict)
 
-if args.plot_network:
+if plot_network:
  
     # Plotting tools
     from matplotlib.lines import Line2D

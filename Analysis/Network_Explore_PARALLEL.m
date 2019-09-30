@@ -204,7 +204,7 @@ else
     computer=getenv('computername');
     switch computer
         case 'W4PT80T2'
-            dataPath=['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\' num2str(currMultiNet) 'nw Alternate NWs\'];
+            dataPath=['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Networks\Adrian Networks\' num2str(currMultiNet) 'nw Alternate NWs\'];
         case ''
             dataPath=['/headnode2/aloe8475/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks/' num2str(currMultiNet) 'nw Alternate NWs/'];
         case 'LAPTOP-S1BV3HR7'

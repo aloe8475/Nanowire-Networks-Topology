@@ -20,8 +20,10 @@ global M;global t;
 %             Stimulus.Signal =ap.*Stimulus.Amplitude*mackeyglass(sum(size(Stimulus.TimeAxis))-1,0,0.2,0.1,10)-b;
 % Stimulus.Signal = ap.*ones(size(Stimulus.TimeAxis));
 %  Stimulus.Signal(Stimulus.TimeAxis > c)=b*ones(size(Stimulus.TimeAxis(Stimulus.TimeAxis > c)));
-T = dlmread('Dow_Jones_Percentage_Change.csv');          
-Stimulus.Signal=T;
+T=dlmread('C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Classification\Time Serieis\Dow_Jones_Percentage_Change.csv');
+    for i=1:length(Stimulus.TimeAxis)
+          Stimulus.Signal(i) =T(i);
+    end
         case 'AC'
 
             Stimulus.Signal=2*(ap.*mackeyglass(length(Stimulus.TimeAxis)-1+1000,17))+1;Stimulus.Signal=Stimulus.Signal(1001:end);

@@ -13,6 +13,7 @@ y1=diag(Layout.Y1);
 y2=diag(Layout.Y2);
 X=full([x1' ; x2']); % X = Wires 'x' value
 Y=full([y1' ; y2']); % Y = Wires 'y' value
+
 [~,~,Cx]=find(Layout.CX); %CX = Junctions 'x' value
 [~,~,Cy]=find(Layout.CY); % CY = Junctions 'y' value
 Adj=triu(Layout.AdjMat); % Adjacency matrix

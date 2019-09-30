@@ -1,4 +1,4 @@
-function [time,out]=getELECTRODES(handles,Settings,Network,elec)
+function [time,out]=getELECTRODES(handles,Settings,Network,varargin)
 
 
 
@@ -32,47 +32,16 @@ end
 % suppress stupid warning message of matlab tables
 warning off MATLAB:table:RowsAddedExistingVars
 
-%% Choosing electrode positions without GUI
-
-
-% Get first electrode position
-AxHandle=gca;
-for i=1:numEl
-    if isequal(handles.ResElCheck.Value,0)
-        if i>numEl
-            break;
-        end
-        x1=elec(i).x;
-        y1=elec(i).y;
-        y_lim=get(AxHandle,'YLim');
-        x_lim=get(AxHandle,'XLim');
-        hl1=line([x1 x1],[y_lim(1) y_lim(2)],'Color','r');
-        hl11=line([x_lim(1) x_lim(2)],[y1 y1],'Color','r');
-        ParEl=GetNodeIndex(Network.LayOut,x1,y1);
-        electrodes.IndexNanowire(i)=ParEl.IndexNanowire;
-        electrodes.IndexNodes(i)=ParEl.IndexNodes;
-        electrodes.PosX(i)=ParEl.PosX;
-        electrodes.PosY(i)=ParEl.PosY;
-        cid=cellfun(@(c) find(c==ParEl.IndexNanowire),Network.Domains,...
-            'UniformOutput',false);
-        electrodes.DomIndex(i)=find(~cellfun(@isempty,cid));
-        electrodes.PosIndex(i)=cid{~cellfun(@isempty,cid)};
-        electrodes.Name{i}=elinfo{i}.Name;
-        hold on
-        scatter(electrodes.PosX(i),electrodes.PosY(i),100,'k','s');
-    end
-    [time,electrodes.Value{i},electrodes.OpenFlag{i}]=SignalGenerator(elinfo{i});
-end
-
+% %% Choosing electrode positions without GUI
+% % Get first electrode position
 % AxHandle=gca;
 % for i=1:numEl
 %     if isequal(handles.ResElCheck.Value,0)
 %         if i>numEl
 %             break;
 %         end
-%         strinfo=elinfo{i}.Name;strinfo=strcat('Place_',strinfo,' electrode.');
-%         uiwait(msgbox(strinfo));
-%         [x1,y1]=ginput(1);
+%         x1=elec(i).x;
+%         y1=elec(i).y;
 %         y_lim=get(AxHandle,'YLim');
 %         x_lim=get(AxHandle,'XLim');
 %         hl1=line([x1 x1],[y_lim(1) y_lim(2)],'Color','r');
@@ -92,7 +61,36 @@ end
 %     end
 %     [time,electrodes.Value{i},electrodes.OpenFlag{i}]=SignalGenerator(elinfo{i});
 % end
-%Get second electrode position
+
+% CHOOSING ELECTRODES WITH GUI
+AxHandle=gca;
+for i=1:numEl
+    if isequal(handles.ResElCheck.Value,0)
+        if i>numEl
+            break;
+        end
+        strinfo=elinfo{i}.Name;strinfo=strcat('Place_',strinfo,' electrode.');
+        uiwait(msgbox(strinfo));
+        [x1,y1]=ginput(1);
+        y_lim=get(AxHandle,'YLim');
+        x_lim=get(AxHandle,'XLim');
+        hl1=line([x1 x1],[y_lim(1) y_lim(2)],'Color','r');
+        hl11=line([x_lim(1) x_lim(2)],[y1 y1],'Color','r');
+        ParEl=GetNodeIndex(Network.LayOut,x1,y1);
+        electrodes.IndexNanowire(i)=ParEl.IndexNanowire;
+        electrodes.IndexNodes(i)=ParEl.IndexNodes;
+        electrodes.PosX(i)=ParEl.PosX;
+        electrodes.PosY(i)=ParEl.PosY;
+        cid=cellfun(@(c) find(c==ParEl.IndexNanowire),Network.Domains,...
+            'UniformOutput',false);
+        electrodes.DomIndex(i)=find(~cellfun(@isempty,cid));
+        electrodes.PosIndex(i)=cid{~cellfun(@isempty,cid)};
+        electrodes.Name{i}=elinfo{i}.Name;
+        hold on
+        scatter(electrodes.PosX(i),electrodes.PosY(i),100,'k','s');
+    end
+    [time,electrodes.Value{i},electrodes.OpenFlag{i}]=SignalGenerator(elinfo{i});
+end
 
 
 if ~isequal(length(unique(electrodes.DomIndex)),1)

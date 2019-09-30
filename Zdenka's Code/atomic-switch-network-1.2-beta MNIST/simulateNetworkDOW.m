@@ -1,5 +1,7 @@
-function [OutputDynamics, SimulationOptions, snapshots,testcurrent,testconduct] = simulateNetwork(Equations, Components, Stimulus, SimulationOptions, varargin)
+function [OutputDynamics, SimulationOptions, snapshots] = simulateNetworkDOW(Equations,Connectivity, Components, Stimulus, SimulationOptions, varargin)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Customized version for Joel by Ruomin.
+% Using the nodal analysis method to solve for voltage.
 % Simulates the network and finds the resistance between the two contacts
 % as a function of time.
 %
@@ -46,18 +48,26 @@ function [OutputDynamics, SimulationOptions, snapshots,testcurrent,testconduct] 
 % Authors:
 % Ido Marcus
 % Paula Sanz-Leon
+% Ruomin Zhu
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    
     %% Initialize:
-    compPtr       = ComponentsPtr(Components);        % using this matlab-style pointer to pass the Components structure by reference
-    niterations   = SimulationOptions.NumberOfIterations; 
-    testerVoltage = zeros(niterations, 1);                      % memory allocation for the voltage on the tester resistor as function of time
-    RHSZeros      = zeros(Equations.NumberOfEdges,1); % the first E entries in the RHS vector.
-    
-    %% Use sparse matrices:
-    Equations.KCLCoeff = sparse(Equations.KCLCoeff);
-    Equations.KVLCoeff = sparse(Equations.KVLCoeff);
-    RHSZeros           = sparse(RHSZeros);
+    global testcurrent;global c;global t;
+    compPtr         = ComponentsPtr(Components);        % using this matlab-style pointer to pass the Components structure by reference
+    niterations     = SimulationOptions.NumberOfIterations; 
+    contactNodes    = SimulationOptions.ContactNodes;
+    E               = Connectivity.NumberOfEdges;
+    V               = Connectivity.NumberOfNodes;
+    edgeList        = Connectivity.EdgeList.';
+    RHS             = zeros(V+length(contactNodes),1); 
+        RHSZeros      = zeros(Equations.NumberOfEdges,1); % the first E entries in the RHS vector.
+    testcurrent=[];
+    %% Output stuff
+    wireVoltage        = zeros(niterations, V);
+    networkCurrent     = zeros(niterations, 1);
+    junctionVoltage    = zeros(niterations, E);
+    junctionResistance = zeros(niterations, E);
+    junctionFilament   = zeros(niterations, E);
     
     %% If snapshots are requested, allocate memory for them:
     if ~isempty(varargin)
@@ -78,21 +88,54 @@ function [OutputDynamics, SimulationOptions, snapshots,testcurrent,testconduct] 
         % Update resistance values:
         updateComponentResistance(compPtr); 
         
+        componentConductance = 1./compPtr.comp.resistance(1:E);
         % Get LHS (matrix) and RHS (vector) of equation:
+        Gmat = zeros(V,V);
+        
+        % This line can be written in a more efficient vetorized way.
+        % Something like:
+        % Gmat(edgeList(:,1),edgeList(:,2)) = componentConductance;
+        % Gmat(edgeList(:,2),edgeList(:,1)) = componentConductance;
+        
+        for i = 1:E
+            Gmat(edgeList(i,1),edgeList(i,2)) = componentConductance(i);
+            Gmat(edgeList(i,2),edgeList(i,1)) = componentConductance(i);
+        end
+        
+        Gmat         = diag(sum(Gmat, 1)) - Gmat;
+        LHS          = zeros(V+length(contactNodes), V+length(contactNodes));
+        LHS(1:V,1:V) = Gmat;
+        
+         % Get LHS (matrix) and RHS (vector) of equation:
         LHS = [Equations.KCLCoeff ./ compPtr.comp.resistance(:,ones(Equations.NumberOfNodes-1,1)).' ; ...
                Equations.KVLCoeff];
         RHS = [RHSZeros ; Stimulus.Signal(ii)];
-        
+
         % Solve equation:
-        compPtr.comp.voltage = LHS\RHS;
+           testsol=LHS\RHS;
+            testcurrent=[testcurrent,testsol];
+%             lhs=ihs1;
+        lhs = sparse(LHS);
+        rhs = sparse(RHS);
+        sol = lhs\rhs;
+        if ii==1
+            ihs1=lhs;
+        end
+       
+
+        tempWireV = sol(1:V);
+        compPtr.comp.voltage(1:E) = tempWireV(edgeList(:,1)) - tempWireV(edgeList(:,2));
                 
         % Update element fields:
         updateComponentState(compPtr, Stimulus.dt);    % ZK: changed to allow retrieval of local values
         %[lambda_vals(ii,:), voltage_vals(ii,:)] = updateComponentState(compPtr, Stimulus.dt);
         
-        % Record tester voltage:
-        testerVoltage(ii) = compPtr.comp.voltage(end);
-        
+        wireVoltage(ii,:)        = sol(1:V);
+        networkCurrent(ii)       = sol(end);
+        junctionVoltage(ii,:)    = compPtr.comp.voltage(1:E);
+        junctionResistance(ii,:) = compPtr.comp.resistance(1:E);
+        junctionFilament(ii,:)   = compPtr.comp.filamentState(1:E);
+       
         % Record the activity of the whole network
         if find(snapshots_idx == ii) 
                 frame.Timestamp  = SimulationOptions.TimeVector(ii);
@@ -109,12 +152,18 @@ function [OutputDynamics, SimulationOptions, snapshots,testcurrent,testconduct] 
     SimulationOptions.SnapshotsIdx = snapshots_idx; % Save these to access the right time from .TimeVector.
 
     % Calculate network resistance and save:
-    OutputDynamics.testerVoltage     = testerVoltage;
-    OutputDynamics.networkCurrent    = testerVoltage ./ compPtr.comp.resistance(end);
-    testcurrent=OutputDynamics.networkCurrent;
-    OutputDynamics.networkResistance = (Stimulus.Signal ./ testerVoltage - 1).*compPtr.comp.resistance(end);
-    testconduct=1./OutputDynamics.networkResistance;
-    % ZK: also for local values:
+    
+    OutputDynamics.networkCurrent     = networkCurrent;
+    OutputDynamics.wireVoltage        = wireVoltage;
+    OutputDynamics.junctionVoltage    = junctionVoltage;
+    OutputDynamics.junctionResistance = junctionResistance;
+    OutputDynamics.junctionFilament   = junctionFilament;
+    
+    
+%     OutputDynamics.testerVoltage     = testerVoltage;
+%     OutputDynamics.networkCurrent    = testerVoltage ./ compPtr.comp.resistance(end);
+%     OutputDynamics.networkResistance = (Stimulus.Signal ./ testerVoltage - 1).*compPtr.comp.resistance(end);
+   % ZK: also for local values:
     %OutputDynamics.lambda = lambda_vals;
     %OutputDynamics.storevoltage = voltage_vals;
     

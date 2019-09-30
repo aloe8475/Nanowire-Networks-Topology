@@ -186,17 +186,16 @@ end
 NewSim.Settings=handles.SimulationSettings;
 
 %Get Electrodes with GUI
-
+GUI=1;
+if GUI
 [NewSim.Time,NewSim.Electrodes]=getELECTRODES(handles,NewSim.Settings,Network);
 if isempty(NewSim.Electrodes)
     guidata(hObject,handles);
     return;
 end
 
-NewSim.SelDomain=Network.Domains{NewSim.Electrodes.DomIndex(1)};
-NewSim.SelLayout=GetSelectedLayout(Network,NewSim.SelDomain);
-% 
 % % Get electrodes without GUI: %Alon 05/08/19
+%GUI=0;
 % elinfo=NewSim.Settings.ElectrodesInfo;
 % numEl=length(elinfo);
 % AxHandle=gca;
@@ -214,6 +213,7 @@ NewSim.SelLayout=GetSelectedLayout(Network,NewSim.SelDomain);
 % Alon + Mike - 29/08/2019
 
 %% ELECTRODES
+else
 for j = 1:numEl
     elec(1).x=3;
     elec(1).y=12;
@@ -224,6 +224,7 @@ for j = 1:numEl
 end
 
 [NewSim.Time,NewSim.Electrodes]=getELECTRODES(handles,NewSim.Settings,Network,elec);
+end 
 if isempty(NewSim.Electrodes)
     guidata(hObject,handles);
     return;
@@ -456,7 +457,7 @@ function OpenButton_Callback(hObject, eventdata, handles)
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2'
-        currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
+        currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Networks\Adrian Networks';
     case ''
         currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks';
     case 'LAPTOP-S1BV3HR7'
@@ -494,7 +495,7 @@ function handles = OpenButton_SimsCallback(hObject, eventdata, handles)
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2'
-        currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
+        currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Adrian Only';
     case ''
         currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks/Simulations Only';
     case 'LAPTOP-S1BV3HR7'
@@ -548,7 +549,7 @@ function SaveButton_SimsCallback(hObject, eventdata, handles)
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2'
-        currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only';
+        currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Adrian Only';
     case ''
         currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks/Simulations Only';
     case 'LAPTOP-S1BV3HR7'
@@ -594,7 +595,7 @@ Name=strcat(Name,'.mat');
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2'
-        currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks';
+        currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Networks\Adrian Networks';
     case ''
         currentPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks';
     case 'LAPTOP-S1BV3HR7'

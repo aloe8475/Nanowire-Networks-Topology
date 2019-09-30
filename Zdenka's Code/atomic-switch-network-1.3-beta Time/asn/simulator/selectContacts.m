@@ -48,6 +48,7 @@ function SimulationOptions = selectContacts(Connectivity, SimulationOptions)
             % Choosing the two wires that are furthest away from each other:
             [contA,contB] = ind2sub(size(Connectivity.wireDistances),find(Connectivity.wireDistances(:) == max(Connectivity.wireDistances(:)),1));
             SimulationOptions.ContactNodes = [contA,contB];
+            SimulationOptions.electrodes = [contA,contB];
         
         case 'specifiedDistance'           
             % Choosing two wires that are about biProbeDistance um apart

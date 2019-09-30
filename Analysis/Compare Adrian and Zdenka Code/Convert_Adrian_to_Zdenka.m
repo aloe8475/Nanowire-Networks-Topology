@@ -4,9 +4,15 @@ clear all
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2' %if on desktop at uni - Alon
-                Sim='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only\Explore\100nw_03_25_2019 - size 20 length6 disp0\Net_Sx_20_NoW100_03_25-2019_11_23_38_Zdenka_10_Square_1SimsOnly_5_Sec_2Electrodes_Vmax_15_10-Sep-2019.mat'%'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Simulations Only\Explore\100nw_03_25_2019 - size 20 length6 disp0\Subgraph Communicability\Net_Sx_20_NoW100_03_25-2019_11_23_38_Zdenka_Square_9SimsOnly_4_Sec_2Electrodes_Vmax_0.75_24-Jul-2019.mat';
-                Net='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Net_Sx_20_NoW100_03_25-2019_11_23_38_.mat';
-     
+        loadPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Networks\Adrian Networks';        
+        cd(loadPath)
+        waitfor(msgbox('Select the Network saved data'));
+        [FileName,PathName] = uigetfile('*.mat','Select the Network saved data');
+        count=1;
+        f{count}=fullfile(PathName,FileName);
+        load(f{count});
+        SelSims=SelNet.Simulations;
+        
     case '' %if on linux
         currentPath='/suphys/aloe8475/Documents/CODE/Analysis';
     case 'LAPTOP-S1BV3HR7'
@@ -14,9 +20,6 @@ switch computer
         Net='D:\alon_\Research\PhD\CODE\Adrian''s Code\NETWORK_sims_2\Saved Networks\Net_Sx_20_NoW100_03_25-2019_11_23_38_.mat';
         %case '' %--- Add other computer paths (e.g. Mike)
 end
-
-load(Sim);
-load(Net)
 
 currSim=input('Which Simulation do you want to convert? \n?');
 
@@ -77,39 +80,39 @@ yi=yi(yi~=0)';
 length_x=15;
 length_y=15;
 %%
-save(['AdriantoZdenka100nw_simulation' num2str(currSim) '.mat']);
+save(['AdriantoZdenka' num2str(number_of_wires) 'nw_simulation' num2str(currSim) '.mat']);
 
 %%
-Connectivity.WhichMatrix       = 'nanoWires';    % 'nanoWires' \ 'randAdjMat'
-Connectivity.filename=['AdriantoZdenka100nw_simulation' num2str(currSim) '.mat'];
-Connectivity=getConnectivity(Connectivity);
-
-Connectivity2.WhichMatrix       = 'nanoWires';    % 'nanoWires' \ 'randAdjMat'
-Connectivity2.filename='2016-09-08-155153_asn_nw_00100_nj_00261_seed_042_avl_100.00_disp_10.00.mat';
-Connectivity2=getConnectivity(Connectivity2);
-
-%% Snapshots 2 figure:
-
-%Snapshots:
+% Connectivity.WhichMatrix       = 'nanoWires';    % 'nanoWires' \ 'randAdjMat'
+% Connectivity.filename=['AdriantoZdenka' num2str(number_of_wires) 'nw_simulation' num2str(currSim) '.mat'];
+% Connectivity=getConnectivity(Connectivity);
 % 
+% Connectivity2.WhichMatrix       = 'nanoWires';    % 'nanoWires' \ 'randAdjMat'
+% Connectivity2.filename='2016-09-08-155153_asn_nw_00100_nj_00261_seed_042_avl_100.00_disp_10.00.mat';
+% Connectivity2=getConnectivity(Connectivity2);
 % 
-for i =1:length(SelSims{currSim}.Time)
-    frame.Timestamp=SelSims{currSim}.Time;    
-    %Convert Current in wires to current in junctions:
-    currs=triu(SelSims{currSim}.Data.Currents{i}); % Find values of currents
-    abscurrs=abs(currs);
-    Imat=full(abscurrs); %full current matrix (instead of sparse double) + absolute value
-    Ilist=Imat(triu(adj_matrix)~=0); % current list for junctions that are 1 in the Adj matrix (only 1 directional)
-    frame.Current=Ilist;
-    %Convert Resistance in wires to resistance in junctions:
-    Rmat=triu(SelSims{currSim}.Data.Rmat{i});
-    Rlist=Rmat(triu(adj_matrix)~=0);
-    frame.Resistance = Rlist;
-    frame.Voltage=frame.Current.*frame.Resistance; %V=IR;
-%     frame.OnOrOff    = compPtr.comp.OnOrOff;
-%     frame.filamentState = compPtr.comp.filamentState;
-    snapshots{i}=frame;
-end
+% %% Snapshots 2 figure:
+% 
+% %Snapshots:
+% % 
+% % 
+% for i =1:length(SelSims{currSim}.Time)
+%     frame.Timestamp=SelSims{currSim}.Time;    
+%     %Convert Current in wires to current in junctions:
+%     currs=triu(SelSims{currSim}.Data.Currents{i}); % Find values of currents
+%     abscurrs=abs(currs);
+%     Imat=full(abscurrs); %full current matrix (instead of sparse double) + absolute value
+%     Ilist=Imat(triu(adj_matrix)~=0); % current list for junctions that are 1 in the Adj matrix (only 1 directional)
+%     frame.Current=Ilist;
+%     %Convert Resistance in wires to resistance in junctions:
+%     Rmat=triu(SelSims{currSim}.Data.Rmat{i});
+%     Rlist=Rmat(triu(adj_matrix)~=0);
+%     frame.Resistance = Rlist;
+%     frame.Voltage=frame.Current.*frame.Resistance; %V=IR;
+% %     frame.OnOrOff    = compPtr.comp.OnOrOff;
+% %     frame.filamentState = compPtr.comp.filamentState;
+%     snapshots{i}=frame;
+% end
 
 % SimulationOptions.ContactNodes=SelSims{currSim}.Electrodes.PosIndex;
 % axesLimits.VoltageCbar=[0 1];%minimum voltage to maximum voltage

@@ -13,13 +13,13 @@ global b;
 global c;
 if 1
     recurrent=[];
-N=hwresult(1:6000);
-M=(hwdata(1:6000));
+N=hwresult(1:60000);
+M=(hwdata(1:60000));
 result=zeros(length(N),10);
 for i=1:length(N)
 r=N(i);result(i,r+1)=1;
 end
-for ap=0.5:0.4:2
+for ap=0.6:0.2:1.6
 for b=1:length(M)
     MonolithicDemokevin;
     recurrent=[recurrent;testcurrent];
