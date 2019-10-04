@@ -128,7 +128,7 @@ if sims_load=='y'
             clear SelSims
         end
     else
-        cd('Simulations Only\Explore');
+        cd('C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Adrian Only\Explore'); %change for all computers
         waitfor(msgbox('Select the Explore Simulation saved data'))
         [FileName,PathName] = uigetfile('*.mat','Select the Explore saved data');
         f_explore=fullfile(PathName,FileName);

@@ -1,4 +1,4 @@
-function [OutputDynamics, SimulationOptions, snapshots] = simulateNetwork(Connectivity,Equations, Components, Stimulus, SimulationOptions, varargin)
+function [OutputDynamics, SimulationOptions, snapshots,testcurrent] = simulateNetwork(Connectivity,Equations, Components, Stimulus, SimulationOptions, varargin)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Simulates the network and finds the resistance between the two contacts
 % as a function of time.

@@ -35,14 +35,14 @@ if loadData=='y'
         switch computer
             case 'W4PT80T2' %if on desktop at uni - Alon
                 if loadData=='y' & loadDataMulti=='n'
-                    explore_location='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\';
-                    savePath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\Multi-Network Data\';
+                    explore_location='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\Continuous DC\';
+                    savePath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\Ordered+Random Data\';
                     fig_dir='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Figures\Explore Analysis\Cross-Network Explore\Graph Theory\';
                 elseif loadData=='y' & loadDataMulti=='y'
                     explore_location_origin='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\';
-                    explore_location=['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\' num2str(currMultiNet) 'nw Alternate NWs'];
+                    explore_location=['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\MultiNetwork Analysis\' num2str(currMultiNet) 'nw Alternate NWs\'];
                     savePath=['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\Multi-Network Data\'];
-                    fig_dir=['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Figures\Explore Analysis\Cross-Network Explore\Graph Theory\' num2str(currMultiNet) 'nw Alternate NWs'];
+                    fig_dir=['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Figures\Explore Analysis\Cross-Network Explore\Graph Theory\' num2str(currMultiNet) 'nw Alternate NWs\'];
                 end
             case '' %if on linux
                 explore_location='/suphys/aloe8475/Documents/CODE/Data/Explore Analysis/';
@@ -68,10 +68,15 @@ if loadData=='y'
             %Load three explore analyses:
             fprintf('Loading Baseline Data... \n');
             clear e100 e500 e1000 e2000
-            e100=load([explore_location 'Adrian_Net_Sx20_NoW100_0325-2019_112338__Sim_1_SourceElectrode_6_DrainElectrode_76_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
-            e500=load([explore_location 'Adrian_Net_Sx20_NoW500_0330-2019_111659__Sim_1_SourceElectrode_18_DrainElectrode_430_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
-            e1000=load([explore_location 'Adrian_Net_Sx20_NoW1000_0606-2019_113353__Sim_1_SourceElectrode_32_DrainElectrode_1000_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
-            e2000=load([explore_location 'Adrian_Net_Sx20_NoW2000_0618-2019_125103__Sim_1_SourceElectrode_158_DrainElectrode_1820_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
+%             e100=load([explore_location 'Adrian_Net_Sx20_NoW100_0325-2019_112338__Sim_1_SourceElectrode_6_DrainElectrode_76_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
+%             e500=load([explore_location 'Adrian_Net_Sx20_NoW500_0330-2019_111659__Sim_1_SourceElectrode_18_DrainElectrode_430_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
+%             e1000=load([explore_location 'Adrian_Net_Sx20_NoW1000_0606-2019_113353__Sim_1_SourceElectrode_32_DrainElectrode_1000_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
+%             e2000=load([explore_location 'Adrian_Net_Sx20_NoW2000_0618-2019_125103__Sim_1_SourceElectrode_158_DrainElectrode_1820_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
+            e100=load([explore_location 'Zdenka_Net_Sx20_NoW109_0930-2019_110329_Length_6_Disp_0_Sim_1_Source_99_Drain_36_Explore_Timestamp_200.mat']);
+            e500=load([explore_location 'Zdenka_Net_Sx20_NoW500_0330-2019_111659_Length_6_Disp_0_Sim_1_Source_498_Drain_435_Explore_Timestamp_200.mat']);
+            e1000=load([explore_location 'Zdenka_Net_Sx20_NoW1000_0606-2019_113353_Length_6_Disp_0_Sim_1_Source_997_Drain_408_Explore_Timestamp_200.mat']);
+            e2000=load([explore_location 'Zdenka_Net_Sx20_NoW2000_0618-2019_125103_Length_6_Disp_0_Sim_1_Source_1999_Drain_935_Explore_Timestamp_200.mat']);
+        
             fprintf('Data Loaded \n');
             break;
         elseif loadData=='y' & loadDataMulti=='y'
@@ -79,11 +84,16 @@ if loadData=='y'
             %Load three explore analyses:
             fprintf('Loading Baseline Data... \n');
             clear e100 e500 e1000 e2000
-            e100=load([explore_location_origin 'Adrian_Net_Sx20_NoW100_0325-2019_112338__Sim_1_SourceElectrode_6_DrainElectrode_76_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
-            e500=load([explore_location_origin 'Adrian_Net_Sx20_NoW500_0330-2019_111659__Sim_1_SourceElectrode_18_DrainElectrode_430_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
-            e1000=load([explore_location_origin 'Adrian_Net_Sx20_NoW1000_0606-2019_113353__Sim_1_SourceElectrode_32_DrainElectrode_1000_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
-            e2000=load([explore_location_origin 'Adrian_Net_Sx20_NoW2000_0618-2019_125103__Sim_1_SourceElectrode_158_DrainElectrode_1820_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
-            fprintf('Data Loaded \n');
+%             e100=load([explore_location_origin 'Adrian_Net_Sx20_NoW100_0325-2019_112338__Sim_1_SourceElectrode_6_DrainElectrode_76_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
+%             e500=load([explore_location_origin 'Adrian_Net_Sx20_NoW500_0330-2019_111659__Sim_1_SourceElectrode_18_DrainElectrode_430_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
+%             e1000=load([explore_location_origin 'Adrian_Net_Sx20_NoW1000_0606-2019_113353__Sim_1_SourceElectrode_32_DrainElectrode_1000_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
+%             e2000=load([explore_location_origin 'Adrian_Net_Sx20_NoW2000_0618-2019_125103__Sim_1_SourceElectrode_158_DrainElectrode_1820_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
+            e100=load([explore_location 'Zdenka_Net_Sx20_NoW109_0930-2019_110329_Length_6_Disp_0_Sim_1_Source_99_Drain_36_Explore_Timestamp_200.mat']);
+            e500=load([explore_location 'Zdenka_Net_Sx20_NoW500_0330-2019_111659_Length_6_Disp_0_Sim_1_Source_498_Drain_435_Explore_Timestamp_200.mat']);
+            e1000=load([explore_location 'Zdenka_Net_Sx20_NoW1000_0606-2019_113353_Length_6_Disp_0_Sim_1_Source_997_Drain_408_Explore_Timestamp_200.mat']);
+            e2000=load([explore_location 'Zdenka_Net_Sx20_NoW2000_0618-2019_125103_Length_6_Disp_0_Sim_1_Source_1999_Drain_935_Explore_Timestamp_200.mat']);
+                    
+fprintf('Data Loaded \n');
             
             cd(explore_location);
             fprintf(['Loading Multi Network Data from Network size ' num2str(currMultiNet) '\n']);
@@ -270,7 +280,7 @@ function elegans=cElegansFun()
 %Kaiser M, Hilgetag CC (2006) Non-Optimal Component Placement, but Short Processing Paths, due to Long-Distance Projections in Neural Systems. PLoS Computational Biology 7:e95
 % Kötter R (2004) Online retrieval, processing, and visualization of primate connectivity data from the CoCoMac database. Neuroinformatics 2: 127-144.
 % Choe Y, McCormick BH, Koh W (2004) Network connectivity analysis on the temporally augmented C. elegans web: A pilot study. Society of Neuroscience Abstracts 30:921.9.
-cd('../../Data/Organic Networks Connectomes/')
+cd('C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Organic Networks Connectomes\')
 
 
 cElegans=load('celegans277neurons.mat');
@@ -518,6 +528,9 @@ function AgNW=AgNWFun(e100, e500, e1000, e2000)
 %Circuit Rank
 AgNW.CircuitRank=[e100.Explore.GraphTheory.CircuitRank e500.Explore.GraphTheory.CircuitRank e1000.Explore.GraphTheory.CircuitRank e2000.Explore.GraphTheory.CircuitRank];
 AgNW.GlobalClust=[e100.Explore.GraphTheory.GlobalClust, e500.Explore.GraphTheory.GlobalClust, e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
+%Degree
+AgNW.Degree={e100.Explore.GraphTheory.DEG; e500.Explore.GraphTheory.DEG; e1000.Explore.GraphTheory.DEG; e2000.Explore.GraphTheory.DEG};
+AgNW.NumWires=[length(e100.Explore.GraphView.AdjMat),length(e500.Explore.GraphView.AdjMat),length(e1000.Explore.GraphView.AdjMat),length(e2000.Explore.GraphView.AdjMat)];
 %Path
 AgNW.AvgPath=[e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
 %Small World Prop
@@ -540,9 +553,13 @@ for z = 1:length(e100Multi.Explore)
     %         BC(z,:)=e100Multi.Explore{z}.GraphTheory.BC;
     PCoeff{z}=e100Multi.Explore{z}.GraphTheory.P;
     MZ{z}=e100Multi.Explore{z}.GraphTheory.MZ;
+    %Degree
+    Degree{z}=e100Multi.Explore{z}.GraphTheory.DEG;
 end
 e100.AvgGlobalClust=mean([GlobalClust]);
 e100.StdGlobalClust=std([GlobalClust])./sqrt(length([GlobalClust]));
+e100.AvgDEG=mean([Degree]);
+e100.StdDEG=std([Degree])./sqrt(length([Degree]));
 e100.AvgAvgPath=mean([AvgPath]);
 e100.StdAvgPath=std([AvgPath])./sqrt(length([AvgPath]));
 e100.AvgCircuitRank=mean([CircuitRank]);
@@ -555,7 +572,7 @@ e100.AvgPCoeff=mean(vertcat(PCoeff{:}));
 e100.StdPCoeff=std(vertcat(PCoeff{:}));
 e100.AvgMZ=mean(vertcat(MZ{:}));
 e100.StdMZ=std(vertcat(MZ{:}));
-clear PCoeff SmallWorldProp GlobalClust AvgPath CircuitRank MZ %BC
+clear PCoeff SmallWorldProp GlobalClust AvgPath CircuitRank MZ Degree%BC
 %500 Nw
 for z = 1:length(e500Multi.Explore)
     GlobalClust(z)=e500Multi.Explore{z}.GraphTheory.GlobalClust;
@@ -565,10 +582,13 @@ for z = 1:length(e500Multi.Explore)
     %         BC(z,:)=e500Multi.Explore{z}.GraphTheory.BC;
     PCoeff{z}=e500Multi.Explore{z}.GraphTheory.P;
     MZ{z}=e500Multi.Explore{z}.GraphTheory.MZ;
-    
+    %Degree
+    Degree{z}=e500Multi.Explore{z}.GraphTheory.DEG;
 end
 e500.AvgGlobalClust=mean([GlobalClust]);
 e500.StdGlobalClust=std([GlobalClust])./sqrt(length([GlobalClust]));
+e500.AvgDEG=mean([Degree]);
+e500.StdDEG=std([Degree])./sqrt(length([Degree]));
 e500.AvgAvgPath=mean([AvgPath]);
 e500.StdAvgPath=std([AvgPath])./sqrt(length([AvgPath]));
 e500.AvgCircuitRank=mean([CircuitRank]);
@@ -581,7 +601,7 @@ e500.AvgPCoeff=mean(vertcat(PCoeff{:}));
 e500.StdPCoeff=std(vertcat(PCoeff{:}));
 e500.AvgMZ=mean(vertcat(MZ{:}));
 e500.StdMZ=std(vertcat(MZ{:}));
-clear PCoeff SmallWorldProp GlobalClust AvgPath CircuitRank MZ %BC
+clear PCoeff SmallWorldProp GlobalClust AvgPath CircuitRank MZ Degree%BC
 %1000 Nw
 for z = 1:length(e1000Multi.Explore)
     GlobalClust(z)=e1000Multi.Explore{z}.GraphTheory.GlobalClust;
@@ -591,10 +611,13 @@ for z = 1:length(e1000Multi.Explore)
     %         BC(z,:)=e1000Multi.Explore{z}.GraphTheory.BC;
     PCoeff{z}=e1000Multi.Explore{z}.GraphTheory.P;
     MZ{z}=e1000Multi.Explore{z}.GraphTheory.MZ;
-    
+    %Degree
+    Degree{z}=e1000Multi.Explore{z}.GraphTheory.DEG;
 end
 e1000.AvgGlobalClust=mean([GlobalClust]);
 e1000.StdGlobalClust=std([GlobalClust])./sqrt(length([GlobalClust]));
+e1000.AvgDEG=mean([Degree]);
+e1000.StdDEG=std([Degree])./sqrt(length([Degree]));
 e1000.AvgAvgPath=mean([AvgPath]);
 e1000.StdAvgPath=std([AvgPath])./sqrt(length([AvgPath]));
 e1000.AvgCircuitRank=mean([CircuitRank]);
@@ -607,7 +630,7 @@ e1000.AvgPCoeff=mean(vertcat(PCoeff{:}));
 e1000.StdPCoeff=std(vertcat(PCoeff{:}));
 e1000.AvgMZ=mean(vertcat(MZ{:}));
 e1000.StdMZ=std(vertcat(MZ{:}));
-clear PCoeff SmallWorldProp GlobalClust AvgPath CircuitRank MZ %BC
+clear PCoeff SmallWorldProp GlobalClust AvgPath CircuitRank MZ Degree%BC
 %2000 Nw
 for z = 1:length(e2000Multi.Explore)
     GlobalClust(z)=e2000Multi.Explore{z}.GraphTheory.GlobalClust;
@@ -617,10 +640,13 @@ for z = 1:length(e2000Multi.Explore)
     %         BC(z,:)=e2000Multi.Explore{z}.GraphTheory.BC;
     PCoeff{z}=e2000Multi.Explore{z}.GraphTheory.P;
     MZ{z}=e2000Multi.Explore{z}.GraphTheory.MZ;
-    
+    %Degree
+    Degree{z}=e2000Multi.Explore{z}.GraphTheory.DEG;
 end
 e2000.AvgGlobalClust=mean([GlobalClust]);
 e2000.StdGlobalClust=std([GlobalClust])./sqrt(length([GlobalClust]));
+e2000.AvgDEG=mean([Degree]);
+e2000.StdDEG=std([Degree])./sqrt(length([Degree]));
 e2000.AvgAvgPath=mean([AvgPath]);
 e2000.StdAvgPath=std([AvgPath])./sqrt(length([AvgPath]));
 e2000.AvgCircuitRank=mean([CircuitRank]);
@@ -637,6 +663,8 @@ e2000.StdMZ=std(vertcat(MZ{:}));
 %Combine all
 AgNW.AvgGlobalClust=[e100.AvgGlobalClust e500.AvgGlobalClust e1000.AvgGlobalClust e2000.AvgGlobalClust];
 AgNW.StdGlobalClust=[e100.StdGlobalClust e500.StdGlobalClust e1000.StdGlobalClust e2000.StdGlobalClust];
+AgNW.AvgDegree=[e100.AvgDegree e500.AvgDegree e1000.AvgDegree e2000.AvgDegree];
+AgNW.StdDegree=[e100.StdDegree e500.StdDegree e1000.StdDegree e2000.StdDegree];
 AgNW.AvgAvgPath=[e100.AvgAvgPath e500.AvgAvgPath e1000.AvgAvgPath e2000.AvgAvgPath];
 AgNW.StdAvgPath=[e100.StdAvgPath e500.StdAvgPath e1000.StdAvgPath e2000.StdAvgPath];
 AgNW.AvgCircuitRank=[e100.AvgCircuitRank e500.AvgCircuitRank e1000.AvgCircuitRank e2000.AvgCircuitRank];
@@ -649,11 +677,24 @@ AgNW.AvgPCoeff=[e100.AvgPCoeff e500.AvgPCoeff e1000.AvgPCoeff e2000.AvgPCoeff];
 AgNW.StdPCoeff=[e100.StdPCoeff e500.StdPCoeff e1000.StdPCoeff e2000.StdPCoeff];
 AgNW.AvgMZ=[e100.AvgMZ e500.AvgMZ e1000.AvgMZ e2000.AvgMZ];
 AgNW.StdMZ=[e100.StdMZ e500.StdMZ e1000.StdMZ e2000.StdMZ];
+
 end
 
 %% Plot:
 function plotAll(Net, random, ordered, human, e100, e500, e1000, e2000, AgNW,network,cElegans,ANN,fig_dir)
 % Small World Analysis
+fDeg=figure;
+for i = 1:length(AgNW.Degree)
+subplot(2,2,i);
+h=histogram(AgNW.Degree{i},11);
+title([num2str(AgNW.NumWires(i)) 'nw']);
+xlabel('Degree');
+ylabel('Frequency');
+end 
+sgtitle('Degree Distribution Comparison of Nanowire Networks')
+
+
+
 f=figure;
 while 1
     plotNet=input('Which Network size would you like to plot? 100, 500, 1000, or 2000? \n');
@@ -667,18 +708,26 @@ while 1
         case 2000
             plotNet=4;
     end
-    
+    if plotNet<3
     y=[Net(plotNet).random100.AvgGlobalClust ANN.GlobalClust ANN.GlobalClust_Trained cElegans.GlobalClust human.GlobalClust Net(plotNet).ordered100.AvgGlobalClust e100.Explore.GraphTheory.GlobalClust e500.Explore.GraphTheory.GlobalClust e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
     x=[Net(plotNet).random100.AvgPath ANN.AvgPath ANN.AvgPath_Trained cElegans.AvgPath human.AvgPath Net(plotNet).ordered100.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
-    p=gscatter(x,y);
+               p=gscatter(x,y); 
     hold on
     e=errorbar(x(1), y(1),Net(plotNet).random100.StdPath);
     e2=errorbar(x(1), y(1),Net(plotNet).random100.StdGlobalClust,'horizontal');
     errorbar(x(3), y(3),Net(plotNet).ordered100.StdPath);
     errorbar(x(3), y(3),Net(plotNet).ordered100.StdGlobalClust,'horizontal');
+        text(x,y,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],'500node ANN Untrained','500node ANN Trained','C. Elegans Nw', 'Human Nw (mm-scale regions)',[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
+    else
+    y=[ ANN.GlobalClust ANN.GlobalClust_Trained cElegans.GlobalClust human.GlobalClust  e100.Explore.GraphTheory.GlobalClust e500.Explore.GraphTheory.GlobalClust e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
+    x=[ANN.AvgPath ANN.AvgPath_Trained cElegans.AvgPath human.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
     % xlim([0.05 0.6])
     % ylim([2 16])
-    text(x,y,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],'500node ANN Untrained','500node ANN Trained','C. Elegans Nw', 'Human Nw (mm-scale regions)',[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
+            p=gscatter(x,y);
+
+    hold on 
+    text(x,y,{'500node ANN Untrained','500node ANN Trained','C. Elegans Nw', 'Human Nw (mm-scale regions)','100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
+    end 
     ylabel('Global Clustering Coefficient');
     xlabel('Global Mean Path Length');
     p.MarkerEdgeColor='b';
@@ -817,12 +866,12 @@ hold on
 
 fprintf('Figure 4 Complete \n');
 
-%Plot Guimera & Amaral rectangles:
+%% Plot Guimera & Amaral rectangles:
+f5=figure;
 for i=1:plotNet
-    f5(i)=figure;
+    subplot(2,2,i)
     guimera(network{i},Net,i); %change network here
     fprintf(['Figure 5 part ' num2str(i) ' Complete \n']);
-    
 end
 
 fprintf('Figure 5 Complete \n');
@@ -867,7 +916,7 @@ e.LineStyle='none';
 % xlim([0.05 0.6])
 % ylim([2 16])
 
-xticklabels({randomLabel{:},orderedLabel{:},'500node Artificial Neural Nw','C. Elegans Nw','100nw','500nw','1000nw','2000nw'});
+xticklabels([randomLabel{:},orderedLabel{:},'500node Artificial Neural Nw','C. Elegans Nw','100nw','500nw','1000nw','2000nw']);
 set(gca, 'XTickLabelRotation', 45)
 ylabel('Betweenness Centrality');
 hold on
@@ -878,14 +927,41 @@ fprintf('Figure 7 Complete \n');
 
 
 %% SAVE GRAPHS
+set(f,'PaperPositionMode','auto');         
+set(f,'PaperOrientation','landscape');
+set(f,'Position',[0 0 1920 1080]);
 print(f,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Clustering Coefficient vs Path Length all networks.pdf']);
+
+set(fDeg,'PaperPositionMode','auto');         
+set(fDeg,'PaperOrientation','landscape');
+set(fDeg,'Position',[0 0 1920 1080]);
+print(fDeg,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Degree Distribution all networks.pdf']);
+
+
+set(f2,'PaperPositionMode','auto');         
+set(f2,'PaperOrientation','landscape');
+set(f2,'Position',[0 0 1920 1080]);
 print(f2,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Small World Prop all networks.pdf']);
+
+set(f3,'PaperPositionMode','auto');         
+set(f3,'PaperOrientation','landscape');
+set(f3,'Position',[0 0 1920 1080]);
 print(f3,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Circuit Rank all networks.pdf']);
+
+set(f4,'PaperPositionMode','auto');         
+set(f4,'PaperOrientation','landscape');
+set(f4,'Position',[0 0 1920 1080]);
 print(f4,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Participant Coefficient vs Module z-Score all networks.pdf']);
-for i = 1:length(f5)
-    print(f5(i),'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Guimera PC vs Module z-Score ' num2str(Net(i).sizeNetwork) 'nw network.pdf']);
-end
+
+set(f5,'PaperPositionMode','auto');         
+set(f5,'PaperOrientation','landscape');
+set(f5,'Position',[0 0 1920 1080]);
+print(f5,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Guimera PC vs Module z-Score all networks.pdf']);
 % print(f6,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Communicability all networks.pdf']);
+
+set(f7,'PaperPositionMode','auto');         
+set(f7,'PaperOrientation','landscape');
+set(f7,'Position',[0 0 1920 1080]);
 print(f7,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Betweenness Centrality all networks.pdf']);
 
 end
@@ -1039,6 +1115,17 @@ hold on
 
 fprintf('Figure 4 Complete \n');
 
+%% Plot Guimera & Amaral rectangles:
+f5=figure;
+for i=1:plotNet
+    subplot(2,2,i)
+    guimera(network{i},Net,i,AgNW); %change network here
+    fprintf(['Figure 5 part ' num2str(i) ' Complete \n']);
+end
+
+fprintf('Figure 5 Complete \n');
+
+
 %Betweenness Centrality
 
 f7=figure;
@@ -1072,16 +1159,27 @@ hold on
 
 
 fprintf('Figure 7 Complete \n');
-
+set(f,'PaperPositionMode','auto');         
+set(f,'PaperOrientation','landscape');
+set(f,'Position',[0 0 1920 1080]);
 print(f,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Clustering Coefficient vs Path Length all networks with Variance.pdf']);
+set(f2,'PaperPositionMode','auto');         
+set(f2,'PaperOrientation','landscape');
+set(f2,'Position',[0 0 1920 1080]);
 print(f2,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Small World Prop all networks with Variance.pdf']);
+set(f3,'PaperPositionMode','auto');         
+set(f3,'PaperOrientation','landscape');
+set(f3,'Position',[0 0 1920 1080]);
 print(f3,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Circuit Rank all networks with Variance.pdf']);
+set(f4,'PaperPositionMode','auto');         
+set(f4,'PaperOrientation','landscape');
+set(f4,'Position',[0 0 1920 1080]);
 print(f4,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Participant Coefficient vs Module z-Score all networks with Variance.pdf']);
 % print(f6,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Communicability all networks.pdf']);
 print(f7,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Betweenness Centrality all networks with Variance.pdf']);
 end
 
-function guimera(network, Net,plotNet)
+function guimera(network, Net,plotNet,varargin)
 % Set up rectangles:
 xR1=[0 0.025 0.025 0];
 xR2=[0.025 0.625 0.625 0.025];
@@ -1130,6 +1228,7 @@ for i = 1:length(PCoeff)
 end
 
 hold on;
+if isempty(varargin)
 for i = 1:length(PCoeff)
     switch RegionsMap(i)
         case 1
@@ -1155,6 +1254,33 @@ for i = 1:length(PCoeff)
             r7.MarkerEdgeColor='black';
     end
 end
+else
+    for i = 1:length(varargin)
+    switch RegionsMap(i)
+        case 1
+            r1=scatter(AgNW.AvgPCoeff(i),AgNW.AvgMZ(i),'black','filled');
+            r1.MarkerEdgeColor='black';
+        case 2
+            r2=scatter(AgNW.AvgPCoeff(i),AgNW.AvgMZ(i),'red','filled');
+            r2.MarkerEdgeColor='black';
+        case 3
+            r3=scatter(AgNW.AvgPCoeff(i),AgNW.AvgMZ(i),'green','filled');
+            r3.MarkerEdgeColor='black';
+        case 4
+            r4=scatter(AgNW.AvgPCoeff(i),AgNW.AvgMZ(i),'blue','filled');
+            r4.MarkerEdgeColor='black';
+        case 5
+            r5=scatter(AgNW.AvgPCoeff(i),AgNW.AvgMZ(i),'yellow','filled');
+            r5.MarkerEdgeColor='black';
+        case 6
+            r6=scatter(AgNW.AvgPCoeff(i),AgNW.AvgMZ(i),[],[255 204 153]/255,'filled');
+            r6.MarkerEdgeColor='black';
+        case 7
+            r7=scatter(AgNW.AvgPCoeff(i),AgNW.AvgMZ(i),[],[0.7 0.7 0.7],'filled');
+            r7.MarkerEdgeColor='black';
+    end
+    end
+end 
 ylim([-3 8]);
 xlabel('Participant Coefficient')
 ylabel('Within-Module Degree z-Score');

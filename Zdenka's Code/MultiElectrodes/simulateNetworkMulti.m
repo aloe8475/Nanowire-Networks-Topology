@@ -1,4 +1,4 @@
-function [OutputDynamics, SimulationOptions, snapshots, SelSims,testcurrent,testconduct] = simulateNetworkMulti(Connectivity, Components, Stimulus, SimulationOptions, varargin)
+function [OutputDynamics, SimulationOptions, snapshots, SelSims,testcurrent] = simulateNetworkMulti(Connectivity, Components, Stimulus, SimulationOptions, varargin)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Simulates the network and finds the resistance between the two contacts
 % as a function of time.
@@ -49,71 +49,79 @@ function [OutputDynamics, SimulationOptions, snapshots, SelSims,testcurrent,test
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Initialize:
-    compPtr         = ComponentsPtr(Components);        % using this matlab-style pointer to pass the Components structure by reference
-    niterations     = SimulationOptions.NumberOfIterations;
-    electrodes      = SimulationOptions.electrodes;
-    numOfElectrodes = SimulationOptions.numOfElectrodes;
-    E               = Connectivity.NumberOfEdges;
-    V               = Connectivity.NumberOfNodes;
-    edgeList        = Connectivity.EdgeList.';
-    RHS             = zeros(V+numOfElectrodes,1); % the first E entries in the RHS vector.
+compPtr         = ComponentsPtr(Components);        % using this matlab-style pointer to pass the Components structure by reference
+niterations     = SimulationOptions.NumberOfIterations;
+electrodes      = SimulationOptions.electrodes;
+numOfElectrodes = SimulationOptions.numOfElectrodes;
+E               = Connectivity.NumberOfEdges;
+V               = Connectivity.NumberOfNodes;
+edgeList        = Connectivity.EdgeList.';
+RHS             = zeros(V+numOfElectrodes,1); % the first E entries in the RHS vector.
+
+wireVoltage        = zeros(niterations, V);
+electrodeCurrent   = zeros(niterations, numOfElectrodes);
+junctionVoltage    = zeros(niterations, E);
+junctionResistance = zeros(niterations, E);
+junctionFilament   = zeros(niterations, E);
+%% If snapshots are requested, allocate memory for them:
+if ~isempty(varargin)
+    snapshots           = cell(size(varargin{1}));
+    snapshots_idx       = sort(varargin{1});
+else
+    nsnapshots          = 10;
+    snapshots           = cell(nsnapshots,1);
+    snapshots_idx       = ceil(logspace(log10(1), log10(niterations), nsnapshots));
+end
+kk = 1; % Counter
+
+%% Solve equation systems for every time step and update:
+for ii = 1 : niterations
+    % Show progress:
+    progressBar(ii,niterations);
     
-    wireVoltage        = zeros(niterations, V);
-    electrodeCurrent   = zeros(niterations, numOfElectrodes);
-    junctionVoltage    = zeros(niterations, E);
-    junctionResistance = zeros(niterations, E);
-    junctionFilament   = zeros(niterations, E);
-    %% If snapshots are requested, allocate memory for them:
-    if ~isempty(varargin)
-        snapshots           = cell(size(varargin{1}));
-        snapshots_idx       = sort(varargin{1}); 
-    else
-        nsnapshots          = 10;
-        snapshots           = cell(nsnapshots,1);
-        snapshots_idx       = ceil(logspace(log10(1), log10(niterations), nsnapshots));
+    % Update resistance values:
+    updateComponentResistance(compPtr);
+    componentConductance = 1./compPtr.comp.resistance;
+    
+    % Get LHS (matrix) and RHS (vector) of equation:
+    Gmat = zeros(V,V);
+    
+    % This line can be written in a more efficient vetorized way.
+    % Something like:
+    %         Gmat(edgeList(:,1),edgeList(:,2)) = diag(componentConductance);
+    %         Gmat(edgeList(:,2),edgeList(:,1)) = diag(componentConductance);
+    
+    
+    for i = 1:E
+        Gmat(edgeList(i,1),edgeList(i,2)) = componentConductance(i);
+        Gmat(edgeList(i,2),edgeList(i,1)) = componentConductance(i);
     end
-    kk = 1; % Counter
     
-    %% Solve equation systems for every time step and update:
-    for ii = 1 : niterations
-        % Show progress:
-        progressBar(ii,niterations);
-        
-        % Update resistance values:
-        updateComponentResistance(compPtr); 
-        componentConductance = 1./compPtr.comp.resistance;
-        
-        % Get LHS (matrix) and RHS (vector) of equation:
-        Gmat = zeros(V,V);
-        
-        % This line can be written in a more efficient vetorized way.
-        % Something like:
-%         Gmat(edgeList(:,1),edgeList(:,2)) = diag(componentConductance);
-%         Gmat(edgeList(:,2),edgeList(:,1)) = diag(componentConductance);
-        
-        
-        for i = 1:E
-            Gmat(edgeList(i,1),edgeList(i,2)) = componentConductance(i);
-            Gmat(edgeList(i,2),edgeList(i,1)) = componentConductance(i);
-        end
-        
-        Gmat = diag(sum(Gmat, 1)) - Gmat;
-        
-        LHS          = zeros(V+numOfElectrodes, V+numOfElectrodes);
-        LHS(1:V,1:V) = Gmat;
-        
+    Gmat = diag(sum(Gmat, 1)) - Gmat;
+    
+    LHS          = zeros(V+numOfElectrodes, V+numOfElectrodes);
+    LHS(1:V,1:V) = Gmat;
+    
     % Again, should be able to vectorize
-         for i = 1:numOfElectrodes
-            this_elec           = electrodes(i);
-            LHS(V+i,this_elec)  = 1;
-            LHS(this_elec,V+i)  = 1;
-            RHS(V+i)            = Stimulus{i,1}(ii);
-        end
+    for i = 1:numOfElectrodes
+        this_elec           = electrodes(i);
+        LHS(V+i,this_elec)  = 1;
+        LHS(this_elec,V+i)  = 1;
+        RHS(V+i)            = Stimulus{i,1}(ii);
+    end
     
     % Solve equation:
     lhs = sparse(LHS);
     rhs = sparse(RHS);
     sol = lhs\rhs;
+    
+    % Current based on Adrian's structure - THIS SLOWS US DOWN SO MUCH
+    [rows,cols,~]=find(Connectivity.weights);
+    Curr=sparse(Gmat);
+    for i=1:length(rows)
+        Curr(cols(i),rows(i))=(sol(cols(i))-sol(rows(i)))...
+            *Curr(cols(i), rows(i));
+    end
     
     %Wire Voltage
     tempWireV = sol(1:V);
@@ -125,12 +133,12 @@ function [OutputDynamics, SimulationOptions, snapshots, SelSims,testcurrent,test
     updateComponentState(compPtr, SimulationOptions.dt);    % ZK: changed to allow retrieval of local values
     %[lambda_vals(ii,:), voltage_vals(ii,:)] = updateComponentState(compPtr, Stimulus.dt);
     
-        wireVoltage(ii,:)        = sol(1:V);
-        electrodeCurrent(ii,:)   = sol(V+1:end);
-        junctionVoltage(ii,:)    = compPtr.comp.voltage;
-        junctionResistance(ii,:) = compPtr.comp.resistance;
-        junctionFilament(ii,:)   = compPtr.comp.filamentState;
-
+    wireVoltage(ii,:)        = sol(1:V);
+    electrodeCurrent(ii,:)   = sol(V+1:end);
+    junctionVoltage(ii,:)    = compPtr.comp.voltage;
+    junctionResistance(ii,:) = compPtr.comp.resistance;
+    junctionFilament(ii,:)   = compPtr.comp.filamentState;
+    
     
     % Record the activity of the whole network
     if find(snapshots_idx == ii)
@@ -183,34 +191,40 @@ function [OutputDynamics, SimulationOptions, snapshots, SelSims,testcurrent,test
         snapshots{kk} = frame;
         kk = kk + 1;
     end
+    Curr2{ii}=sparse(Curr);
 end
 
-    % Store some important fields
-    SimulationOptions.SnapshotsIdx = snapshots_idx; % Save these to access the right time from .TimeVector.
-    OutputDynamics.sources = [];
-    OutputDynamics.drains  = [];
-    for i = 1:length(SimulationOptions.electrodes)
-        sourceChecker = sum(Stimulus{i,1})>0;
-        if sourceChecker
-            OutputDynamics.sources = [OutputDynamics.sources, SimulationOptions.electrodes(i)];
-        else
-            OutputDynamics.drains  = [OutputDynamics.drains, SimulationOptions.electrodes(i)];
-        end
+% Store some important fields
+SimulationOptions.SnapshotsIdx = snapshots_idx; % Save these to access the right time from .TimeVector.
+OutputDynamics.sources = [];
+OutputDynamics.drains  = [];
+for i = 1:length(SimulationOptions.electrodes)
+    sourceChecker = sum(Stimulus{i,1})>0;
+    if sourceChecker
+        OutputDynamics.sources = [OutputDynamics.sources, SimulationOptions.electrodes(i)];
+    else
+        OutputDynamics.drains  = [OutputDynamics.drains, SimulationOptions.electrodes(i)];
     end
-    % Calculate network 
+end
+
+
+%% SAVE
+
 OutputDynamics.electrodeCurrent = electrodeCurrent;
 SelSims.Data.ElectrodeCurrents=electrodeCurrent;
 % testcurrent=OutputDynamics.networkCurrent;
 OutputDynamics.wireVoltage        = wireVoltage;
+SelSims.Gmat=Gmat;
 SelSims.Data.WireVoltages = wireVoltage;
 OutputDynamics.junctionVoltage    = junctionVoltage;
 SelSims.Data.JunctionVoltages = junctionVoltage;
 testcurrent=OutputDynamics.electrodeCurrent;
 OutputDynamics.junctionResistance = junctionResistance;
 SelSims.Data.JunctionResistance = junctionResistance;
-testconduct=1./OutputDynamics.junctionResistance;
+% electrodeVoltage=wireVoltage(:,SimulationOptions.electrodes);
+% testconduct=1./(electrodeVoltage./electrodeCurrent);
 OutputDynamics.junctionFilament   = junctionFilament;
 SelSims.Data.JunctionCurrents=junctionVoltage./junctionResistance;
-
+SelSims.Data.Currents=Curr2;
 
 end

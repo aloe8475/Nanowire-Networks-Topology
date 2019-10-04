@@ -1,16 +1,7 @@
-global t;
-global a;
-global plotpsd;
-global dutyratio;
-global ap;
-global testcurrent;
-global contactn
 contactn=[randperm(100,29)];
 load('handwritedata.mat');load('handwirteresult.mat');
 hwdata=b;
 hwresult=c;
-global b;
-global c;
 if 1
     recurrent=[];
 N=hwresult(1:60000);
@@ -19,16 +10,16 @@ result=zeros(length(N),10);
 for i=1:length(N)
 r=N(i);result(i,r+1)=1;
 end
+pool=parpool(10);
 for ap=0.6:0.2:1.6
-for b=1:length(M)
-    MonolithicDemokevin;
+parfor b=1:length(M)
+   [testcurrent]=MonolithicDemoMNIST(contactn,b,c,M,N,ap);
     recurrent=[recurrent;testcurrent];
-    
 %     recurent(b,:)=Output.networkCurrent(c,:);
 end
 % recurent(:,end)=[];
-save(['6000hwdata_Amp' num2str(ap) '.mat'],'recurrent')
-save(['6000hwdata_Result' num2str(ap) '.mat'],'result')
+save(['60000hwdata_Amp' num2str(ap) '_700nw.mat'],'recurrent')
+save(['60000hwdata_Result' num2str(ap) '_700nw.mat'],'result')
 end
 end 
 if 0

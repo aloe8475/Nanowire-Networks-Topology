@@ -12,6 +12,8 @@
 dbstop if error
 %% Load Data
 
+set(0,'DefaultFigureVisible','off')
+
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2' %if on desktop at uni - Alon
@@ -126,7 +128,7 @@ else %if we're not looping
             %% Saving Explore
             save_state=lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
             if save_state=='y'
-                save_explore(Explore,network(networkNum),network_load,currentPath,simNum);
+                save_explore(Explore,network(networkNum),network_load,currentPath,simNum,loop,currentSim);
                 i=i+1; %get out of while loop this loop finishes
             end
             i=i+1;
@@ -281,7 +283,6 @@ function Explore=explore_simulation_loop(Sim,network,network_load,simNum,current
 % Threshold = Degree of greater than 1
 % Binarise Threshold = Only low resistence junctions + wires
 % Full Graph = all degrees, all resistences
-
 [NodeList.String,NodeList.UserData]=GetNodeList(Sim);
 NodeList.Value=1:height(Sim.Electrodes);
 
@@ -349,7 +350,7 @@ IndexTime=size(Sim.Data,1);%input(['What Timestamp do you want to analyse? 1-' n
 
 %% Network View
 % Function that plots network view of current and resistance
-[f2, f3, Adj, NumEl, Explore] = network_view(Sim,IndexTime, NodeList);
+[f2, f3, Adj, NumEl, Explore] = network_view(Sim,IndexTime, NodeList,network_load);
 fprintf('Network Analysis Complete \n');
 close all
 %% Overlay Graph Theory:
@@ -377,17 +378,17 @@ end
 if threshold_network=='t'
     [f4, f5, f6, G, Adj, Adj2, Explore, highlightElec, new_electrodes] = graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold, drain_exist);
 else
-    [f4, f5, f6, G, Adj, Explore, highlightElec, new_electrodes] = graph_view(Sim,IndexTime,Explore,G, threshold_network,drain_exist);
+    [f4, f5, f6, G, Adj, Explore, highlightElec, new_electrodes] = graph_view(Sim,IndexTime,Explore,G, threshold_network,drain_exist,network_load);
 end
 close all
 %% Graph Theory View
 % Function that plots graph theory overlayed on graph view of currents
 if threshold_network=='t'
-    [f7, f8, f9, f10, f11, f12,f13,f14, Explore,sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj,Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices,drain_exist);
+    [f7, f8, f9, f10, f11, f12,f13,f14, Explore,sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj,Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices,drain_exist,network_load);
     fprintf('Graph Theory Complete \n');
     
 else
-    [f7, f8, f9, f10, f11, f12,f13,f14, Explore, sourceElec, drainElec]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore, Graph, highlightElec, new_electrodes,drain_exist);
+    [f7, f8, f9, f10, f11, f12,f13,f14, Explore, sourceElec, drainElec]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore, Graph, highlightElec, new_electrodes,drain_exist,[],network_load);
     fprintf('Graph Theory Complete \n');
 end
 close all
@@ -408,7 +409,7 @@ else
     Explore.Thresholded='No';
 end
 
-fprintf(['Network ' num2str(networkNum) ' Finished \n \n']);
+fprintf(['\n \n Network ' num2str(networkNum) ' Finished \n \n']);
 end
 function Explore = explore_simulation(Sim,network,network_load,simNum,currentPath,loop)
 
@@ -417,7 +418,7 @@ function Explore = explore_simulation(Sim,network,network_load,simNum,currentPat
 % Binarise Threshold = Only low resistence junctions + wires
 % Full Graph = all degrees, all resistences
 
-[NodeList.String,NodeList.UserData]=GetNodeList(Sim);
+[NodeList.String,NodeList.UserData]=GetNodeList(Sim,network_load);
 NodeList.Value=1:length([Sim.Electrodes.PosIndex]);
 
 %% Timeseries View
@@ -429,8 +430,8 @@ if isempty(drainIndex)
 end
 sourceIndex=find(contains(NodeList.String,'Source'));
 for i = 1:length(sourceIndex)
-        source(:,i)=full(Sim.Data.(['ISource' num2str(i)]));
-        sourceV(:,i)=full(Sim.Data.(['VSource' num2str(i)]));
+    source(:,i)=full(Sim.Data.(['ISource' num2str(i)]));
+    sourceV(:,i)=full(Sim.Data.(['VSource' num2str(i)]));
 end
 for i = 1:length(drainIndex)
     if ismember(['IDrain' num2str(i)], fieldnames(Sim.Data))
@@ -469,9 +470,12 @@ IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(length(Sim.
 
 %% Network View
 % Function that plots network view of current and resistance
-[f2, f3, Adj, NumEl, Explore] = network_view(Sim,IndexTime, NodeList);
-fprintf('Network Analysis Complete \n');
+% [f2, f3, Adj, NumEl, Explore] = network_view(Sim,IndexTime, NodeList,network_load);
+% NEED TO COMMENT THIS OUT UNTIL CAN FIX CY AND CX
 
+Explore=[];
+
+fprintf('Network Analysis Complete \n');
 %% Overlay Graph Theory:
 % -----------------------------
 %Threshold
@@ -495,19 +499,19 @@ end
 %% Graph View
 % Function that plots graphical view of current, voltage and resistance
 if threshold_network=='t'
-    [f4, f5, f6, G, Adj, Adj2, Explore, highlightElec, new_electrodes] = graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold, drain_exist);
+    [f4, f5, f6, G, Adj, Adj2, Explore, highlightElec, new_electrodes] = graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold, drain_exist,network_load,node_indices);
 else
-    [f4, f5, f6, G, Adj, Explore, highlightElec, new_electrodes] = graph_view(Sim,IndexTime,Explore,G, threshold_network,drain_exist);
+    [f4, f5, f6, G, Adj, Explore, highlightElec, new_electrodes] = graph_view(Sim,IndexTime,Explore,G, threshold_network,drain_exist,network_load);
 end
 
 %% Graph Theory View
 % Function that plots graph theory overlayed on graph view of currents
 if threshold_network=='t'
-    [f7, f8, f9, f10, f11, f12,f13,f14, Explore,sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj,Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices,drain_exist);
+    [f7, f8, f9, f10, f11, f12,f13,f14, Explore,sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj,Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices,drain_exist,[],network_load);
     fprintf('Graph Theory Complete \n');
     
 else
-    [f7, f8, f9, f10, f11, f12,f13,f14, Explore, sourceElec, drainElec]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore, Graph, highlightElec, new_electrodes,drain_exist);
+    [f7, f8, f9, f10, f11, f12,f13,f14, Explore, sourceElec, drainElec]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore, Graph, highlightElec, new_electrodes,drain_exist,[],network_load);
     fprintf('Graph Theory Complete \n');
 end
 
@@ -558,7 +562,10 @@ end
 %% Save
 %Save Variables
 Explore.IndexTime=IndexTime;
-Explore.Name=Sim.Name;
+if network_load=='a'
+    Explore.Name=Sim.Name;
+end
+
 Graph.CircuitRank = numedges(G) - (numnodes(G) - 1);
 Explore.GraphTheory=Graph;
 Explore.GraphTheory.Definitions={'GE = Global Efficiency','LE = Local Efficiency', 'COMM = Communicability', 'Ci = Community/Cluster Affiliation',...
@@ -648,12 +655,17 @@ if save_explore_plots=='y'
     end
 end
 end
-function save_explore(Explore,network,network_load,currentPath,simNum,loop)
+function save_explore(Explore,network,network_load,currentPath,simNum,loop,currentSim)
 cd(currentPath);
 % save_directory='..\Data\Explore Analysis\';
-save_directory=['..\Data\Explore Analysis\' num2str(network.NetworkSettings.Number) 'nw Alternate NWs\'];
+if loop==0
+    save_directory=['..\Data\Explore Analysis\Continuous DC\'];
+elseif loop ==1
+        save_directory=['..\Data\Explore Analysis\' num2str(size(currentSim.SelLayout.AdjMat,2)) 'nw Alternate NWs\'];
+end
 if strcmp(network_load,'z')%Zdenka Code:
-    save([save_directory 'Zdenka_' num2str(network.number_of_wires) 'nw_Exploration_Analysis_' date],'Explore');
+        network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
+    save([save_directory 'Zdenka_' num2str(network.Name) 'Length_' num2str(network.NetworkSettings.Length) '_Disp_' num2str(network.NetworkSettings.Disp) '_Sim_' num2str(simNum) '_Source_' num2str(Explore.GraphView.ElectrodePosition(1)) '_Drain_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_Timestamp_' num2str(Explore.IndexTime)],'Explore');
 elseif strcmp(network_load,'a') %adrian code
     network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
     if loop
@@ -986,38 +998,35 @@ end
 %Graph Functions
 function [Graph, binarise_network]=graph_analysis(network,network_load,currentSim,IndexTime,loop)
 %% Mac's Analysis: (Graph)
-if strcmp(network_load,'z')%Zdenka Code:
-    net_mat=network.adj_matrix; %symmetrical matrix
-elseif strcmp(network_load,'a') %adrian code
-    if isempty(IndexTime)
-        IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(size(currentSim.Data,1)) '\n']); %CHOOSE TIMESTAMP
-    end
-    %this gives a resistance matrix for the network used for a chosen simulation at a specific timestamp
-    if loop
-        binarise_network='n';
-    else
-        binarise_network=input('Do you want to view the network thresholded/binarised ONLY with low Resistance? \n','s');
-    end
-    if binarise_network=='y' %Binarise so we can use Resistance for graph theory analysis
-        
-        %what we are doing here is creating a matrix of 0 and 1 (high and
-        %low resistence), so that we can plot ONLY those nodes/edges that
-        %have low resistence and are relevant.
-        fprintf('Binarising... \n');
-        a= full(currentSim.Data.Rmat{IndexTime});
-        a(a==5000)=1; %if resistance is low, we make it 1 (on)
-        a(a==5000000)=0;  %if it is high we make it 0 (off)
-        net_mat=a;
-        Graph.binarised='Yes - Using Resistance';
-        fprintf('Binarisation Complete \n');
-    else
-        fprintf('Binarising... \n');
-        net_mat=currentSim.SelLayout.AdjMat; %use standard adjacency matrix
-        Graph.binarised='No';
-        fprintf('Binarisation Complete \n');
-    end
-    %    net_mat=full(simulations(simNum).Data.AdjMat{IndexTime}); %this gives an adj matrix for the network used for a chosen simulation at a specific timestamp
+
+if isempty(IndexTime)
+    IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(size(currentSim.Data,1)) '\n']); %CHOOSE TIMESTAMP
 end
+%this gives a resistance matrix for the network used for a chosen simulation at a specific timestamp
+if loop
+    binarise_network='n';
+else
+    binarise_network=input('Do you want to view the network thresholded/binarised ONLY with low Resistance? \n','s');
+end
+if binarise_network=='y' %Binarise so we can use Resistance for graph theory analysis
+    
+    %what we are doing here is creating a matrix of 0 and 1 (high and
+    %low resistence), so that we can plot ONLY those nodes/edges that
+    %have low resistence and are relevant.
+    fprintf('Binarising... \n');
+    a= full(currentSim.Data.Rmat{IndexTime});
+    a(a==5000)=1; %if resistance is low, we make it 1 (on)
+    a(a==5000000)=0;  %if it is high we make it 0 (off)
+    net_mat=a;
+    Graph.binarised='Yes - Using Resistance';
+    fprintf('Binarisation Complete \n');
+else
+    fprintf('Binarising... \n');
+    net_mat=currentSim.SelLayout.AdjMat; %use standard adjacency matrix
+    Graph.binarised='No';
+    fprintf('Binarisation Complete \n');
+end
+%    net_mat=full(simulations(simNum).Data.AdjMat{IndexTime}); %this gives an adj matrix for the network used for a chosen simulation at a specific timestamp
 
 %Global efficiency --> 1/characteristic path length, averaged over the whole network. An estimate of how integrated the network is.
 % & Distance Matrix
@@ -1050,7 +1059,7 @@ Graph.BC=betweenness_bin(net_mat);
 % fprintf('Betweenness Centrality Complete \n');
 
 %Eigenvector Centrality
-% Graph.EC=eigenvector_centrality_und(full(net_mat));
+Graph.EC=eigenvector_centrality_und(full(net_mat));
 % Eigenector centrality is a self-referential measure of centrality -- nodes have high eigenvector centrality if they connect to other nodes that have high eigenvector centrality.
 % fprintf('Eigenvector Centrality Complete \n');
 

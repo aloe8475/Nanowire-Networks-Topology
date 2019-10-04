@@ -1,4 +1,4 @@
-function [OutputDynamics, SimulationOptions, snapshots] = simulateNetworknewkevin(Connectivity, Components, Stimulus, SimulationOptions, varargin)
+function [OutputDynamics, SimulationOptions, snapshots,testcurrent] = simulateNetworkMNIST(Connectivity, Components, Stimulus, SimulationOptions, c,t, varargin)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Customized version for Joel by Ruomin.
 % Using the nodal analysis method to solve for voltage.
@@ -52,7 +52,7 @@ function [OutputDynamics, SimulationOptions, snapshots] = simulateNetworknewkevi
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    
     %% Initialize:
-    global testcurrent;global c;global t;
+
     compPtr         = ComponentsPtr(Components);        % using this matlab-style pointer to pass the Components structure by reference
     niterations     = SimulationOptions.NumberOfIterations; 
     contactNodes    = SimulationOptions.ContactNodes;
@@ -111,7 +111,7 @@ function [OutputDynamics, SimulationOptions, snapshots] = simulateNetworknewkevi
         RHS(V+a) = Stimulus.Signal(a,ii);
         end
         % Solve equation:
-        if ii==floor(1/6*(c-t)+t)||ii==floor(2/6*(c-t)+t)||ii==floor(3/6*(c-t)+t)||ii==floor(4/6*(c-t)+t)||ii==floor(5/6*(c-t)+t)||ii==floor(6/6*(c-t)+t)
+        if ii==floor(1/6*(c-t)+t)|ii==floor(2/6*(c-t)+t)|ii==floor(3/6*(c-t)+t)|ii==floor(4/6*(c-t)+t)|ii==floor(5/6*(c-t)+t)|ii==floor(6/6*(c-t)+t)
             testrhs=RHS;testrhs(V+1:end-1)=1;
             testsol=lhs\testrhs;
             testcurrent=[testcurrent,testsol(V+1:end-1)'];

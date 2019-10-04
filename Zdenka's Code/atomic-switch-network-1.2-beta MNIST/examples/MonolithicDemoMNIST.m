@@ -1,10 +1,6 @@
+function testcurrent=MonolithicDemoMNIST(contactn,b,c,M,N)
 global a;
 global plotpsd;
-global dutyratio;
-global ap;global c;
-global b;global M;global t;
-global testcurrent;
-global contactn;
 % Make sure you have added the folder 'asn', including its subdiretories
 
 %% Set the seed for PRNGs for reproducibility:
@@ -33,12 +29,13 @@ SimulationOptions.ContactNodes = contactn; % only really required for preSet, ot
 Connectivity.WhichMatrix       = 'nanoWires';    % 'nanoWires' \ 'randAdjMat'
 switch Connectivity.WhichMatrix
     case 'nanoWires'
-        Connectivity.filename = '2016-09-08-155153_asn_nw_00100_nj_00261_seed_042_avl_100.00_disp_10.00.mat';
+%         Connectivity.filename = '2016-09-08-155153_asn_nw_00100_nj_00261_seed_042_avl_100.00_disp_10.00.mat';
+        Connectivity.filename = '2016-09-08-155044_asn_nw_00700_nj_14533_seed_042_avl_100.00_disp_10.00.mat';
     case 'randAdjMat'
         Connectivity.NumberOfNodes = 30;
         Connectivity.AverageDegree = 10;
 end
-Connectivity = getConnectivity(Connectivity);
+Connectivity = getConnectivityMNIST(Connectivity);
 
 %% Choose  contacts:
 if strcmp(SimulationOptions.ContactMode, 'specifiedDistance')
@@ -48,7 +45,7 @@ SimulationOptions = selectContacts(Connectivity, SimulationOptions);
 
 %% Initialize dynamic components:
 Components.ComponentType       = 'atomicSwitch'; % 'atomicSwitch' \ 'memristor' \ 'resistor'
-Components = initializeComponents(Connectivity.NumberOfEdges,Components);
+Components = initializeComponentsMNIST(Connectivity.NumberOfEdges,Components);
 
 %% Initialize stimulus:
 Stimulus.BiasType              = 'DC';           % 'DC' \ 'AC' \ 'DCandWait' \ 'Ramp'
@@ -67,7 +64,7 @@ switch Stimulus.BiasType
         Stimulus.AmplitudeMin = 0;    % (Volt)
         Stimulus.AmplitudeMax = 5;    % (Volt)
 end
-Stimulus = getStimulusMNIST(a,Stimulus, SimulationOptions);
+[Stimulus, t] = getStimulusMNIST(a,Stimulus, SimulationOptions,dutyratio,b,c,M,N,ap);
 
 %% Get Equations:
 Equations = getEquations(Connectivity,SimulationOptions);
@@ -84,9 +81,9 @@ end
 %% Simulate:
 if SimulationOptions.takingSnapshots
 %     [Output, SimulationOptions, snapshots] = simulateNetwork(Connectivity,Equations, Components, Stimulus, SimulationOptions, snapshotsIdx); % (Ohm)
-[Output, SimulationOptions, snapshots] = simulateNetworknewkevin(Connectivity, Components, Stimulus, SimulationOptions, snapshotsIdx); %
+[Output, SimulationOptions, snapshots,testcurrent] = simulateNetworkMNIST(Connectivity, Components, Stimulus, SimulationOptions, c,t, snapshotsIdx); %
 else % this discards the snaphots
-    [Output, SimulationOptions, snapshots] =simulateNetworknewkevin(Connectivity,Equations, Components, Stimulus, SimulationOptions); % (Ohm)
+    [Output, SimulationOptions, snapshots,testcurrent] =simulateNetworkMNIST(Connectivity,Equations, Components, Stimulus, SimulationOptions,c,t); % (Ohm)
 end
 
 %% Analysis and plot results:
@@ -169,4 +166,4 @@ if SimulationOptions.takingSnapshots
 end
 
 fprintf('\n');
-
+end 

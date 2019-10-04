@@ -42,7 +42,11 @@ Cxe=(x2(IdxEl)+x1(IdxEl))./2;Cye=(y1(IdxEl)+y2(IdxEl))./2; %Find X and Y (juncti
 text(currAx,Cxe-1.7,Cye+0.7,'Electrode'); %Write 'Electrode' where it is placed
 
 %Plot Currents:
+if network_load=='a'
 currs=triu(Sim.Data.Currents{IndexTime}); % Find values of currents
+else
+currs=triu(Sim.Data.JunctionCurrents(IndexTime,:)); % Find values of currents
+end 
 Imat=full(abs(currs)); %full current matrix (instead of sparse double) + absolute value
 Cx=Layout.CX(Adj~=0); %'x' coordinates for junctions that are 1 in the Adj matrix
 Cy=Layout.CY(Adj~=0);%'y' coordinates for junctions that are 1 in the Adj matrix

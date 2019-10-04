@@ -1,12 +1,5 @@
-%%
-% 
-% 
-% 
-function Stimulus = getStimulus(a,Stimulus, SimulationOptions)
-global dutyratio;
-global ap;global c;
-global b;
-global M;global t;
+
+function [Stimulus, t] = getStimulusMNIST(a,Stimulus, SimulationOptions,dutyratio,b,c,M,N,ap)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Generates a structure with the details of an external voltage signal
 % applied to the network.

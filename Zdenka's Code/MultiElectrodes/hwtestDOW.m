@@ -7,9 +7,11 @@ global Nodes
 % for Nodes = 1:10
 % contactn=randperm(100,2);
  
-% load('handwritedata.mat');load('handwirteresult.mat');
-Data=dlmread('C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Classification\Time Serieis\Dow_Jones_Percentage_Change1.csv');
+n=1;
 
+% load('handwritedata.mat');load('handwirteresult.mat');
+% Data=dlmread('C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Classification\Time Serieis\Dow_Jones_Percentage_Change1.csv');
+Data=dlmread('C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Classification\Time Serieis\IMPORT.csv');
 % hwresult=Data;
 % % global b;
 % % global c;
@@ -23,15 +25,15 @@ Data=dlmread('C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Classificatio
 % end
 % for ap=0.5:0.4:2
 % for b=1:length(M)
-    testcurrent=runSimulationDOW();
+    [testcurrent]=runSimulationDOW(Data,n);
     testcurrent(end)
     recurrent=testcurrent;
-    reconduct=testconduct;
+%     reconduct=testconduct;
 
 %     recurent(b,:)=Output.networkCurrent(c,:);
 % end
 % recurent(:,end)=[];
-save(['DOW_current_conduct_Multi.mat'],'recurrent','reconduct');
+save(['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Classification\Time Serieis\DOW_current_Multi' num2str(n) '.mat'],'recurrent');
 % save(['DOW_result' num2str(ap) '.mat'],'result')
 % end
 % end 

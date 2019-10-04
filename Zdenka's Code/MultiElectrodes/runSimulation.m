@@ -38,7 +38,7 @@ end
 Connectivity.WhichMatrix       = 'nanoWires';    % 'nanoWires' \ 'randAdjMat'
 switch Connectivity.WhichMatrix
     case 'nanoWires'
-          numNanowires=1000; %Change size to load different networks 
+          numNanowires=100c; %Change size to load different networks 
           savepath= 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka\';
           loadpath= 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Networks\Zdenka Networks\';
           Connectivity.filename = [loadpath 'AdriantoZdenka' num2str(numNanowires) 'nw_simulation1.mat'];
@@ -112,7 +112,7 @@ SelSims{simNum}.Settings.SigType = Stimulus{1}.BiasType;
 fprintf('\n')
 end 
 %% Save Simulation
-save([savepath SelSims{simNum}.Settings.Model '_' num2str(Connectivity.NumberOfNodes) 'nw_' SelSims{simNum}.Settings.SigType '_' num2str(length(SelSims{simNum})) 'SimsOnly_' num2str(SelSims{simNum}.Settings.Time) '_Sec_' num2str(length(SelSims{simNum}.Electrodes)) 'Electrodes_Vmax_' num2str(SelSims{simNum}.Settings.Vmax) '_' date],'SelSims');
+save([savepath SelSims{simNum}.Settings.Model '_' num2str(Connectivity.NumberOfNodes) 'nw_' SelSims{simNum}.Settings.SigType '_' num2str(length(SelSims{simNum})) 'SimsOnly_' num2str(SelSims{simNum}.Settings.Time) '_Sec_' num2str(length(SelSims{simNum}.Electrodes)) 'Electrodes_Vmax_' num2str(SelSims{simNum}.Settings.Vmax) '_' date],'SelSims','-v7.3');
 % run DataExport.m
 toc
 %run ShowMe.m 

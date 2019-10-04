@@ -2,15 +2,15 @@
 % This function plots graph theory parameters overlayed on graph view of
 % currents for the chosen Sim at the given timestamp (IndexTime)
 
-function [f6, f7, f8, f9, f10, f11,f12,f13, Explore, sourceElec, drainElec]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore,Graph, highlightElec, new_electrodes,drain_exist,source_exist)
+function [f6, f7, f8, f9, f10, f11,f12,f13, Explore, sourceElec, drainElec]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore,Graph, highlightElec, new_electrodes,drain_exist,source_exist,network_load)
 
 %% Find Source and Drain Electrodes:
-for i = 1:length(new_electrodes)
-    electrodes_cell(i)=new_electrodes(i).Name;
+for i = 1:length(new_electrodes.Name)
+    electrodes_cell{i}=new_electrodes.Name{i};
 end
 
-sourceIndex = find(contains(electrodes_cell,'Source')); %find index of electrodes that are source electrodes
-drainIndex = find(contains(electrodes_cell,'Drain')); %find index of electrodes that are drain electrodes
+sourceIndex = find(contains([electrodes_cell{:}],'Source')); %find index of electrodes that are source electrodes
+drainIndex = find(contains([electrodes_cell{:}],'Drain')); %find index of electrodes that are drain electrodes
 
 sourceElec=highlightElec(sourceIndex); %change to show path from different electrodes
 if drain_exist
@@ -69,8 +69,11 @@ bins2 = discretize(p_ranks,edges2);
 p3.MarkerSize=bins2;
 
 %Label Source
+if network_load=='a'
+    labelnode(p3,highlightElec,[new_electrodes.Name{:}]); %need to make this automated.
+else
 labelnode(p3,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
-
+end 
 %Need to figure out how to change colormap for Nodes seperately.
 
 
@@ -134,8 +137,11 @@ bins3 = discretize(mod_ranks,edges3);
 p4.MarkerSize=bins3;
 
 %Label Source
+if network_load=='a'
+    labelnode(p4,highlightElec,[new_electrodes.Name{:}]); %need to make this automated.
+else
 labelnode(p4,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
-
+end 
 
 text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ)) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
 
@@ -197,7 +203,11 @@ p5.MarkerSize = bins;
 p5.NodeColor='r';
 title(['Degree Size | T= ' num2str(IndexTime)]);
 highlight(p5,highlightElec,'NodeColor','green'); %change simulation number
+if network_load=='a'
+    labelnode(p5,highlightElec,[new_electrodes.Name{:}]); %need to make this automated.
+else
 labelnode(p5,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
+end 
 text(-5,-6.2,'Min Degrees - 1 (small dot) | Max Degrees - 44 (large dot)');
 
 %% Shortest Path (Distance)
@@ -253,7 +263,7 @@ p8.LineWidth=1.5;
 
 currs=abs(Sim.Data.Currents{IndexTime});
 
-[j,i,~]=find(tril(Adj));
+[j,i,~]=find(tril(Adj)); % j = row, i = column - find non-zero elements in the adj matrix 
 cc=zeros(1,length(j));
 for k=1:length(j)
     cc(k)=currs(i(k),j(k));
@@ -301,7 +311,11 @@ for k=1:length(j)
 end
 
 % extract lower triangular part of Adjacency matrix of network
-Adj2=(Sim.Data.AdjMat{IndexTime});%convert 498x498 matrix to EdgeCData ~(1x6065)
+if network_load=='a'
+Adj2=Sim.Data.AdjMat{IndexTime};
+else
+    Adj2=Sim.SelLayout.AdjMat;
+end 
 [j,i,~]=find(tril(Adj2));
 com2=zeros(1,length(j));
 
@@ -316,8 +330,11 @@ p9.EdgeCData=com3;%log10(wd);
 p9.MarkerSize=2;
 colormap jet
 colorbar
-
+if network_load=='a'
+    labelnode(p9,highlightElec,[new_electrodes.Name{:}]); %need to make this automated.
+else
 labelnode(p9,highlightElec,[new_electrodes(:).Name]);
+end 
 highlight(p9,highlightElec,'NodeColor','green','Marker','o'); %change simulation number
 
 title(['Communicability,  Timestamp ' num2str(IndexTime) ' (log10)']);
@@ -360,7 +377,11 @@ p11.NodeCData=Graph.Ci;
 % p11.MarkerSize=bins3;
 
 % labelnode(p11,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
+if network_load=='a'
+    labelnode(p11,highlightElec,[new_electrodes.Name{:}]); %need to make this automated.
+else
 labelnode(p11,highlightElec,[new_electrodes(:).Name]);
+end 
 
 colormap hsv(6)
 % colorbar

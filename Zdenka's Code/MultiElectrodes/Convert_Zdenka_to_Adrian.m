@@ -4,9 +4,7 @@ function SelSims=Convert_Zdenka_to_Adrian(SelSims,snapshots,SimulationOptions,Co
 %Junction Values
     SelSims.Time= Stimulus{1}.TimeAxis;
     SelSims.Data.JunctionRmat=SelSims.Data.JunctionResistance;
-    SelSims.Data.JunctionCurrents=SelSims.Data.JunctionCurrents;
     SelSims.Data.JunctionVoltage=SelSims.Data.JunctionVoltages;
-
 
 %Wire Values
     countSource=0;
@@ -32,8 +30,12 @@ xa=Connectivity.WireEnds(:,1);
 ya=Connectivity.WireEnds(:,2);
 xb=Connectivity.WireEnds(:,3);
 yb=Connectivity.WireEnds(:,4);
-xc=(xa+xb)/2;
-yc=(ya+yb)/2;
+xa=diag(xa);
+xb=diag(xb);
+ya=diag(ya);
+yb=diag(yb);
+xc=(xa+xb)./2; % NEED HELP WITH THIS
+yc=(ya+yb)./2; % NEED HELP WITH THIS
 % xc=Connectivity.VertexPosition(:,1);
 % yc=Connectivity.VertexPosition(:,2);
 xi=Connectivity.EdgePosition(1,:);
@@ -63,7 +65,12 @@ SelSims.Settings.Vmin = Stimulus{1}.AmplitudeOff;
 if strcmp(Stimulus{1}.BiasType,'AlonPulse')
 SelSims.Settings.NoC = Stimulus{1}.NumPulse1+Stimulus.NumPulse2;
 SelSims.Settings.SetFreq = Stimulus{1}.Period;
+
 end 
 SelSims.Settings.Model = 'Zdenka';
 SelSims.Settings.Name  = Connectivity.filename;
+SelSims.SimInfo.MaxI=max(max([SelSims.Data.Currents{:}]));
+SelSims.SimInfo.MinI=min(min([SelSims.Data.Currents{:}]));
+SelSims.SimInfo.MaxV=max(max(SelSims.Data.JunctionVoltage));
+SelSims.SimInfo.MinV=min(min(SelSims.Data.JunctionVoltage));
 end
