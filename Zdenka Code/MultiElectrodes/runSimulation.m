@@ -68,7 +68,7 @@ Components = initializeComponentsMulti(Connectivity.NumberOfEdges,Components);
 
 %% Initialize stimulus:
 Signals = cell(SimulationOptions.numOfElectrodes,1);
-
+Stimulus = cell(SimulationOptions.numOfElectrodes,1);
 
 Stimulus1.BiasType       = biasType;           % 'DC' \ 'AC' \ 'DCandWait' \ 'Ramp' \ 'AlonPulse'
 if strcmp(biasType,'TimeDelay')

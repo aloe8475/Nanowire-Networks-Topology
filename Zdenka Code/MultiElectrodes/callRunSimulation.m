@@ -34,13 +34,16 @@ switch simType
         loadpath = 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka\10 Square Pulses\'; %load contact nodes from previous simulations
 
         savepath= 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka\Variable Time Delay\';
-        load('Zdenka_100nw_DCandWait_100SimsOnly_2_Sec_2Electrodes_Vmax_2_09-Oct-2019.mat') %load contact nodes from previous simulations
-        OldSims=SelSims; %save simulations from previous.
-        clear SelSims
+        load([loadpath 'Zdenka_100nw_DCandWait_100SimsOnly_2_Sec_2Electrodes_Vmax_2_09-Oct-2019.mat']) %load contact nodes from previous simulations
+        for i = 1:numSims
+        ElecPos(i,:)=[SelSims{i}.Electrodes.PosIndex]; %save simulations from previous.
+        end
+        clear SelSims 
+        SelSims=cell(numSims,numTimes);
         for i = 1:numSims
             randseed=i;
             biasType='TimeDelay';
-            contactn = [OldSims{i}.Electrodes.PosIndex]; %load contact nodes from previous simulation (case P)
+            contactn = ElecPos(i,:); %load contact nodes from previous simulation (case P)
             fprintf([num2str(i) '\n']);
             for j = 1:numTimes
                 timeDelay = j*0.05;
