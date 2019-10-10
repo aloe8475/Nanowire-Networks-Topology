@@ -100,16 +100,16 @@ for j = 1:length(Explore)
                     classTime{counter}=idxTime{j};
                 end
             else
-                if j<=(1/3)*length(Explore)
+                if j<=(1/3)*length(Explore) %if the threshold is reached in the first three pulses, early
                     class{j}{i}='Early';
                     classNums{1}=[1:(1/3)*length(Explore)];
-                elseif j>(1/3)*length(Explore) & j <(2/3)*length(Explore)
+                elseif j>(1/3)*length(Explore) & j <(2/3)*length(Explore) %if the threshold is reached in the 4 mid pulses, mid
                     class{j}{i}='Mid';
                     classNums{2}=[round((1/3)*length(Explore)):round((2/3)*length(Explore))];
-                elseif j>=(2/3)*length(Explore) & j<length(Explore)
+                elseif j>=(2/3)*length(Explore) & j<length(Explore) %if the threshold is reached in the 3 last pulses, last 
                     class{j}{i}='Late';
                     classNums{3}=[round(2/3*length(Explore))+1:length(Explore)-1];
-                elseif j == length(Explore)
+                elseif j == length(Explore) %if the threshold is reached last pulse, never
                     class{j}{i}='Never';
                     classNums{4}=length(Explore);
                 end
@@ -1093,7 +1093,7 @@ colorbar EastOutside
 zlabel('Time Delay (sec)');
 yticks([1 2 3 4]);
 xlabel('Communicability');
-yticklabels({'Pulse 3','Mid Point of Time Delay','End Point of Time Delay','Pulse 4'});    %% ANOVAS
+yticklabels({'Pulse 3','Mid Point of Time Delay','End Point of Time Delay','Pulse 4'});    
 %% ANOVAS
 
 if analysis_type=='e'
@@ -1149,11 +1149,61 @@ if analysis_type=='e'
     FClustbox=FigHandle(2);
     
     clear FigHandle FigList
+    % TIME ANALYSIS 
+else 
+      
+    maxlength = max(cellfun(@numel, categories.COMM));
+    COMMtemp = cellfun(@(v) [v, nan(1, maxlength-numel(v))], categories.COMM, 'UniformOutput', false);
+    
+    [ANOVA.COMM.p,ANOVA.COMM.AnovaTab,ANOVA.COMM.Stats] = anova1([COMMtemp{1}' COMMtemp{2}' COMMtemp{3}' COMMtemp{4}'],{'Pulse 3','Mid Time Delay','End Time Delay','Pulse 4'});
+    [POSTHOC.COMM.c, POSTHOC.COMM.m, POSTHOC.COMM.h, POSTHOC.COMM.nms]=multcompare(ANOVA.COMM.Stats,'alpha',.05/3,'ctype','bonferroni');
+    title('Communicability Post Hoc')
+    
+    FigHandle = setdiff(allchild(groot), FigList);
+    FCOMMtable=FigHandle(1);
+    FCOMMbox=FigHandle(2);
+    
+    clear FigHandle FigList
+    
+    %Path Length
+    FigList = allchild(groot);
+    
+    maxlength = max(cellfun(@numel, categories.PathLength));
+    PathLengthTemp = cellfun(@(v) [v, nan(1, maxlength-numel(v))], categories.PathLength, 'UniformOutput', false);
+    
+    [ANOVA.PathLength.p,ANOVA.PathLength.AnovaTab,ANOVA.PathLength.Stats] = anova1([PathLengthTemp{1}' PathLengthTemp{2}' PathLengthTemp{3}' PathLengthTemp{3}'],{'Pulse 3','Mid Time Delay','End Time Delay','Pulse 4'});
+    [POSTHOC.PathLength.c, POSTHOC.PathLength.m, POSTHOC.PathLength.h, POSTHOC.PathLength.nms]=multcompare(ANOVA.PathLength.Stats,'alpha',.05/3,'ctype','bonferroni');
+    title('Path Length Post Hoc')
+    FigHandle = setdiff(allchild(groot), FigList);
+    
+    FPathtable=FigHandle(1);
+    FPathbox=FigHandle(2);
+    
+    clear FigHandle FigList
+    
+    %Clustering Coeff
+    FigList = allchild(groot);
+    
+    maxlength = max(cellfun(@numel, categories.Clust));
+    ClustTemp = cellfun(@(v) [v, nan(1, maxlength-numel(v))], {categories.Clust{1}' categories.Clust{2}' categories.Clust{3}' categories.Clust{4}'}, 'UniformOutput', false);
+    
+    [ANOVA.Clust.p,ANOVA.Clust.AnovaTab,ANOVA.Clust.Stats] = anova1([ClustTemp{1}' ClustTemp{2}' ClustTemp{3}' ClustTemp{4}'],{'Pulse 3','Mid Time Delay','End Time Delay','Pulse 4'});
+    title('Clustering Coeff ANOVA')
+    [POSTHOC.Clust.c, POSTHOC.Clust.m, POSTHOC.Clust.h, POSTHOC.Clust.nms]=multcompare(ANOVA.Clust.Stats,'alpha',.05,'ctype','bonferroni');
+    title('Clustering Coeff Post Hoc')
+    FigHandle = setdiff(allchild(groot), FigList);
+    
+    FClusttable=FigHandle(1);
+    FClustbox=FigHandle(2);
+    
+    clear FigHandle FigList
 end
 %% Save
-save_directory='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Figures\Explore Analysis\Multiple Simulations - Same Network\';
+if analysis_type=='e'
+save_directory='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Figures\Explore Analysis\MultiPulse Categorical Analysis\';
 MaxVoltage=num2str(Sim{1}.SimInfo.MaxV);
 MaxVoltage=strrep(MaxVoltage,'.','');
+
 
 % saveas(fCat,[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeCategories_Degree_' date],'jpg');
 % print(fCat,'-painters','-dpdf','-bestfit','-r600',[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeCategories_Degree_' date '.pdf']);
@@ -1187,7 +1237,33 @@ saveas(fWatts,[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(le
 print(fWatts,'-painters','-dpdf','-bestfit','-r600',[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeCategories_PathLength vs ClustCoeff vs Watts-Strogatz_' date '.pdf']);
 saveas(fCOMMCat,[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeCategories_TimeCategories vs Communicability' date],'jpg');
 print(fCOMMCat,'-painters','-dpdf','-bestfit','-r600',[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeCategories vs Communicability' date '.pdf']);
+else
+    save_directory='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Figures\Explore Analysis\Time Delay Analysis\';
+MaxVoltage=num2str(Sim{1}.SimInfo.MaxV);
+MaxVoltage=strrep(MaxVoltage,'.','');
 
+saveas(fTime,[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeSeries_' date],'jpg');
+print(fTime,'-painters','-dpdf','-bestfit','-r600',[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeSeries_' date '.pdf']);
+saveas(fCOMMCurr,[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_Current vs Communicability Correlation_' date],'jpg');
+print(fCOMMCurr,'-painters','-dpdf','-bestfit','-r600',[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_Current vs Communicability Correlation_' date '.pdf']);
+saveas(FCOMMtable,[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeDelay_ANOVA_Table_COMM_' date],'jpg');
+print(FCOMMtable,'-painters','-dpdf','-bestfit','-r600',[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeDelay_ANOVA_Table_COMM_' date '.pdf']);
+saveas(FCOMMbox,[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeDelay_ANOVA_Boxplot_COMM_' date],'jpg');
+print(FCOMMbox,'-painters','-dpdf','-bestfit','-r600',[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeDelay_ANOVA_Boxplot_COMM_' date '.pdf']);
+saveas(FPathtable,[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeDelay_ANOVA_Table_PathLength_' date],'jpg');
+print(FPathtable,'-painters','-dpdf','-bestfit','-r600',[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeDelay_ANOVA_Table_PathLength_' date '.pdf']);
+saveas(FPathbox,[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeDelay_ANOVA_Boxplot_PathLength_' date],'jpg');
+print(FPathbox,'-painters','-dpdf','-bestfit','-r600',[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeDelay_ANOVA_Boxplot_PathLength_' date '.pdf']);
+saveas(FClusttable,[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeDelay_ANOVA_Table_ClustCoeff_' date],'jpg');
+print(FClusttable,'-painters','-dpdf','-bestfit','-r600',[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeDelay_ANOVA_Table_ClustCoeff_' date '.pdf']);
+saveas(FClustbox,[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeDelay_ANOVA_Boxplot_ClustCoeff_' date],'jpg');
+print(FClustbox,'-painters','-dpdf','-bestfit','-r600',[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeDelay_PathLength vs ClustCoeff vs Watts-Strogatz' date '.pdf']);
+saveas(fWatts,[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeDelay_PathLength vs ClustCoeff vs Watts-Strogatz_' date],'jpg');
+print(fWatts,'-painters','-dpdf','-bestfit','-r600',[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeDelay_PathLength vs ClustCoeff vs Watts-Strogatz_' date '.pdf']);
+saveas(fCOMMCat,[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeDelay_TimeDelay vs Communicability' date],'jpg');
+print(fCOMMCat,'-painters','-dpdf','-bestfit','-r600',[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeDelay vs Communicability' date '.pdf']);
+
+end 
 
 %% -----------------------------------------------------------------------
 % %% Timestamps

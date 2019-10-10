@@ -10,9 +10,10 @@ switch computer
         dataPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Networks\Zdenka Networks';
         simPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka';
     case ''
-        dataPath='/suphys/aloe8475/Documents/CODE/Adrian''s Code/NETWORK_sims_2/Saved Networks';
+        dataPath='/suphys/aloe8475/Documents/CODE/Data/Raw/Networks/Zdenka Networks';
+        simPath='/suphys/aloe8475/Documents/CODE/Data/Raw/Simulations/Zdenka';
     case 'LAPTOP-S1BV3HR7'
-        dataPath='D:\alon_\Research\PhD\CODE\Zdenka''s Code\atomic-switch-network-1.3-beta\examples';
+        dataPath='D:\alon_\Research\PhD\CODE\Zdenka Code\atomic-switch-network-1.3-beta\examples';
 end
 cd(dataPath)
 waitfor(msgbox('Select the Network saved data'));

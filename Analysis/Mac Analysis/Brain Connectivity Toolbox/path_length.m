@@ -8,8 +8,8 @@ for c = 1:size
           if(c~=dest)
               [P,d] = shortestpath(G,c,dest);
               if mod(c,100)==0 && dest==1
-                fprintf(['\n Shortest Path Completed:' num2str(c) '\n']);
-                toc(time1)
+%                 fprintf(['\n Shortest Path Completed:' num2str(c) '\n']);
+%                 toc(time1)
               end 
                x = [x, d];
           end

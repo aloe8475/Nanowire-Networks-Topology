@@ -44,9 +44,6 @@ text(currAx,Cxe-1.7,Cye+0.7,'Electrode'); %Write 'Electrode' where it is placed
 %Plot Currents:
 if network_load=='a'
 currs=triu(Sim.Data.Currents{IndexTime}); % Find values of currents
-else
-currs=triu(Sim.Data.JunctionCurrents(IndexTime,:)); % Find values of currents
-end 
 Imat=full(abs(currs)); %full current matrix (instead of sparse double) + absolute value
 Cx=Layout.CX(Adj~=0); %'x' coordinates for junctions that are 1 in the Adj matrix
 Cy=Layout.CY(Adj~=0);%'y' coordinates for junctions that are 1 in the Adj matrix
@@ -58,6 +55,21 @@ PlotNetworkAux(currAx,X,Y,Cx,Cy,'curr',c);
 labels=strsplit(num2str(1:length(Ilist))); %all junctions
 % text(Cx,Cy,labels,'HorizontalAlignment','left');%label each junction with its number
 clim=[min(Ilist) max(Ilist)]; %minimum and maximum currents
+else
+currs=triu(Sim.Data.JunctionCurrents(IndexTime,:)); % Find values of currents
+Imat=full(abs(currs));
+Ilist=Imat; % current list for junctions that are 1 in the Adj matrix
+I=linspace(0,max(Ilist),10*length(Ilist)); %generates 10*length(Ilist)) points between 0 and max current
+cmap=jet(10*length(Ilist)); %creates jet colormap with 10*length(Ilist) colorvalues
+c=interp1(I,cmap,full(Ilist)); % %creates interpolation table with colormap - not sure what this is
+Cx=Layout.CX; %'x' coordinates for junctions that are 1 in the Adj matrix
+Cy=Layout.CY;%'y' coordinates for junctions that are 1 in the Adj matrix
+PlotNetworkAux(currAx,X,Y,Cx,Cy,'curr',c);
+labels=strsplit(num2str(1:length(Ilist))); %all junctions
+clim=[min(Ilist) max(Ilist)]; %minimum and maximum currents
+
+end 
+
 
 %colorbar
 colormap(currAx,cmap);

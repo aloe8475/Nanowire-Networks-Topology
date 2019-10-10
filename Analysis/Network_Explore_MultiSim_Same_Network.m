@@ -134,7 +134,7 @@ for currentSimulation=1:length(simulations)
                 fprintf(num2str(currentSimulation));
             end
             MAX_PULSE_CENTRES=11;
-            for time=1:length(pulseCentres) %Alon to change to var
+            for time=1:length(pulseCentres)
                 [TimeData(time).Explore{currentSimulation},TimeData(time).threshold{currentSimulation}]=explore_simulation(currentSim,network,network_load,simNum,currentPath,currentSimulation,simulations,pulseCentres,time);
             end
             if length(pulseCentres<11)
@@ -162,8 +162,8 @@ for currentSimulation=1:length(simulations)
             
             
             
-            % TIME-BASED ANALYSIS USING ZDENKA'S CODE:
-            if network_load == 'z' %making sure zdenka's code is loaded
+            % TIME-BASED ANALYSIS USING ZDENKa CODE:
+            if network_load == 'z' %making sure zdenka code is loaded
                 
                 %Choose a time to Explore Simulation:
                 
@@ -280,7 +280,7 @@ if strcmp(network_load,'a')
     cd(currentPath);
 elseif strcmp(network_load,'z')
     % Get network - Zdenka:
-    % D:\alon_\Research\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
+    % D:\alon_\Research\PhD\CODE\Zdenka Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
     [network,sim_loaded, explore_network, numNetworks]=Load_Zdenka_Code();
     simulations=network.Simulations;
     cd(currentPath);

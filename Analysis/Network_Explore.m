@@ -82,7 +82,7 @@ if networkNum==0 %if we want to loop through all networks
             if networkCount==length(network)
                 save_state=lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
                 if save_state=='y'
-                    save_explore(Explore,network(networkCount),network_load,currentPath,simNum,loop);
+                    save_explore(Explore,network(networkCount),network_load,currentPath,simNum,loop,currentSim);
                     i=i+1; %get out of while loop this loop finishes
                 end
             end
@@ -219,14 +219,14 @@ if ~loop
         cd(currentPath);
         % elseif strcmp(network_load,'z')
         %Get network - Zdenka:
-        % D:\alon_\Research\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
+        % D:\alon_\Research\PhD\CODE\Zdenka Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
         %     network=Load_Zdenka_Code();
         %     cd(currentPath);
         % end
         
     elseif strcmp(network_load,'z')
         % Get network - Zdenka:
-        % D:\alon_\Research\PhD\CODE\Zdenka's Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
+        % D:\alon_\Research\PhD\CODE\Zdenka Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
         [network,sim_loaded, explore_network, numNetworks]=Load_Zdenka_Code();
         simulations=network.Simulations;
         cd(currentPath);
@@ -252,9 +252,9 @@ else
         thisfile = dinfo(K).name;
         destfile = fullfile(dataPath, thisfile);
         temp = load(thisfile); %load file into network variable
-        if strcmp(network_load,'a') %if adrian's data structure
+        if strcmp(network_load,'a') %if adrian data structure
             network(K)=temp.SelNet;
-        elseif strcmp(network_load,'z') %if zdenka's data structure
+        elseif strcmp(network_load,'z') %if zdenka data structure
             network(K)=temp;
         end
         simulations(K)=network(K).Simulations;
@@ -285,7 +285,7 @@ function Explore=explore_simulation_loop(Sim,network,network_load,simNum,current
 % Full Graph = all degrees, all resistences
 [NodeList.String,NodeList.UserData]=GetNodeList(Sim);
 NodeList.Value=1:height(Sim.Electrodes);
-
+fprintf('Starting Network Analysis... \n');
 %% Timeseries View
 %Plot Current
 % f=figure;
@@ -351,7 +351,7 @@ IndexTime=size(Sim.Data,1);%input(['What Timestamp do you want to analyse? 1-' n
 %% Network View
 % Function that plots network view of current and resistance
 [f2, f3, Adj, NumEl, Explore] = network_view(Sim,IndexTime, NodeList,network_load);
-fprintf('Network Analysis Complete \n');
+fprintf('Network View Analysis Complete \n');
 close all
 %% Overlay Graph Theory:
 % -----------------------------
@@ -661,7 +661,11 @@ cd(currentPath);
 if loop==0
     save_directory=['..\Data\Explore Analysis\Continuous DC\'];
 elseif loop ==1
-        save_directory=['..\Data\Explore Analysis\' num2str(size(currentSim.SelLayout.AdjMat,2)) 'nw Alternate NWs\'];
+    if network_load=='z'
+        save_directory=['..\Data\Explore Analysis\MultiNetwork Analysis\' num2str(size(currentSim.SelLayout.AdjMat,2)) 'nw Alternate NWs\'];
+    else
+        save_directory=['..\Data\Explore Analysis\MultiNetwork Analysis\' num2str(network.NetworkSettings.Number) 'nw Alternate NWs\'];
+    end 
 end
 if strcmp(network_load,'z')%Zdenka Code:
         network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
@@ -1014,7 +1018,11 @@ if binarise_network=='y' %Binarise so we can use Resistance for graph theory ana
     %low resistence), so that we can plot ONLY those nodes/edges that
     %have low resistence and are relevant.
     fprintf('Binarising... \n');
+    if network_load=='a'
     a= full(currentSim.Data.Rmat{IndexTime});
+    else
+        a= full(currentSim.Data.JunctionRmat(IndexTime,:));
+    end 
     a(a==5000)=1; %if resistance is low, we make it 1 (on)
     a(a==5000000)=0;  %if it is high we make it 0 (off)
     net_mat=a;
