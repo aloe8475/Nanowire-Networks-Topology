@@ -1,4 +1,4 @@
-function [OutputDynamics, SimulationOptions, snapshots, SelSims,testcurrent] = simulateNetworkMulti(Connectivity, Components, Stimulus, SimulationOptions,biasType, varargin)
+function [OutputDynamics, SimulationOptions, snapshots, SelSims] = simulateNetworkMulti(Connectivity, Components, Stimulus, SimulationOptions,biasType, varargin)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Simulates the network and finds the resistance between the two contacts
 % as a function of time.
@@ -233,7 +233,7 @@ SelSims.Gmat=Gmat;
 SelSims.Data.WireVoltages = wireVoltage;
 OutputDynamics.junctionVoltage    = junctionVoltage;
 SelSims.Data.JunctionVoltages = junctionVoltage;
-testcurrent=OutputDynamics.electrodeCurrent;
+% testcurrent=OutputDynamics.electrodeCurrent;
 OutputDynamics.junctionResistance = junctionResistance;
 SelSims.Data.JunctionResistance = junctionResistance;
 % electrodeVoltage=wireVoltage(:,SimulationOptions.electrodes);

@@ -1,5 +1,5 @@
 % Make sure you have added the folder 'asn', including its subdiretories
-function SelSims= runSimulation(contactn, timeDelay,randseed,biasType,numNanowires,inputVoltage)
+function SelSims= runSimulation(SimSettings,contactn, timeDelay,randseed,biasType,numNanowires,inputVoltage)
 
 close all;
 % clearvars -except Nodes testcurrent testconduct contactn recurrent
@@ -17,11 +17,10 @@ SimulationOptions.onlyGraphics    = false; % true \ false (no analysis is done a
 %% Simulation general options:
 SimulationOptions.seed = s;    % save
 SimulationOptions.dt = 1e-2;%1e-3;   % (sec)
-SimulationOptions.T  = 2;%1e0;    % (sec) duration of simulation
+SimulationOptions.T  = SimSettings.SimulationDuration;%1e0;    % (sec) duration of simulation
 SimulationOptions.TimeVector = (SimulationOptions.dt:SimulationOptions.dt:SimulationOptions.T)';
 SimulationOptions.NumberOfIterations = length(SimulationOptions.TimeVector);
 
-%% Simulation recording options:
 if strcmp(biasType,'DC')
     SimulationOptions.ContactMode     = 'farthest';    % 'farthest' \ 'specifiedDistance' \ 'random' (the only one relevant for 'randAdjMat' (no spatial meaning)) \ 'preSet'
     % FOR MULTIPLE ELECTRODES NEED TO DEFINE BELOW AND UNCOMMENT BOTH LINES
@@ -68,45 +67,65 @@ Components = initializeComponentsMulti(Connectivity.NumberOfEdges,Components);
 
 %% Initialize stimulus:
 Signals = cell(SimulationOptions.numOfElectrodes,1);
-Stimulus = cell(SimulationOptions.numOfElectrodes,1);
+% StimulusSource = cell(SimulationOptions.numOfElectrodes,1);
 
-Stimulus1.BiasType       = biasType;           % 'DC' \ 'AC' \ 'DCandWait' \ 'Ramp' \ 'AlonPulse'
-if strcmp(biasType,'TimeDelay')
-    Stimulus1.AmplitudeOn  = inputVoltage;
-    Stimulus1.AmplitudeOff = 0.005;%1e-3;
-    Stimulus1.Period       = 3; %period of the short pulses
-    Stimulus1.LongWait     = timeDelay*0.05; %Waiting time between the first set and second set of pulses
-    Stimulus1.NumPulse1    = 3; %number of pulses before the long wait
-    Stimulus1.NumPulse2    = 1; %number of pulses after the long wait
-    
-elseif strcmp(biasType,'DCandWait')
-    Stimulus1.OnTime         = 0.0;
-    Stimulus1.OffTime        = SimulationOptions.T/20; %ten pulses
-    Stimulus1.AmplitudeOn    = inputVoltage;
-    Stimulus1.AmplitudeOff   = 0.005;
-elseif strcmp(biasType,'DC')
-    % Stimulus1.OnTime         = 0.0;
-    % Stimulus1.OffTime        = SimulationOptions.T/20; %ten pulses
-    Stimulus1.AmplitudeOn    = inputVoltage;
-    Stimulus1.AmplitudeOff   = 0.005;
+%Source Type
+if SimSettings.numSources>1 %if multiple types
+    StimulusSource(1).BiasType       = biasType{1};           % 'DC' \ 'AC' \ 'DCandWait' \ 'Ramp' \ 'AlonPulse'
+    StimulusSource(2).BiasType       = biasType{2};           % 'DC' \ 'AC' \ 'DCandWait' \ 'Ramp' \ 'AlonPulse'
+else
+    StimulusSource.BiasType       = biasType;           % 'DC' \ 'AC' \ 'DCandWait' \ 'Ramp' \ 'AlonPulse'
 end
-[Signals{1,1}, Stimulus{1}] = getStimulusMulti(Stimulus1, SimulationOptions);
+%Drain Type
+StimulusDrain.BiasType       = 'Drain';           % 'DC' \ 'AC' \ 'DCandWait' \ 'Ramp'
 
+for bias=1:SimSettings.numSources %for each stimulus source, select the bias type
+    
+    if strcmp(biasType,'TimeDelay')
+        StimulusSource.AmplitudeOn  = inputVoltage;
+        StimulusSource.AmplitudeOff = 0.005;%1e-3;
+        StimulusSource.Period       = 2; %period of the short pulses
+        StimulusSource.LongWait     = timeDelay; %Waiting time between the first set and second set of pulses
+        StimulusSource.NumPulse1    = 3; %number of pulses before the long wait
+        StimulusSource.NumPulse2    = 1; %number of pulses after the long wait
+    elseif strcmp(biasType{bias},'TimeDelay1')
+        StimulusSource(bias).AmplitudeOn  = inputVoltage;
+        StimulusSource(bias).AmplitudeOff = 0.005;%1e-3;
+        StimulusSource(bias).Period       = 2; %period of the short pulses
+        StimulusSource(bias).WaitTime     = timeDelay; %Waiting time between the first set and second set of pulses
+        StimulusSource(bias).NumPulse1    = 1; %number of pulses before the long wait
+        StimulusSource(bias).NumPulse2    = 0; %number of pulses after the long wait
+    elseif strcmp(biasType{bias},'TimeDelay2')
+        StimulusSource(bias).AmplitudeOn  = inputVoltage;
+        StimulusSource(bias).AmplitudeOff = 0.005;%1e-3;
+        StimulusSource(bias).Period       = 2; %period of the short pulses
+        StimulusSource(bias).StartWait     = timeDelay; %Waiting time between the first set and second set of pulses
+        StimulusSource(bias).StartTime     = (StimulusSource(bias).Period) + StimulusSource(bias).StartWait; %start after stimulus 1 + wait time
+        StimulusSource(bias).NumPulse1    = 0; %number of pulses before the long wait
+        StimulusSource(bias).NumPulse2    = 1; %number of pulses after the long wait
+    elseif strcmp(biasType,'DCandWait')
+        StimulusSource.OnTime         = 0.0;
+        StimulusSource.OffTime        = SimulationOptions.T/20; %ten pulses
+        StimulusSource.AmplitudeOn    = inputVoltage;
+        StimulusSource.AmplitudeOff   = 0.005;
+    elseif strcmp(biasType,'DC')
+        % Stimulus1.OnTime         = 0.0;
+        % Stimulus1.OffTime        = SimulationOptions.T/20; %ten pulses
+        StimulusSource.AmplitudeOn    = inputVoltage;
+        StimulusSource.AmplitudeOff   = 0.005;
+    end
+end
+%Source1
+[Signals{1,1}, Stimulus{1}] = getStimulusMulti(StimulusSource(1), SimulationOptions);
+%Drain1
+[Signals{2,1}, Stimulus{2}] = getStimulusMulti(StimulusDrain, SimulationOptions);
 
-
-
-Stimulus2.BiasType       = 'Drain';           % 'DC' \ 'AC' \ 'DCandWait' \ 'Ramp'
-[Signals{2,1}, Stimulus{2}] = getStimulusMulti(Stimulus2, SimulationOptions);
-
-% Stimulus3.BiasType       = 'DCandWait';           % 'DC' \ 'AC' \ 'DCandWait' \ 'Ramp'
-% Stimulus3.OnTime         = 0.0;
-% Stimulus3.OffTime        = 1.0;
-% Stimulus3.AmplitudeOn    = 1.4;
-% Stimulus3.AmplitudeOff   = 0.005;
-% Signals{3,1} = getStimulusMulti(Stimulus3, SimulationOptions);
-%
-% Stimulus3.BiasType       = 'Drain';           % 'DC' \ 'AC' \ 'DCandWait' \ 'Ramp'
-% Signals{3,1} = getStimulusMulti(Stimulus3, SimulationOptions);
+if length(biasType)>1%if we want multiple electrodes
+    %Source2
+    [Signals{3,1}, Stimulus{3}] = getStimulusMulti(StimulusSource(2), SimulationOptions);
+    %Drain2
+    [Signals{4,1}, Stimulus{4}] = getStimulusMulti(StimulusDrain, SimulationOptions);
+end
 
 %% Simulate:
 fprintf('Running simulation ...')
@@ -122,15 +141,15 @@ end
 
 SimulationOptions.electrodes      = SimulationOptions.ContactNodes;
 if SimulationOptions.takingSnapshots
-    [Output, SimulationOptions, snapshots, SelSims,testcurrent,testconduct] = simulateNetworkMulti(Connectivity, Components, Signals, SimulationOptions, biasType, snapshotsIdx); % (Ohm)
+    [Output, SimulationOptions, snapshots, SelSims] = simulateNetworkMulti(Connectivity, Components, Signals, SimulationOptions, biasType, snapshotsIdx); % (Ohm)
 else % this discards the snaphots
-    [Output, SimulationOptions, snapshots, SelSims,testcurrent] = simulateNetworkMulti(Connectivity, Components, Signals, SimulationOptions,biasType); % (Ohm)
+    [Output, SimulationOptions, snapshots, SelSims] = simulateNetworkMulti(Connectivity, Components, Signals, SimulationOptions,biasType); % (Ohm)
 end
 
 
 %Convert Zdenka's structure to Adrian's Structure:
 SelSims=Convert_Zdenka_to_Adrian(SelSims,snapshots,SimulationOptions,Connectivity,Components,Stimulus);
-SelSims.Settings.SigType = Stimulus{1}.BiasType;
+SelSims.Settings.SigType = StimulusSource{1}.BiasType;
 SelSims.NumberOfNodes=Connectivity.NumberOfNodes;
 fprintf('\n')
 

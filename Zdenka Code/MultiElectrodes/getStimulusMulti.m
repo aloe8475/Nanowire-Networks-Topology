@@ -73,7 +73,7 @@ function [signal,Stimulus] = getStimulusMulti(Stimulus, SimulationOptions)
 % Ido Marcus
 % Paula Sanz-Leon
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
+        dbstop if error
     % Signal duration and timestep:
     Stimulus.T  = SimulationOptions.T;
     Stimulus.dt = SimulationOptions.dt;
@@ -163,6 +163,38 @@ T(T>0)=0;
             Stimulus.Signal(Stimulus.TimeAxis >= SecondSetStart) = Stim1(Stimulus.TimeAxis >= SecondSetStart);
             Stimulus.Signal(Stimulus.TimeAxis >= SecondSetEnd)   = Stimulus.AmplitudeOff;
             
+        case 'TimeDelay1'
+%             Stimulus.Signal = max(Stimulus.AmplitudeOff,Stimulus.AmplitudeOn*square(2*pi*Stimulus.TimeAxis/Stimulus.Period));
+%             Stimulus.Signal(Stimulus.TimeAxis >= Stimulus.NumPulse1*Stimulus.Period) = Stimulus.AmplitudeOff;
+%             SecondSetStart =  Stimulus.NumPulse1*Stimulus.Period + Stimulus.LongWait; %second set of pulses starts here
+%             Stim1          = max(Stimulus.AmplitudeOff,Stimulus.AmplitudeOn*square(2*pi*(Stimulus.TimeAxis-SecondSetStart)/Stimulus.Period));
+%             SecondSetEnd   = SecondSetStart + Stimulus.NumPulse2*Stimulus.Period;
+%             Stimulus.Signal(Stimulus.TimeAxis >= SecondSetStart) = Stim1(Stimulus.TimeAxis >= SecondSetStart);
+%             Stimulus.Signal(Stimulus.TimeAxis >= SecondSetEnd)   = Stimulus.AmplitudeOff;   
+
+            FirstSetStart =  Stimulus.NumPulse2*(Stimulus.Period); %First set of pulses starts here
+%             Stim1          = max(Stimulus.AmplitudeOff,Stimulus.AmplitudeOn*square(2*pi*(Stimulus.TimeAxis-FirstSetStart)/Stimulus.Period));
+            FirstSetEnd  = FirstSetStart + Stimulus.NumPulse1*(Stimulus.Period);
+            Stimulus.Signal(Stimulus.TimeAxis >= FirstSetStart) = Stimulus.AmplitudeOn;%Stim1(Stimulus.TimeAxis >= FirstSetStart);
+            Stimulus.Signal(Stimulus.TimeAxis > FirstSetEnd)   = Stimulus.AmplitudeOff;  
+%             Stimulus.Signal(Stimulus.TimeAxis < FirstSetStart)   = Stimulus.AmplitudeOff;    
+            Stimulus.Signal=Stimulus.Signal';
+            
+       case 'TimeDelay2'
+            %JOEL CAN HELP HERE OR RAW RAW
+            %NEED TO FLIP SIGNAL + ADD TIMEDELAY 1 TIME PULSE BEFORE THIS COMES ON
+            
+            %StimulusSource(bias).StartTime %We want this to = Stimulus.AmplitudeOff
+%             
+%             Stimulus.Signal = max(Stimulus.AmplitudeOff,Stimulus.AmplitudeOn*square(2*pi*Stimulus.TimeAxis/Stimulus.Period));
+%             Stimulus.Signal(Stimulus.TimeAxis >= Stimulus.NumPulse2*Stimulus.Period) = Stimulus.AmplitudeOff;
+            FirstSetStart =  Stimulus.StartTime + Stimulus.NumPulse1*(Stimulus.Period); %First set of pulses starts here
+%             Stim1          = max(Stimulus.AmplitudeOff,Stimulus.AmplitudeOn*square(2*pi*(Stimulus.TimeAxis-FirstSetStart)/Stimulus.Period));
+            FirstSetEnd  = FirstSetStart + Stimulus.NumPulse2*(Stimulus.Period);
+            Stimulus.Signal(Stimulus.TimeAxis >= FirstSetStart) = Stimulus.AmplitudeOn;%Stim1(Stimulus.TimeAxis >= FirstSetStart);
+            Stimulus.Signal(Stimulus.TimeAxis >= FirstSetEnd)   = Stimulus.AmplitudeOff;    
+            Stimulus.Signal(Stimulus.TimeAxis < FirstSetStart)   = Stimulus.AmplitudeOff;    
+            Stimulus.Signal=Stimulus.Signal';
             
         case 'SinglePulse'
            Stimulus.Signal = Stimulus.AmplitudeOff*ones(size(Stimulus.TimeAxis));
