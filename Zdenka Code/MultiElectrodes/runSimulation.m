@@ -46,8 +46,18 @@ end
 %% Generate Connectivity:
 Connectivity.WhichMatrix       = 'nanoWires';    % 'nanoWires' \ 'randAdjMat'
 switch Connectivity.WhichMatrix
+    
     case 'nanoWires'
-        loadpath= 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Networks\Zdenka Networks\';
+        computer=getenv('computername');
+        switch computer
+            case 'W4PT80T2' %if on desktop at uni - Alon
+                loadpath= 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Networks\Zdenka Networks\';
+            case '' %if on linux
+                loadpath='/suphys/aloe8475/Documents/CODE/Data/Raw/Networks/Zdenka Networks/';
+                %     case 'LAPTOP-S1BV3HR7'
+                %         currentPath='D:\alon_\Research\PhD\CODE\Analysis';
+                %case '' %--- Add other computer paths (e.g. Mike)
+        end
         Connectivity.filename = [loadpath 'AdriantoZdenka' num2str(numNanowires) 'nw_simulation1.mat'];
         Connectivity.DataType = 'Zdenka';
         %         Connectivity.filename = 'NetworkData/2016-09-08-155153_asn_nw_00100_nj_00261_seed_042_avl_100.00_disp_10.00.mat';
@@ -120,7 +130,7 @@ end
 %Drain1
 [Signals{2,1}, Stimulus{2}] = getStimulusMulti(StimulusDrain, SimulationOptions);
 
-if length(biasType)>1%if we want multiple electrodes
+if length(StimulusSource)>1%if we want multiple electrodes
     %Source2
     [Signals{3,1}, Stimulus{3}] = getStimulusMulti(StimulusSource(2), SimulationOptions);
     %Drain2
@@ -149,7 +159,12 @@ end
 
 %Convert Zdenka's structure to Adrian's Structure:
 SelSims=Convert_Zdenka_to_Adrian(SelSims,snapshots,SimulationOptions,Connectivity,Components,Stimulus);
-SelSims.Settings.SigType = StimulusSource{1}.BiasType;
+if length(StimulusSource)>1
+SelSims.Settings.SigType{1} = Stimulus{1}.BiasType;
+SelSims.Settings.SigType{2} = Stimulus{2}.BiasType;
+else
+SelSims.Settings.SigType = Stimulus{1}.BiasType;
+end 
 SelSims.NumberOfNodes=Connectivity.NumberOfNodes;
 fprintf('\n')
 
