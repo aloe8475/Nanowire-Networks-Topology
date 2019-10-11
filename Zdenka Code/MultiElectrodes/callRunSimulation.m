@@ -7,11 +7,20 @@ numSims=100;
 numTimes=100;
 numNanowires=100;
 inputVoltage=2;
+computer=getenv('computername');
 
 switch simType
     case 'c'
         %% Continuous DC
-        savepath= 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka\Single DC Pulse\';
+        switch computer
+            case 'W4PT80T2' %if on desktop at uni - Alon
+                savepath= 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka\Single DC Pulse\';
+            case '' %if on linux
+                savepath='/suphys/aloe8475/Documents/CODE/Data/Raw/Simulations/Zdenka/Single DC Pulse/';
+                %     case 'LAPTOP-S1BV3HR7'
+                %         currentPath='D:\alon_\Research\PhD\CODE\Analysis';
+                %case '' %--- Add other computer paths (e.g. Mike)
+        end
         SimSettings.numSources=1;
         SimSettings.SimulationDuration=2;
         randseed=i;
@@ -21,7 +30,12 @@ switch simType
         SelSims=runSimulation(contactn, [],randseed,biasType,numNanowires,inputVoltage);
     case 'p'
         %% 10 DC pulses: HAVE TO RUN THIS BEFORE TIME-DELAY (NEED TO USE SAME CONTACTN
-        savepath= 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka\10 Square Pulses\';
+        switch computer
+            case 'W4PT80T2' %if on desktop at uni - Alon
+                savepath= 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka\10 Square Pulses\';
+            case '' %if on linux
+                savepath='/suphys/aloe8475/Documents/CODE/Data/Raw/Simulations/Zdenka/10 Square Pulses/';
+        end
         SimSettings.numSources=1;
         SimSettings.SimulationDuration=2;
         
@@ -36,9 +50,16 @@ switch simType
         
     case 't'
         %% 4 pulses with different Time-Delay bw pulse 3 and 4
-        loadpath = 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka\10 Square Pulses\'; %load contact nodes from previous simulations
         
-        savepath= 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka\Variable Time Delay\';
+        switch computer
+            case 'W4PT80T2' %if on desktop at uni - Alon
+                savepath= 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka\Variable Time Delay\';
+                loadpath = 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka\10 Square Pulses\'; %load contact nodes from previous simulations
+            case '' %if on linux
+                savepath='/suphys/aloe8475/Documents/CODE/Data/Raw/Simulations/Zdenka/Variable Time Delay/';
+                loadpath='/suphys/aloe8475/Documents/CODE/Data/Raw/Simulations/Zdenka/10 Square Pulses/';
+                
+        end
         load([loadpath 'Zdenka_100nw_DCandWait_100SimsOnly_2_Sec_2Electrodes_Vmax_2_09-Oct-2019.mat']) %load contact nodes from previous simulations
         SimSettings.numSources=1;
         SimSettings.SimulationDuration=9;
