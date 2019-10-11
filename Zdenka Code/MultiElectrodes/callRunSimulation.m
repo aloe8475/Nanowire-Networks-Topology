@@ -27,7 +27,7 @@ switch simType
         % contactn = randi(100,[1 2]);
         % timeDelay = i*0.05;
         biasType='DC';
-        SelSims=runSimulation(contactn, [],randseed,biasType,numNanowires,inputVoltage);
+        SelSims=runSimulation(SimSettings,contactn, [],randseed,biasType,numNanowires,inputVoltage);
     case 'p'
         %% 10 DC pulses: HAVE TO RUN THIS BEFORE TIME-DELAY (NEED TO USE SAME CONTACTN
         switch computer
@@ -44,7 +44,7 @@ switch simType
             contactn = randi(100,[1 2]);
             % timeDelay = i*0.05;
             biasType='DCandWait';
-            SelSims{i}=runSimulation(contactn, [],randseed,biasType,numNanowires,inputVoltage);
+            SelSims{i}=runSimulation(SimSettings,contactn, [],randseed,biasType,numNanowires,inputVoltage);
         end
         save([savepath SelSims{1}.Settings.Model '_' num2str(SelSims{1}.NumberOfNodes) 'nw_' SelSims{1}.Settings.SigType '_' num2str(length(SelSims)) 'SimsOnly_' num2str(SelSims{1}.Settings.Time) '_Sec_' num2str(length(SelSims{1}.Electrodes)) 'Electrodes_Vmax_' num2str(SelSims{1}.Settings.Vmax) '_' date '.mat'],'SelSims','-v7.3');
         
@@ -76,7 +76,7 @@ switch simType
             fprintf([num2str(i) '\n']);
             for j = 1:numTimes
                 timeDelay = j*0.05;
-                SelSims{i,j}=runSimulation(contactn, timeDelay,randseed,biasType,numNanowires,inputVoltage);
+                SelSims{i,j}=runSimulation(SimSettings,contactn, timeDelay,randseed,biasType,numNanowires,inputVoltage);
             end
         end
         save([savepath SelSims{1}.Settings.Model '_' num2str(SelSims{1}.NumberOfNodes) 'nw_' SelSims{1}.Settings.SigType '_' num2str(length(SelSims)) 'SimsOnly_' num2str(SelSims{1}.Settings.Time) '_Sec_' num2str(length(SelSims{1}.Electrodes)) 'Electrodes_Vmax_' num2str(SelSims{1}.Settings.Vmax) '_' date '.mat'],'SelSims','-v7.3');
