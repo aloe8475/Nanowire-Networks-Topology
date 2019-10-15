@@ -49,7 +49,12 @@ switch simType
         %         save([savepath SelSims{1}.Settings.Model '_' num2str(SelSims{1}.NumberOfNodes) 'nw_' SelSims{1}.Settings.SigType '_' num2str(length(SelSims)) 'SimsOnly_' num2str(SelSims{1}.Settings.Time) '_Sec_' num2str(length(SelSims{1}.Electrodes)) 'Electrodes_Vmax_' num2str(SelSims{1}.Settings.Vmax) '_' num2str(WorkerID) '.mat'],'SelSims','-v7.3');
         save([savepath 'SelSims_DCandWait_' num2str(WorkerID) '.mat'],'SelSims','-v7.3');
                 fprintf('Data Saved');
-
+        %% Network Explore Analysis:
+        exploreAnalysisPath='/headnode2/aloe8475/CODE/Analysis';
+        cd(exploreAnalysisPath);
+        exploreSavePath='/headnode2/aloe8475/CODE/Data/Explore Analysis/DC Pulse/';
+        Explore{WorkerID}=Network_Explore_MultiSim_PARALLEL(numNanowires,SelSims{WorkerID}); 
+        save([exploreSavePath 'ExploreAnalysis_TimeDelay_' num2str(WorkerID) '.mat'],'Explore','-v7.3');
     case 't'
         %% 4 pulses with different Time-Delay bw pulse 3 and 4
         
@@ -83,8 +88,15 @@ switch simType
         %         end
         %         save([savepath SelSims{1}.Settings.Model '_' num2str(SelSims{1}.NumberOfNodes) 'nw_' SelSims{1}.Settings.SigType '_' num2str(length(SelSims)) 'SimsOnly_' num2str(SelSims{1}.Settings.Time) '_Sec_' num2str(length(SelSims{1}.Electrodes)) 'Electrodes_Vmax_' num2str(SelSims{1}.Settings.Vmax) '_' date '.mat'],'SelSims','-v7.3');
         save([savepath 'SelSims_TimeDelay_' num2str(WorkerID) '.mat'],'SelSims','-v7.3');
-                fprintf('Data Saved');
-
+        fprintf('Data Saved \n');
+        fprintf('Starting Explore Analysis');
+        %% Network Explore Analysis:
+        exploreAnalysisPath='/headnode2/aloe8475/CODE/Analysis';
+        cd(exploreAnalysisPath);
+        exploreSavePath='/headnode2/aloe8475/CODE/Data/Explore Analysis/Time Delay Analysis/';
+        Explore{WorkerID}=Network_Explore_MultiSim_PARALLEL(numNanowires,SelSims{WorkerID,:}); 
+        save([exploreSavePath 'ExploreAnalysis_TimeDelay_' num2str(WorkerID) '.mat'],'Explore','-v7.3');
+        
     case 'l'
         %% 4 pulses with different Time-Delay bw pulse 3 and 4
         %         loadpath = 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka\10 Square Pulses\'; %load contact nodes from previous simulations
@@ -112,6 +124,12 @@ switch simType
         %         save([savepath SelSims{1,1}.Settings.Model '_' num2str(SelSims{1,1}.NumberOfNodes) 'nw_' SelSims{1,1}.Settings.SigType '_' num2str(length(SelSims)) 'SimsOnly_' num2str(SelSims{1,1}.Settings.Time) '_Sec_' num2str(length(SelSims{1,1}.Electrodes)) 'Electrodes_Vmax_' num2str(SelSims{1,1}.Settings.Vmax) '_' date '.mat'],'SelSims','-v7.3');
         save([savepath 'SelSims_TimeDelayLDA_' num2str(WorkerID) '.mat'],'SelSims','-v7.3');
                 fprintf('Data Saved');
-
+         %% Network Explore Analysis:
+        exploreAnalysisPath='/headnode2/aloe8475/CODE/Analysis';
+        cd(exploreAnalysisPath);
+        exploreSavePath='/headnode2/aloe8475/CODE/Data/Explore Analysis/LDA Time Delay/';
+        Explore{WorkerID}=Network_Explore_MultiSim_PARALLEL(numNanowires,SelSims{WorkerID,:}); 
+        save([exploreSavePath 'ExploreAnalysis_TimeDelay_' num2str(WorkerID) '.mat'],'Explore','-v7.3');
 end
+
 end

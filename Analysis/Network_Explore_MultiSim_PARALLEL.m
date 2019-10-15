@@ -12,9 +12,10 @@
 % Binarise Threshold = Only low resistence junctions + wires
 % Full Graph = all degrees, all resistences
 % --------------------------
-dbstop if error
+% dbstop if error
 %% Load Data
 
+function Explore=Network_Explore_MultiSim_PARALLEL(numNW,simNum)
 set(0,'DefaultFigureVisible','off')
 
 
@@ -23,35 +24,26 @@ switch computer
     case 'W4PT80T2' %if on desktop at uni - Alon
         currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis';
     case '' %if on linux
-        currentPath='/suphys/aloe8475/Documents/CODE/Analysis';
+        currentPath='/headnode2/aloe8475/CODE/ZdenkaCode/MultiElectrodes';
     case 'LAPTOP-S1BV3HR7'
         currentPath='D:\alon_\Research\PhD\CODE\Analysis';
         %case '' %--- Add other computer paths (e.g. Mike)
 end
 cd(currentPath);
-load_data_question=lower(input('Load network data? N - None, D - Network Data\n','s'));
 
-if load_data_question=='d'
-    clearvars -except load_data_question currentPath
-    close all
+    clearvars -except load_data_question currentPath simNum
+%     close all
     %load network data
-    [network, network_load, simulations,sim_loaded,numNetworks, explore_network]= load_data(currentPath);
-elseif load_data_question=='a'
-    clear LDA_Analysis
-    close all
-    %Load previous LDA analysis data
-    networkNum=input(['Which Network # do you want to load? 1 - ' num2str(length(network)) '\n']);
-    simNum=input(['Which Simulation # do you want to load? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
-    [LDA_Analysis(simNum)] = load_LDA_data(currentPath);
-else
-    close all
-end
-
+    simDetails=[numNW, simNum];
+%     [network, network_load, simulations,sim_loaded,numNetworks, explore_network]= load_data(currentPath);
+    [network,sim_loaded, explore_network, numNetworks]=Load_Zdenka_Code(simDetails);
+    simulations=network.Simulations;
+    cd(currentPath);
 %% Choose Simulations
 %-------
 %Choose Network and Simulation for training or exploring
 
-for currentSimulation=1:length(simulations)
+for currentSimulation=simNum%1:length(simulations)
     
     if load_data_question~='a'
         if explore_network=='t'
@@ -277,52 +269,50 @@ for currentSimulation=1:length(simulations)
 end
 
 %--------------------------------------------------------------------------
-
+end 
 
 %% FUNCTIONS
 
 %Loading Functions
-function [network, network_load, simulations, sim_loaded, numNetworks, explore_network] = load_data(currentPath)
-
-%% Load Data
-%Ask to load Zdenka or Adrian:
-network_load=lower(input('Which Network do you want to analyse? Z - Zdenka, A - Adrian \n','s'));
-
-if strcmp(network_load,'a')
-    %Get current network - Adrian
-    [network,sim_loaded, explore_network, numNetworks]=Load_Adrian_Code();
-    %unpack simulation data into simulation variable
-    if sim_loaded==1
-        if explore_network=='t' %if we have training and testing simulations
-            tempSim=network.Simulations{2};
-            %         tempSim=num2cell(tempSim);
-            %         network.Simulations(2) = [];
-            %         network.Simulations=[network.Simulations tempSim];
-            
-            %number of training + number of testing:
-            
-            fprintf(['Your Training Simulations are Simulations 1 - ' num2str(network.numTrainingSims) '\n']);
-            fprintf(['Your Testing Simulations are Simulations ' num2str(network.numTrainingSims +1) ' - ' num2str(network.numTestingSims) '\n']);
-            
-            fprintf('\n -------------------------- \nStart Analysis: \n');
-            
-        end
-        for i = 1:length(network.Simulations)
-            simulations(i)=network.Simulations(i);
-        end
-    else
-        simulations=network.Simulations;
-    end
-    cd(currentPath);
-elseif strcmp(network_load,'z')
-    % Get network - Zdenka:
-    % D:\alon_\Research\PhD\CODE\Zdenka Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
-    [network,sim_loaded, explore_network, numNetworks]=Load_Zdenka_Code();
-    simulations=network.Simulations;
-    cd(currentPath);
-    % end
-end
-end
+% function [network, network_load, simulations, sim_loaded, numNetworks, explore_network] = load_data(currentPath,simNum)
+% 
+% %% Load Data
+% %Ask to load Zdenka or Adrian:
+% network_load=lower(input('Which Network do you want to analyse? Z - Zdenka, A - Adrian \n','s'));
+% 
+% if strcmp(network_load,'a')
+%     %Get current network - Adrian
+%     [network,sim_loaded, explore_network, numNetworks]=Load_Adrian_Code();
+%     %unpack simulation data into simulation variable
+%     if sim_loaded==1
+%         if explore_network=='t' %if we have training and testing simulations
+%             tempSim=network.Simulations{2};
+%             %         tempSim=num2cell(tempSim);
+%             %         network.Simulations(2) = [];
+%             %         network.Simulations=[network.Simulations tempSim];
+%             
+%             %number of training + number of testing:
+%             
+%             fprintf(['Your Training Simulations are Simulations 1 - ' num2str(network.numTrainingSims) '\n']);
+%             fprintf(['Your Testing Simulations are Simulations ' num2str(network.numTrainingSims +1) ' - ' num2str(network.numTestingSims) '\n']);
+%             
+%             fprintf('\n -------------------------- \nStart Analysis: \n');
+%             
+%         end
+%         for i = 1:length(network.Simulations)
+%             simulations(i)=network.Simulations(i);
+%         end
+%     else
+%         simulations=network.Simulations;
+%     end
+%     cd(currentPath);
+% elseif strcmp(network_load,'z')
+%     % Get network - Zdenka:
+%     % D:\alon_\Research\PhD\CODE\Zdenka Code\atomic-switch-network-1.3-beta\asn\connectivity\connectivity_data
+% 
+%     % end
+% end
+% end
 
 %Exploring Functions:
 function [Explore,threshold] = explore_simulation(Sim,network,network_load,simNum,currentPath,currentSimulation,simulations,times,time)
