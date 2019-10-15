@@ -28,7 +28,7 @@ dbstop if error
 %     end
 % A=createRandRegGraph(height(network.Explore.GraphView.Nodes),temp);%this only works with an even number of edges*nodes, so we need to make it even above
 
-%Make 50 versions of WattsStrogatz graphs
+%Make 50 versions of WattsStrogatz graphs --- 
 
 for graph=1%:50 %bootstrapping
     count=0;

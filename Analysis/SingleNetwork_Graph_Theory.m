@@ -1,6 +1,9 @@
 % 06/10/19
 % Network Analysis Code - This code performs graph and subgraph analysis for
-% individual Explore files created in Network_Explore.m 
+% individual Explore files. 
+% Use this instead of MultiNetwork_Graph_Theory.m when we need to explore
+% different simulations of 1 network. Use together with
+% MultiSims_Graph_Theory.m 
 % --------------------------
 dbstop if error
 load_data_question=lower(input('Load Explore Data or None? N - None, D - Explore Data \n','s'));
@@ -297,7 +300,7 @@ function [Explore,randomOrdered100] = load_data()
             [FileName,PathName] = uigetfile('*.mat','Select the Explore saved data');
             f=fullfile(PathName,FileName);
             load(f);       
-            wattsPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Network Explore Functions'
+            wattsPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Network Explore Functions';
             load([wattsPath 'Random_Ordered_Graphs_ALL_networks.mat']);
 end
 
