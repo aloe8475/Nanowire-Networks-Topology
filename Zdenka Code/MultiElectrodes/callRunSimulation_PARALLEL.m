@@ -1,17 +1,25 @@
 %Topology Analysis Simulation Script Start:
 
 function callRunSimulation_PARALLEL(WorkerID)
-simType='t';%lower(input('Choose Simulation: C - Continuous DC, P - 10 Pulse DC, T - Time Delay Analysis, L - LDA \n','s'));
+%WorkerID is the parallel worker number which is assigned to this script
 
+%% CHANGE SIMULATION TYPE HERE
+% --------------------------------------------------------------------------------------------------------------------------
+simType='t';%lower(input('Choose Simulation: C - Continuous DC, P - 10 Pulse DC, T - Time Delay Analysis, L - LDA \n','s'));
+% --------------------------------------------------------------------------------------------------------------------------
+
+%Initialise Variables
 numSims      = 100;
 numTimes     = 100;
 numNanowires = 100;
 inputVoltage =   2;
 computer     = getenv('computername');
 
+
 switch simType
     case 'c'
         %% Continuous DC
+        %Initialise Paths
         switch computer
             case 'W4PT80T2' %if on desktop at uni - Alon
                 savepath= 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka\Single DC Pulse\';
@@ -29,7 +37,8 @@ switch simType
         biasType = 'DC';
         SelSims  = runSimulation(SimSettings,contactn, [],randseed,biasType,numNanowires,inputVoltage);
     case 'p'
-        %% 10 DC pulses: HAVE TO RUN THIS BEFORE TIME-DELAY (NEED TO USE SAME CONTACTN
+        %% 10 DC pulses: HAVE TO RUN THIS BEFORE TIME-DELAY (NEED TO USE SAME CONTACTN)
+        %Initialise Paths
         switch computer
             case 'W4PT80T2' %if on desktop at uni - Alon
                 savepath = 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka\10 Square Pulses\';
@@ -53,11 +62,11 @@ switch simType
         exploreAnalysisPath='/headnode2/aloe8475/CODE/Analysis';
         cd(exploreAnalysisPath);
         exploreSavePath='/headnode2/aloe8475/CODE/Data/Explore Analysis/DC Pulse/';
-        Explore{WorkerID}=Network_Explore_MultiSim_PARALLEL(numNanowires,SelSims{WorkerID}); 
-        save([exploreSavePath 'ExploreAnalysis_TimeDelay_' num2str(WorkerID) '.mat'],'Explore','-v7.3');
+        [Explore{WorkerID}, threshold{WorderID}, network{WorkerID}, Sim{WorkerID},analysis_type{WorkerID}]=Network_Explore_MultiSim_PARALLEL(numNanowires,SelSims{WorkerID},biasType); 
+        save([exploreSavePath 'ExploreAnalysis_TimeDelay_' num2str(WorkerID) '.mat'],'Explore','threshold','network','Sim','analysis_type','-v7.3');
     case 't'
         %% 4 pulses with different Time-Delay bw pulse 3 and 4
-        
+        %Initialise Paths
         switch computer
             case 'W4PT80T2' %if on desktop at uni - Alon
                 savepath = 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka\Variable Time Delay\';
@@ -72,13 +81,13 @@ switch simType
         SimSettings.SimulationDuration = 9;
         
         %         for i = WorkerID
-        ElecPos(WorkerID,:) = [SelSims{WorkerID}.Electrodes.PosIndex]; %save simulations from previous.
+        ElecPos(WorkerID,:) = [SelSims{WorkerID}.Electrodes.PosIndex]; %save electrodes from previous simulation
         %         end
         clear SelSims
         SelSims = cell(numSims,numTimes);
         %         for i = WorkerID
-        randseed = WorkerID;
-        biasType = 'TimeDelay';
+        randseed = WorkerID; 
+        biasType = 'TimeDelay'; % biasType for getStimulus function
         contactn = ElecPos(WorkerID,:); %load contact nodes from previous simulation (case P)
         fprintf([num2str(WorkerID) '\n']);
         for j = 1:numTimes
@@ -94,11 +103,11 @@ switch simType
         exploreAnalysisPath='/headnode2/aloe8475/CODE/Analysis';
         cd(exploreAnalysisPath);
         exploreSavePath='/headnode2/aloe8475/CODE/Data/Explore Analysis/Time Delay Analysis/';
-        Explore{WorkerID}=Network_Explore_MultiSim_PARALLEL(numNanowires,SelSims{WorkerID,:}); 
-        save([exploreSavePath 'ExploreAnalysis_TimeDelay_' num2str(WorkerID) '.mat'],'Explore','-v7.3');
+        [Explore{WorkerID}, threshold{WorderID}, network{WorkerID}, Sim{WorkerID},analysis_type{WorkerID}]=Network_Explore_MultiSim_PARALLEL(numNanowires,SelSims{WorkerID,:},biasType); 
+        save([exploreSavePath 'ExploreAnalysis_TimeDelay_' num2str(WorkerID) '.mat'],'Explore','threshold','network','Sim','analysis_type','-v7.3');
         
     case 'l'
-        %% 4 pulses with different Time-Delay bw pulse 3 and 4
+        %% 4 pulses with different Time-Delay bw pulse 3 and 4 + LDA Analysis Setup
         %         loadpath = 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka\10 Square Pulses\'; %load contact nodes from previous simulations
         
         savepath ='/headnode2/aloe8475/CODE/Data/Raw/Simulations/Zdenka/Variable Time Delay/';
@@ -106,12 +115,13 @@ switch simType
         
         SimSettings.numSources=2;
         SimSettings.SimulationDuration=9;
+        %% NEED TO FIGURE OUT CONTACT NODE POSITIONS FOR LDA TOPOLOGY EXPLORATION - ALON 15/10/19
         contactn = randi(100,[1 4]); %Placement of 4 electrodes: [Source1, Drain1, Source2, Drain2]
         clear SelSims
         SelSims=cell(numSims,numTimes);
         %         for i = WorkerID
         randseed=WorkerID;
-        biasType{1}='TimeDelay1';
+        biasType{1}='TimeDelay1'; %different biasTypes for getStimulus function
         biasType{2}='TimeDelay2';
         tempcontact = contactn(WorkerID,:); %load contact nodes from previous simulation (case P)
         fprintf([num2str(WorkerID) '\n']);
@@ -128,8 +138,8 @@ switch simType
         exploreAnalysisPath='/headnode2/aloe8475/CODE/Analysis';
         cd(exploreAnalysisPath);
         exploreSavePath='/headnode2/aloe8475/CODE/Data/Explore Analysis/LDA Time Delay/';
-        Explore{WorkerID}=Network_Explore_MultiSim_PARALLEL(numNanowires,SelSims{WorkerID,:}); 
-        save([exploreSavePath 'ExploreAnalysis_TimeDelay_' num2str(WorkerID) '.mat'],'Explore','-v7.3');
+        [Explore{WorkerID}, threshold{WorderID}, network{WorkerID}, Sim{WorkerID},analysis_type{WorkerID}]=Network_Explore_MultiSim_PARALLEL(numNanowires,SelSims{WorkerID,:},biasType); 
+        save([exploreSavePath 'ExploreAnalysis_TimeDelay_' num2str(WorkerID) '.mat'],'Explore','threshold','network','Sim','analysis_type','-v7.3');
 end
 
 end
