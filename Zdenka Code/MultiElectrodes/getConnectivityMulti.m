@@ -1,4 +1,4 @@
-function [Connectivity] = getConnectivity(Connectivity)
+function [Connectivity] = getConnectivityMulti(Connectivity)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Generates a structure with an adjacency matrix and its properties.
 %

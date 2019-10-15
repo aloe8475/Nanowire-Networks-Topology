@@ -116,13 +116,6 @@ for ii = 1 : niterations
     rhs = sparse(RHS);
     sol = lhs\rhs;
     
-    % Current based on Adrian's structure - THIS SLOWS US DOWN SO MUCH
-    [rows,cols,~]=find(Connectivity.weights);
-    Curr=sparse(Gmat);
-    for i=1:length(rows)
-        Curr(cols(i),rows(i))=(sol(cols(i))-sol(rows(i)))...
-            *Curr(cols(i), rows(i));
-    end
     
     %Wire Voltage
     tempWireV = sol(1:V);
@@ -135,12 +128,35 @@ for ii = 1 : niterations
     %[lambda_vals(ii,:), voltage_vals(ii,:)] = updateComponentState(compPtr, Stimulus.dt);
     
     wireVoltage(ii,:)        = sol(1:V);
-    
     electrodeCurrent(ii,:)   = sol(V+1:end);
     junctionVoltage(ii,:)    = compPtr.comp.voltage;
     junctionResistance(ii,:) = compPtr.comp.resistance;
     junctionFilament(ii,:)   = compPtr.comp.filamentState;
     
+    % Current based on Adrian's structure
+    
+    Imat = zeros(Connectivity.NumberOfNodes, Connectivity.NumberOfNodes);
+    index = sub2ind(size(Imat), edgeList(:,1),edgeList(:,2));
+    Imat(index) = junctionVoltage(ii,:)./junctionResistance(ii,:);
+    Imat = Imat + Imat.';
+    
+%     [rows,cols,~]=find(Connectivity.weights);
+%     Curr=zeros(size((Gmat)));
+%     voltdif=zeros(size((Gmat)));
+%     for i=1:length(rows)
+%         Curr(cols(i),rows(i))=(sol(cols(i))-sol(rows(i)))...
+%             *Gmat(cols(i), rows(i));
+%         voltdif(cols(i),rows(i))=(sol(cols(i))-sol(rows(i)));
+%     end
+%     currSwitch = compPtr.comp.OnOrOff;
+
+    index = sub2ind(size(Gmat), edgeList(:,1),edgeList(:,2));
+    Rmat = zeros(Connectivity.NumberOfNodes, Connectivity.NumberOfNodes);
+    Rmat(index) = junctionResistance(ii,:);
+    Rmat = abs(Rmat + Rmat.');
+    
+%     Resistance=abs(voltdif)./abs(Curr); %Do you use volt dif or wire voltage here?
+%     Resistance(isnan(Resistance))=0;
     
     % Insert Current Threshold
     if strcmp(biasType,'DCandWait')
@@ -206,7 +222,10 @@ for ii = 1 : niterations
         snapshots{kk} = frame;
         kk = kk + 1;
     end
-    Curr2{ii}=sparse(Curr);
+    Curr2{ii}=sparse(Imat);
+    
+    Res{ii}=sparse(Rmat);
+    
 end
 
 % Store some important fields
@@ -227,7 +246,8 @@ end
 
 OutputDynamics.electrodeCurrent = electrodeCurrent(1:stopTime,:);
 SelSims.Data.ElectrodeCurrents=electrodeCurrent(1:stopTime,:);
-% testcurrent=OutputDynamics.networkCurrent;
+
+% SelSims.Data.WireCurrents=OutputDynamics.networkCurrent;
 OutputDynamics.wireVoltage        = wireVoltage;
 SelSims.Gmat=Gmat;
 SelSims.Data.WireVoltages = wireVoltage;
@@ -241,5 +261,5 @@ SelSims.Data.JunctionResistance = junctionResistance;
 OutputDynamics.junctionFilament   = junctionFilament;
 SelSims.Data.JunctionCurrents=junctionVoltage./junctionResistance;
 SelSims.Data.Currents=Curr2;
-
+SelSims.Data.Rmat=Res;
 end

@@ -62,11 +62,13 @@ SelSims.Settings.MaxW = Components.maxFlux;
 SelSims.Settings.IniW= Components.criticalFlux;
 SelSims.Settings.Vmax = Stimulus{1}.AmplitudeOn;
 SelSims.Settings.Vmin = Stimulus{1}.AmplitudeOff;
-if strcmp(Stimulus{1}.BiasType,'AlonPulse')
+% if strcmp(Stimulus{1}.BiasType,'Time')
+if length(Stimulus)<3 & strcmp(Stimulus{1}.BiasType,'TimeDelay') %only if there's 2 electrodes:
 SelSims.Settings.NoC = Stimulus{1}.NumPulse1+Stimulus{1}.NumPulse2;
-SelSims.Settings.SetFreq = Stimulus{1}.Period;
-
 end 
+if strcmp(Stimulus{1}.BiasType,'DCandWait')
+SelSims.Settings.SetFreq = Stimulus{1}.Period;
+ end 
 SelSims.Settings.Model = 'Zdenka';
 SelSims.Settings.Name  = Connectivity.filename;
 SelSims.SimInfo.MaxI=max(max([SelSims.Data.Currents{:}]));

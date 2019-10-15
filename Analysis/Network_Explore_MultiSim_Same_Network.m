@@ -83,7 +83,7 @@ for currentSimulation=1:length(simulations)
             analysis_type='e';%lower(input('Which analysis would you like to perform? G - graph, E - Explore Network,L - LDA, N - none \n','s'));
         elseif explore_network=='e' % we don't want to allow LDA if just exploring
             %% CHANGE BETWEEN T AND E HERE
-            analysis_type='t'; %lower(input('Which analysis would you like to perform? T = Time b/w Pulses, E = Early/Mid/Late/Never \n','s'));
+            analysis_type='e'; %lower(input('Which analysis would you like to perform? T = Time b/w Pulses, E = Early/Mid/Late/Never \n','s'));
         end
         if analysis_type=='g'
             %% Graph Analysis
@@ -93,6 +93,45 @@ for currentSimulation=1:length(simulations)
         elseif analysis_type=='e'
             %% Exploratary analysis of simulation
             
+            if network_load == 'z' %making sure zdenka code is loaded
+                
+                %Choose a time to Explore Simulation:
+                
+                %Find pulse centres
+                if min(currentSim.Data.VSource1) < max(currentSim.Data.VSource1)
+                    V1 = currentSim.Data.VSource1 - min(currentSim.Data.VSource1(currentSim.Data.VSource1>0)); %if AmpOff is greater than 0 (which it should be)
+                else
+                    V1=currentSim.Data.VSource1;
+                end
+                pulseEnds    = [];
+                pulseStarts  = [];
+                
+                j = 1;
+                
+                isPulse = false;
+                
+                for m = 1:numel(V1)
+                    if V1(m) > 0 && ~isPulse
+                        pulseStarts(j) = m;
+                        isPulse = true;
+                    end
+                    
+                    if V1(m) <= 0 && isPulse
+                        pulseEnds(j) = m - 1;
+                        isPulse = false;
+                        j = j + 1;
+                    end
+                end
+                
+                if numel(pulseStarts) > numel(pulseEnds)
+                    pulseEnds(j) = numel(V1);
+                end
+                
+                pulseCentres = floor((pulseStarts + pulseEnds)/2);
+                  if length(pulseCentres)==currentSim.Settings.SetFreq
+                pulseCentres=[pulseCentres pulseEnds(end-1)]; %take the second last pulse time
+            end
+            end 
             %Choose a time to Explore Simulation:
             %Find the centres of when the voltage is on
             if min(currentSim.Data.VSource1) < max(currentSim.Data.VSource1)
@@ -169,7 +208,7 @@ for currentSimulation=1:length(simulations)
                 
                 %Find pulse centres
                 if min(currentSim.Data.VSource1) < max(currentSim.Data.VSource1)
-                    V1 = currentSim.Data.VSource1 - min(currentSim.Data.VSource1);
+                    V1 = currentSim.Data.VSource1 - min(currentSim.Data.VSource1(currentSim.Data.VSource1>0)); %if AmpOff is greater than 0 (which it should be)
                 else
                     V1=currentSim.Data.VSource1;
                 end
@@ -202,7 +241,7 @@ for currentSimulation=1:length(simulations)
                 %last pulse centre.
                 pulseTimeMid=floor((pulseCentres(end)+pulseCentres(end-1))/2); %find the middle of the third pulse and the 4th pulse (i.e. the time difference)
                 pulseTimeEnd=pulseStarts(end)-1; %the time just before the last pulse
-                pulseCentres=[pulseCentres(1:end-1) pulseTimeMid pulseTimeEnd pulseCentres(end)];end
+                pulseCentres=[pulseCentres(1:end-1) pulseTimeMid pulseTimeEnd pulseCentres(end)];
             for time=1:length(pulseCentres) %Alon to change to var
                 [TimeData(time).Explore{currentSimulation},TimeData(time).threshold{currentSimulation}]=explore_simulation(currentSim,network,network_load,simNum,currentPath,currentSimulation,simulations,pulseCentres,time);
             end
@@ -218,6 +257,7 @@ for currentSimulation=1:length(simulations)
                 end
             end
             i=i+1;  
+            end
         end
         
         if analysis_type=='g' || analysis_type=='n'
@@ -366,7 +406,7 @@ IndexTime=times(time); %choose the last timestamp
 
 %% Network View
 % Function that plots network view of current and resistance
-[f2, f3, Adj, NumEl, Explore] = network_view(Sim,IndexTime, NodeList,network_load);
+[ Adj, NumEl, Explore] = network_view(Sim,IndexTime, NodeList,network_load);
 % fprintf('Network Analysis Complete \n');
 
 %% Overlay Graph Theory:
@@ -536,15 +576,15 @@ if binarise_network=='y' %Binarise so we can use Resistance for graph theory ana
     %low resistence), so that we can plot ONLY those nodes/edges that
     %have low resistence and are relevant.
     %         fprintf('Binarising... \n');
-
-    a= full(currentSim.Data.Rmat{IndexTime});
+        a= abs(full(currentSim.Data.Rmat{IndexTime}));
         a(isnan(a))=0;
         if network_load=='a'
+
     a(a>0 & a<5000000)=1; %if resistance is low, we make it 1 (on) - need to code it this way because for some reason matlab was showing more than one unique value for each of ON & OFF
     a(a>5000)=0;  %if it is high we make it 0 (off)
         else
-    a(a>0 & a<1000000)=1; %if resistance is low, we make it 1 (on)
-    a(a>10000)=0;  %if it is high we make it 0 (off)
+    a(a>0 & a<1e7)=1; %if resistance is low, we make it 1 (on)
+    a(a>1e4)=0;  %if it is high we make it 0 (off)
         end 
 
     net_mat=a;

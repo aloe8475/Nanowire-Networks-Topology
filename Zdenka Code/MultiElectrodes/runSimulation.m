@@ -40,7 +40,6 @@ if ~strcmp(SimulationOptions.ContactMode,'preSet')
     if strcmp(SimulationOptions.ContactMode, 'specifiedDistance')
         SimulationOptions.BiProbeDistance = 1500; % (um)
     end
-    SimulationOptions = selectContacts(Connectivity, SimulationOptions);
 end
 
 %% Generate Connectivity:
@@ -53,7 +52,7 @@ switch Connectivity.WhichMatrix
             case 'W4PT80T2' %if on desktop at uni - Alon
                 loadpath= 'C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Networks\Zdenka Networks\';
             case '' %if on linux
-                loadpath='/suphys/aloe8475/Documents/CODE/Data/Raw/Networks/Zdenka Networks/';
+                loadpath='/headnode2/aloe8475/CODE/Data/Raw/Networks/Zdenka Networks/';
                 %     case 'LAPTOP-S1BV3HR7'
                 %         currentPath='D:\alon_\Research\PhD\CODE\Analysis';
                 %case '' %--- Add other computer paths (e.g. Mike)
@@ -70,6 +69,8 @@ switch Connectivity.WhichMatrix
         Connectivity.sizey = 10;
 end
 Connectivity = getConnectivityMulti(Connectivity);
+    
+SimulationOptions = selectContacts(Connectivity, SimulationOptions);
 
 %% Initialize dynamic components:
 Components.ComponentType       = 'atomicSwitch'; % 'atomicSwitch' \ 'memristor' \ 'resistor'
@@ -91,38 +92,47 @@ StimulusDrain.BiasType       = 'Drain';           % 'DC' \ 'AC' \ 'DCandWait' \ 
 
 for bias=1:SimSettings.numSources %for each stimulus source, select the bias type
     
-    if strcmp(biasType,'TimeDelay')
-        StimulusSource.AmplitudeOn  = inputVoltage;
-        StimulusSource.AmplitudeOff = 0.005;%1e-3;
-        StimulusSource.Period       = 2; %period of the short pulses
-        StimulusSource.LongWait     = timeDelay; %Waiting time between the first set and second set of pulses
-        StimulusSource.NumPulse1    = 3; %number of pulses before the long wait
-        StimulusSource.NumPulse2    = 1; %number of pulses after the long wait
-    elseif strcmp(biasType{bias},'TimeDelay1')
-        StimulusSource(bias).AmplitudeOn  = inputVoltage;
-        StimulusSource(bias).AmplitudeOff = 0.005;%1e-3;
-        StimulusSource(bias).Period       = 2; %period of the short pulses
-        StimulusSource(bias).WaitTime     = timeDelay; %Waiting time between the first set and second set of pulses
-        StimulusSource(bias).NumPulse1    = 1; %number of pulses before the long wait
-        StimulusSource(bias).NumPulse2    = 0; %number of pulses after the long wait
-    elseif strcmp(biasType{bias},'TimeDelay2')
-        StimulusSource(bias).AmplitudeOn  = inputVoltage;
-        StimulusSource(bias).AmplitudeOff = 0.005;%1e-3;
-        StimulusSource(bias).Period       = 2; %period of the short pulses
-        StimulusSource(bias).StartWait     = timeDelay; %Waiting time between the first set and second set of pulses
-        StimulusSource(bias).StartTime     = (StimulusSource(bias).Period) + StimulusSource(bias).StartWait; %start after stimulus 1 + wait time
-        StimulusSource(bias).NumPulse1    = 0; %number of pulses before the long wait
-        StimulusSource(bias).NumPulse2    = 1; %number of pulses after the long wait
-    elseif strcmp(biasType,'DCandWait')
-        StimulusSource.OnTime         = 0.0;
-        StimulusSource.OffTime        = SimulationOptions.T/20; %ten pulses
-        StimulusSource.AmplitudeOn    = inputVoltage;
-        StimulusSource.AmplitudeOff   = 0.005;
-    elseif strcmp(biasType,'DC')
-        % Stimulus1.OnTime         = 0.0;
-        % Stimulus1.OffTime        = SimulationOptions.T/20; %ten pulses
-        StimulusSource.AmplitudeOn    = inputVoltage;
-        StimulusSource.AmplitudeOff   = 0.005;
+    switch biasType
+        
+        case 'TimeDelay'
+            StimulusSource.AmplitudeOn  = inputVoltage;
+            StimulusSource.AmplitudeOff = 0.005;%1e-3;
+            StimulusSource.Period       = 2; %period of the short pulses
+            StimulusSource.LongWait     = timeDelay; %Waiting time between the first set and second set of pulses
+            StimulusSource.NumPulse1    = 3; %number of pulses before the long wait
+            StimulusSource.NumPulse2    = 1; %number of pulses after the long wait
+        case 'TimeDelay1'
+            if size(biasType,1) >1
+                StimulusSource(bias).AmplitudeOn  = inputVoltage;
+                StimulusSource(bias).AmplitudeOff = 0.005;%1e-3;
+                StimulusSource(bias).Period       = 2; %period of the short pulses
+                StimulusSource(bias).WaitTime     = timeDelay; %Waiting time between the first set and second set of pulses
+                StimulusSource(bias).NumPulse1    = 1; %number of pulses before the long wait
+                StimulusSource(bias).NumPulse2    = 0; %number of pulses after the long wait
+            end
+        case 'TimeDelay2'
+            if size(biasType,1) >1
+                StimulusSource(bias).AmplitudeOn  = inputVoltage;
+                StimulusSource(bias).AmplitudeOff = 0.005;%1e-3;
+                StimulusSource(bias).Period       = 2; %period of the short pulses
+                StimulusSource(bias).StartWait     = timeDelay; %Waiting time between the first set and second set of pulses
+                StimulusSource(bias).StartTime     = (StimulusSource(bias).Period) + StimulusSource(bias).StartWait; %start after stimulus 1 + wait time
+                StimulusSource(bias).NumPulse1    = 0; %number of pulses before the long wait
+                StimulusSource(bias).NumPulse2    = 1; %number of pulses after the long wait
+            end
+        case 'DCandWait'
+            numPulses=10;
+            StimulusSource.OnTime         = 0.0;
+            StimulusSource.OffTime        = SimulationOptions.T/(numPulses*2); %ten pulses
+            StimulusSource.AmplitudeOn    = inputVoltage;
+            StimulusSource.AmplitudeOff   = 0.005;
+            StimulusSource.Period      = numPulses;
+            
+        case 'DC'
+            % Stimulus1.OnTime         = 0.0;
+            % Stimulus1.OffTime        = SimulationOptions.T/20; %ten pulses
+            StimulusSource.AmplitudeOn    = inputVoltage;
+            StimulusSource.AmplitudeOff   = 0.005;
     end
 end
 %Source1
@@ -160,11 +170,11 @@ end
 %Convert Zdenka's structure to Adrian's Structure:
 SelSims=Convert_Zdenka_to_Adrian(SelSims,snapshots,SimulationOptions,Connectivity,Components,Stimulus);
 if length(StimulusSource)>1
-SelSims.Settings.SigType{1} = Stimulus{1}.BiasType;
-SelSims.Settings.SigType{2} = Stimulus{2}.BiasType;
+    SelSims.Settings.SigType{1} = Stimulus{1}.BiasType;
+    SelSims.Settings.SigType{2} = Stimulus{2}.BiasType;
 else
-SelSims.Settings.SigType = Stimulus{1}.BiasType;
-end 
+    SelSims.Settings.SigType = Stimulus{1}.BiasType;
+end
 SelSims.NumberOfNodes=Connectivity.NumberOfNodes;
 fprintf('\n')
 

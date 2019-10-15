@@ -2,7 +2,7 @@
 % This function plots the network view of current, voltage and resistance
 % for the chosen Sim at the given timestamp (IndexTime)
 
-function [f1, f2, Adj, NumEl, Explore]= network_view(Sim, IndexTime, NodeList,network_load)
+function [Adj, NumEl, Explore]= network_view(Sim, IndexTime, NodeList,network_load)
 
 Layout=Sim.SelLayout;
 
@@ -22,13 +22,13 @@ NumEl=height(Sim.Electrodes); %Number of electrodes
 else
 NumEl=length({Sim.Electrodes}); %Number of electrodes
 end 
-%Plot Network:
-f1=figure;
-currAx=gca; %current axis
-plot(currAx,X,Y,'b'); % plot wires
-hold on
-scatter(currAx,Cx,Cy,2,'r'); %scatterplot junctions
-hold(currAx,'on');
+% %Plot Network:
+% % f1=figure;
+% currAx=gca; %current axis
+% % plot(currAx,X,Y,'b'); % plot wires
+% hold on
+% scatter(currAx,Cx,Cy,2,'r'); %scatterplot junctions
+% hold(currAx,'on');
 
 %PlotElectrodes
 if network_load=='a'
@@ -39,7 +39,7 @@ else
 end 
 Xe=X(:,IdxEl);Ye=Y(:,IdxEl); %Find X and Y (wires) for electrode
 Cxe=(x2(IdxEl)+x1(IdxEl))./2;Cye=(y1(IdxEl)+y2(IdxEl))./2; %Find X and Y (junctions) for electrode
-text(currAx,Cxe-1.7,Cye+0.7,'Electrode'); %Write 'Electrode' where it is placed
+% text(currAx,Cxe-1.7,Cye+0.7,'Electrode'); %Write 'Electrode' where it is placed
 
 %Plot Currents:
 if network_load=='a'
@@ -51,7 +51,7 @@ Ilist=Imat(Adj~=0); % current list for junctions that are 1 in the Adj matrix
 I=linspace(0,max(Ilist),10*length(Ilist)); %generates 10*length(Ilist)) points between 0 and max current
 cmap=jet(10*length(Ilist)); %creates jet colormap with 10*length(Ilist) colorvalues
 c=interp1(I,cmap,full(Ilist)); % %creates interpolation table with colormap - not sure what this is
-PlotNetworkAux(currAx,X,Y,Cx,Cy,'curr',c);
+% PlotNetworkAux(currAx,X,Y,Cx,Cy,'curr',c);
 labels=strsplit(num2str(1:length(Ilist))); %all junctions
 % text(Cx,Cy,labels,'HorizontalAlignment','left');%label each junction with its number
 clim=[min(Ilist) max(Ilist)]; %minimum and maximum currents
@@ -64,7 +64,7 @@ cmap=jet(10*length(Ilist)); %creates jet colormap with 10*length(Ilist) colorval
 c=interp1(I,cmap,full(Ilist)); % %creates interpolation table with colormap - not sure what this is
 Cx=Layout.CX; %'x' coordinates for junctions that are 1 in the Adj matrix
 Cy=Layout.CY;%'y' coordinates for junctions that are 1 in the Adj matrix
-PlotNetworkAux(currAx,X,Y,Cx,Cy,'curr',c);
+% PlotNetworkAux(currAx,X,Y,Cx,Cy,'curr',c);
 labels=strsplit(num2str(1:length(Ilist))); %all junctions
 clim=[min(Ilist) max(Ilist)]; %minimum and maximum currents
 
@@ -72,30 +72,30 @@ end
 
 
 %colorbar
-colormap(currAx,cmap);
-colorbar(currAx);
-caxis(currAx,clim);
-title(['Current Flow Network View Timestamp ' num2str(IndexTime)]);
+% colormap(currAx,cmap);
+% colorbar(currAx);
+% caxis(currAx,clim);
+% title(['Current Flow Network View Timestamp ' num2str(IndexTime)]);
 
 %Plot Network for Figure 2
-f2=figure;
-currAx=gca; %current axis
-plot(currAx,X,Y,'b'); % plot wires
-hold on
-scatter(currAx,Cx,Cy,2,'r'); %scatterplot junctions
-hold(currAx,'on');
+% f2=figure;
+% currAx=gca; %current axis
+% plot(currAx,X,Y,'b'); % plot wires
+% hold on
+% scatter(currAx,Cx,Cy,2,'r'); %scatterplot junctions
+% hold(currAx,'on');
 
 %PlotElectrodes
 Xe=X(:,IdxEl);Ye=Y(:,IdxEl); %Find X and Y (wires) for electrode
 Cxe=(x2(IdxEl)+x1(IdxEl))./2;Cye=(y1(IdxEl)+y2(IdxEl))./2; %Find X and Y (junctions) for electrode
-text(currAx,Cxe-1.7,Cye+0.7,'Electrode'); %Write 'Electrode' where it is placed
+% text(currAx,Cxe-1.7,Cye+0.7,'Electrode'); %Write 'Electrode' where it is placed
 
 
 %Plot Resistance
 if network_load=='a'
 Rmat=triu(Sim.Data.Rmat{IndexTime});
 else
-    tempRes=Sim.Data.Voltages{IndexTime}./Sim.Data.Currents{IndexTime};
+    tempRes=Sim.Data.WireVoltages(IndexTime,1)./Sim.Data.Currents{IndexTime};
     Rmat=triu(tempRes);
     clear tempRes
 end 
@@ -109,24 +109,23 @@ else
 end 
 cmap=flipud(copper(10*length(Rlist)));
 c=interp1(R,cmap,full(Rlist));
-PlotNetworkAux(currAx,X,Y,Cx,Cy,'curr',c);
+% PlotNetworkAux(currAx,X,Y,Cx,Cy,'curr',c);
 if network_load=='a'
 clim=[min([Sim.Settings.Roff Sim.Settings.Ron]) max([Sim.Settings.Roff Sim.Settings.Ron])];
 else
     clim=[min([Sim.Settings.Roff; Sim.Settings.Ron]) max([Sim.Settings.Roff; Sim.Settings.Ron])];
 end 
-
-%colorbar
-colormap(currAx,cmap);
-colorbar(currAx);
-caxis(currAx,clim);
-
-title(['Resistance Network View Timestamp ' num2str(IndexTime)]);
+% 
+% %colorbar
+% colormap(currAx,cmap);
+% colorbar(currAx);
+% caxis(currAx,clim);
+% 
+% title(['Resistance Network View Timestamp ' num2str(IndexTime)]);
 
 %Save struct
 Explore.NetworkView.currents=Ilist; %save currents at each junction at the IndexTime
 Explore.NetworkView.resistance=Rlist; %save currents at each junction at the IndexTime
 Explore.NetworkView.junctions=labels;
 Explore.NetworkView.ElectrodePosition=IdxEl;
-
     end 
