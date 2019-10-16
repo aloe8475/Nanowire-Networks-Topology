@@ -1,4 +1,4 @@
-function [signal,Stimulus] = getStimulusMulti(Stimulus, SimulationOptions)
+function [signal,Stimulus] = getStimulusMulti(Stimulus, SimulationOptions,Data)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Generates a structure with the details of an external voltage signal
 % applied to the network.
@@ -87,28 +87,28 @@ function [signal,Stimulus] = getStimulusMulti(Stimulus, SimulationOptions)
         case 'DOWPos'
 %             Stimulus.Signal = Stimulus.Amplitude*ones(size(Stimulus.TimeAxis));
 %             T=dlmread('C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Classification\Time Serieis\Dow_Jones_Percentage_Change1.csv');
-                T=dlmread('C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Classification\Time Serieis\IMPORT.csv');
+%                 T=dlmread('C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Classification\Time Serieis\IMPORT.csv');
 
 % T(T > 3) = 3; T(T < -3) = -3;
-T = Stimulus.AmplitudeOn*T;
+T = Stimulus.AmplitudeOn*Data;
 
 T(T<0)=0;
               for i=1:length(Stimulus.TimeAxis)
 %         Stimulus.Signal(i)=T(i);
-       Stimulus.Signal(i) =T(ceil(i/10));
+       Stimulus.Signal(i) =T(ceil(i/25));
               end
                 case 'DOWNeg'
 %             Stimulus.Signal = Stimulus.Amplitude*ones(size(Stimulus.TimeAxis));
 %             T=dlmread('C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Classification\Time Serieis\Dow_Jones_Percentage_Change1.csv');
-                T=dlmread('C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Classification\Time Serieis\IMPORT.csv');
+%                 T=dlmread('C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Classification\Time Serieis\IMPORT.csv');
 
 % T(T > 3) = 3; T(T < -3) = -3;
-T = Stimulus.AmplitudeOn*T;
+T = Stimulus.AmplitudeOn*Data;
 
 T(T>0)=0;
               for i=1:length(Stimulus.TimeAxis)
 %         Stimulus.Signal(i)=T(i);
-       Stimulus.Signal(i) =-T(ceil(i/10));
+       Stimulus.Signal(i) =T(ceil(i/25));
               end
     Stimulus.Signal=Stimulus.Signal';
         case 'Drain'

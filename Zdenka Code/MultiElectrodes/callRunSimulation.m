@@ -3,7 +3,7 @@
 
 simType=lower(input('Choose Simulation: C - Continuous DC, P - 10 Pulse DC, T - Time Delay Analysis, L - LDA \n','s'));
 
-numSims=100;
+numSims=1;
 numTimes=100;
 numNanowires=100;
 inputVoltage=10;

@@ -3,7 +3,7 @@
 % for the chosen Sim at the given timestamp (IndexTime)
 
 function [Adj, NumEl, Explore]= network_view(Sim, IndexTime, NodeList,network_load)
-
+fprintf('line6')
 Layout=Sim.SelLayout;
 
 % These are all aspects of the network that are used to graph it.
@@ -29,6 +29,7 @@ end
 % hold on
 % scatter(currAx,Cx,Cy,2,'r'); %scatterplot junctions
 % hold(currAx,'on');
+fprintf('line32')
 
 %PlotElectrodes
 if network_load=='a'
@@ -69,6 +70,7 @@ labels=strsplit(num2str(1:length(Ilist))); %all junctions
 clim=[min(Ilist) max(Ilist)]; %minimum and maximum currents
 
 end 
+fprintf('line73')
 
 
 %colorbar

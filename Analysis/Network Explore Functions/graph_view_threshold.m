@@ -29,7 +29,6 @@ if ~drain_exist %if no drains
     currs=log10(abs(Sim.Data.Currents{IndexTime}));
 else
     currs=abs(Sim.Data.Currents{IndexTime}); %Graph.BinarisedCurrents);
-
 end
 
 %% What we are doing here is finding the adj matrix, and finding the edges that have current flowing through them.

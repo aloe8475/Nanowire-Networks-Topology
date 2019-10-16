@@ -1,4 +1,4 @@
-function [OutputDynamics, SimulationOptions, snapshots, SelSims] = simulateNetworkMulti(Connectivity, Components, Stimulus, SimulationOptions,biasType, varargin)
+function [OutputDynamics, SimulationOptions, snapshots, SelSims,testcurrent] = simulateNetworkMultiDOW(Connectivity, Components, Stimulus, SimulationOptions,biasType, varargin)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Simulates the network and finds the resistance between the two contacts
 % as a function of time.
@@ -158,18 +158,18 @@ for ii = 1 : niterations
 %     Resistance=abs(voltdif)./abs(Curr); %Do you use volt dif or wire voltage here?
 %     Resistance(isnan(Resistance))=0;
     
-    % Insert Current Threshold
-    if strcmp(biasType,'DCandWait')
-        if abs(electrodeCurrent(ii,1))>MaxI
-            stopTime=ii;
-            break;
-        else
-            stopTime=niterations;
-        end
-    else
+%     % Insert Current Threshold
+%     if strcmp(biasType,'DCandWait')
+%         if abs(electrodeCurrent(ii,1))>MaxI
+%             stopTime=ii;
+%             break;
+%         else
+%             stopTime=niterations;
+%         end
+%     else
         stopTime=niterations;
-    end
-    
+%     end
+%     
     
     % Record the activity of the whole network
     if find(snapshots_idx == ii)
@@ -248,18 +248,18 @@ OutputDynamics.electrodeCurrent = electrodeCurrent(1:stopTime,:);
 SelSims.Data.ElectrodeCurrents=electrodeCurrent(1:stopTime,:);
 
 % SelSims.Data.WireCurrents=OutputDynamics.networkCurrent;
-OutputDynamics.wireVoltage        = sparse(wireVoltage);
-SelSims.Gmat=sparse(Gmat);
-SelSims.Data.WireVoltages = sparse(wireVoltage);
-OutputDynamics.junctionVoltage    = sparse(junctionVoltage);
-SelSims.Data.JunctionVoltages = sparse(junctionVoltage);
-% testcurrent=OutputDynamics.electrodeCurrent;
+OutputDynamics.wireVoltage        = wireVoltage;
+SelSims.Gmat=Gmat;
+SelSims.Data.WireVoltages = wireVoltage;
+OutputDynamics.junctionVoltage    = junctionVoltage;
+SelSims.Data.JunctionVoltages = junctionVoltage;
+testcurrent=OutputDynamics.electrodeCurrent;
 OutputDynamics.junctionResistance = junctionResistance;
-SelSims.Data.JunctionResistance = sparse(junctionResistance);
-% electrodeVoltage=wireVoltage(:,SimulationOptions.electrodes);
-% testconduct=1./(electrodeVoltage./electrodeCurrent);
+SelSims.Data.JunctionResistance = junctionResistance;
+electrodeVoltage=wireVoltage(:,SimulationOptions.electrodes);
+% testconduct=Gmat(SimulationOptions.electrodes,:);
 OutputDynamics.junctionFilament   = junctionFilament;
-SelSims.Data.JunctionCurrents=sparse(junctionVoltage./junctionResistance);
+SelSims.Data.JunctionCurrents=junctionVoltage./junctionResistance;
 SelSims.Data.Currents=Curr2;
 SelSims.Data.Rmat=Res;
 end

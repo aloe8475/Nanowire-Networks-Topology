@@ -1,14 +1,13 @@
-global t;
-global a;
-global plotpsd;
-global dutyratio;
-global ap;
-global Nodes
+%% THIS IS THE DOW JONES STARTING POINT 
+% Next script is runSimulationDOW.m
+
+
 % for Nodes = 1:10
 % contactn=randperm(100,2);
  
-n=1;
 
+amp=0.5; %Voltage Amplitude
+numNW=700; %Number of nanowires
 % load('handwritedata.mat');load('handwirteresult.mat');
 % Data=dlmread('C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Classification\Time Serieis\Dow_Jones_Percentage_Change1.csv');
 Data=dlmread('C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Classification\Time Serieis\IMPORT.csv');
@@ -25,7 +24,7 @@ Data=dlmread('C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Classificatio
 % end
 % for ap=0.5:0.4:2
 % for b=1:length(M)
-    [testcurrent]=runSimulationDOW(Data,n);
+    [testcurrent]=runSimulationDOW(Data,amp,numNW);
     testcurrent(end)
     recurrent=testcurrent;
 %     reconduct=testconduct;
@@ -33,7 +32,7 @@ Data=dlmread('C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Classificatio
 %     recurent(b,:)=Output.networkCurrent(c,:);
 % end
 % recurent(:,end)=[];
-save(['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Classification\Time Serieis\DOW_current_Multi' num2str(n) '.mat'],'recurrent');
+save(['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Classification\Time Serieis\DOW_current_Multi' num2str(amp) '_' num2str(numNW) '.mat'],'recurrent');
 % save(['DOW_result' num2str(ap) '.mat'],'result')
 % end
 % end 

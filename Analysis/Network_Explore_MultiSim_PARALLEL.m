@@ -34,9 +34,10 @@ load_data_question='d';
 %     clearvars -except load_data_question currentPath simNum numNW
 %     close all
 %load network data
-simDetails=[numNW, simNum];
 %     [network, network_load, simulations,sim_loaded,numNetworks, explore_network]= load_data(currentPath);
-[network,sim_loaded, explore_network, numNetworks]=Load_Zdenka_Code(simDetails);
+simDetails=[numNW; simNum];
+network_load='z';
+[network,sim_loaded, explore_network, numNetworks]=Load_Zdenka_Code(simDetails,biasType);
 simulations=network.Simulations;
 cd(currentPath);
 %% Choose Simulations
@@ -75,7 +76,7 @@ for currentSimulation=simNum%1:length(simulations)
             analysis_type='e';%lower(input('Which analysis would you like to perform? G - graph, E - Explore Network,L - LDA, N - none \n','s'));
         elseif explore_network=='e' % we don't want to allow LDA if just exploring
             %% CHANGE BETWEEN T AND E HERE
-            if exist(biasType,'var') %if bias type exists
+            if exist('biasType','var') %if bias type exists
                 if biasType>1 %if it's greater than one, we are doing the time-delay LDA
                     analysis_type='t';
                 else
@@ -95,10 +96,10 @@ for currentSimulation=simNum%1:length(simulations)
             %Choose a time to Explore Simulation:
             
             %Find pulse centres
-            if min(currentSim.Data.VSource1) < max(currentSim.Data.VSource1)
-                V1 = currentSim.Data.VSource1 - min(currentSim.Data.VSource1(currentSim.Data.VSource1>0)); %if AmpOff is greater than 0 (which it should be)
+            if min(currentSim{1}.Data.VSource1) < max(currentSim{1}.Data.VSource1)
+                V1 = currentSim{1}.Data.VSource1 - min(currentSim{1}.Data.VSource1(currentSim{1}.Data.VSource1>0)); %if AmpOff is greater than 0 (which it should be)
             else
-                V1=currentSim.Data.VSource1;
+                V1=currentSim{1}.Data.VSource1;
             end
             pulseEnds    = [];
             pulseStarts  = [];
@@ -125,16 +126,16 @@ for currentSimulation=simNum%1:length(simulations)
             end
             
             pulseCentres = floor((pulseStarts + pulseEnds)/2);
-            if length(pulseCentres)==currentSim.Settings.SetFreq
+            if length(pulseCentres)==currentSim{1}.Settings.SetFreq
                 pulseCentres=[pulseCentres pulseEnds(end-1)]; %take the second last pulse time
             end
         end
         %Choose a time to Explore Simulation:
         %Find the centres of when the voltage is on
-        if min(currentSim.Data.VSource1) < max(currentSim.Data.VSource1)
-            V1 = currentSim.Data.VSource1 - min(currentSim.Data.VSource1);
+        if min(currentSim{1}.Data.VSource1) < max(currentSim{1}.Data.VSource1)
+            V1 = currentSim{1}.Data.VSource1 - min(currentSim{1}.Data.VSource1);
         else
-            V1=currentSim.Data.VSource1;
+            V1=currentSim{1}.Data.VSource1;
         end
         pulseEnds    = [];
         pulseStarts  = [];
@@ -161,7 +162,7 @@ for currentSimulation=simNum%1:length(simulations)
         end
         
         pulseCentres = floor((pulseStarts + pulseEnds)/2);
-        if length(pulseCentres)==currentSim.Settings.SetFreq
+        if length(pulseCentres)==currentSim{1}.Settings.SetFreq
             pulseCentres=[pulseCentres pulseEnds(end-1)]; %take the second last pulse time
         end
         
@@ -171,7 +172,7 @@ for currentSimulation=simNum%1:length(simulations)
         end
         MAX_PULSE_CENTRES=11;
         for time=1:length(pulseCentres)
-            [TimeData(time).Explore{currentSimulation},TimeData(time).threshold{currentSimulation}]=explore_simulation(currentSim,network,network_load,simNum,currentPath,currentSimulation,simulations,pulseCentres,time);
+            [TimeData(time).Explore{currentSimulation},TimeData(time).threshold{currentSimulation}]=explore_simulation(currentSim{1},network,network_load,simNum,currentPath,currentSimulation,simulations,pulseCentres,time);
         end
         if length(pulseCentres<11)
             for time=length(pulseCentres)+1:MAX_PULSE_CENTRES
@@ -202,10 +203,11 @@ for currentSimulation=simNum%1:length(simulations)
             %Choose a time to Explore Simulation:
             
             %Find pulse centres
-            if min(currentSim.Data.VSource1) < max(currentSim.Data.VSource1)
-                V1 = currentSim.Data.VSource1 - min(currentSim.Data.VSource1(currentSim.Data.VSource1>0)); %if AmpOff is greater than 0 (which it should be)
+            currentSim{1}
+            if min(currentSim{1}.Data.VSource1) < max(currentSim{1}.Data.VSource1)
+                V1 = currentSim{1}.Data.VSource1 - min(currentSim{1}.Data.VSource1(currentSim{1}.Data.VSource1>0)); %if AmpOff is greater than 0 (which it should be)
             else
-                V1=currentSim.Data.VSource1;
+                V1=currentSim{1}.Data.VSource1;
             end
             pulseEnds    = [];
             pulseStarts  = [];
@@ -238,7 +240,7 @@ for currentSimulation=simNum%1:length(simulations)
             pulseTimeEnd=pulseStarts(end)-1; %the time just before the last pulse
             pulseCentres=[pulseCentres(1:end-1) pulseTimeMid pulseTimeEnd pulseCentres(end)];
             for time=1:length(pulseCentres) %Alon to change to var
-                [TimeData(time).Explore{currentSimulation},TimeData(time).threshold{currentSimulation}]=explore_simulation(currentSim,network,network_load,simNum,currentPath,currentSimulation,simulations,pulseCentres,time);
+                [TimeData(time).Explore{currentSimulation},TimeData(time).threshold{currentSimulation}]=explore_simulation(currentSim{1},network,network_load,simNum,currentPath,currentSimulation,simulations,pulseCentres,time);
             end
             progressBar(currentSimulation,length(simulations));
             %% Saving Explore

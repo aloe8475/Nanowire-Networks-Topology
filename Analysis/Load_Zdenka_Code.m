@@ -4,14 +4,28 @@
 function [network, sim_loaded, explore_network, numNetworks] = Load_Zdenka_Code(varargin)
 %% Load Network Data:
 %choose network to load
+if ~isempty(varargin)
+    biasType=varargin{2};
+end
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2'
         dataPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Networks\Zdenka Networks';
         simPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka';
     case ''
-        dataPath='/headnode2/aloe8475/CODE/Data/Raw/Networks/Zdenka Networks';
-        simPath='/headnode2/aloe8475/CODE/Data/Raw/Simulations/Zdenka';%'/suphys/aloe8475/Documents/CODE/Data/Raw/Simulations/Zdenka';
+        dataPath='/headnode2/aloe8475/CODE/Data/Raw/Networks/Zdenka Networks/';
+        if exist('biasType','var')
+            switch biasType
+                case 'TimeDelay'
+                    simPath='/headnode2/aloe8475/CODE/Data/Raw/Simulations/Zdenka/Variable Time Delay/';%'/suphys/aloe8475/Documents/CODE/Data/Raw/Simulations/Zdenka';
+                case 'DCandWait'
+                    simPath='/headnode2/aloe8475/CODE/Data/Raw/Simulations/Zdenka/10 Square Pulses/';
+                case 'DC'
+                    simPath='/headnode2/aloe8475/CODE/Data/Raw/Simulations/Zdenka/Single DC Pulse/';
+            end
+        else
+            simPath='/headnode2/aloe8475/CODE/Data/Raw/Simulations/Zdenka/';
+        end 
     case 'LAPTOP-S1BV3HR7'
         dataPath='D:\alon_\Research\PhD\CODE\Zdenka Code\atomic-switch-network-1.3-beta\examples';
 end
@@ -23,8 +37,8 @@ if isempty(varargin)
     f{count}=fullfile(PathName,FileName);
     load(f{count});
 else
-    numNW=varargin(1);
-    simNum=varargin(2);
+    numNW=varargin{1}(1);
+    simNum=varargin{1}(2);
     load([dataPath 'AdriantoZdenka' num2str(numNW) 'nw_simulation1.mat']);
 end
 % Define network variable
