@@ -1,4 +1,4 @@
-function SelSims=Convert_Zdenka_to_Adrian(SelSims,snapshots,SimulationOptions,Connectivity,Components,Stimulus)
+function SelSims=Convert_Zdenka_to_Adrian(SelSims,snapshots,SimulationOptions,Connectivity,Components,Stimulus,Signals)
 %ASK RUOMIN TO HELP CHANGE FOR MULTI ELECTRODES
 
 %Junction Values
@@ -17,13 +17,13 @@ function SelSims=Convert_Zdenka_to_Adrian(SelSims,snapshots,SimulationOptions,Co
             SelSims.Electrodes(k).Name=['Drain' num2str(countDrain)];
         end
     end
-    SelSims.Data.VSource1=SelSims.Data.WireVoltages(:,SelSims.Electrodes(1).PosIndex);
-    SelSims.Data.VDrain1=SelSims.Data.WireVoltages(:,SelSims.Electrodes(2).PosIndex,:);
-    SelSims.Data.ISource1=SelSims.Data.ElectrodeCurrents(:,1); 
+    SelSims.Data.VSource1=Signals{1};%SelSims.Data.WireVoltages(:,SelSims.Electrodes(1).PosIndex); 
+    SelSims.Data.VDrain1=Signals{2};%SelSims.Data.WireVoltages(:,SelSims.Electrodes(2).PosIndex);
+    SelSims.Data.ISource1=SelSims.Data.ElectrodeCurrents(:,1);
     SelSims.Data.IDrain1=SelSims.Data.ElectrodeCurrents(:,2); 
 
 %Adj Matrix & Wire Positions
-SelSims.SelLayout.AdjMat=Connectivity.weights;
+SelSims.SelLayout.AdjMat=Connectivity.weights; %THIS IS THE NETWORK ADJMAT, NOT THE SIMULATION ADJMAT
 connLength=length(Connectivity.WireEnds);
 connLengthNodes=length(Connectivity.VertexPosition);
 xa=Connectivity.WireEnds(:,1);

@@ -7,9 +7,9 @@ function [f6, f7, f8, f9, f10, f11, f12,f13, Explore, sourceElec, drainElec]= gr
 
 %NOTE: This only works with 1 source and 1 drain:
 if source_exist & ~drain_exist
-    electrodes_cell(1)=new_electrodes(1).Name
+    electrodes_cell(1)=new_electrodes(1).Name;
 elseif ~source_exist & drain_exist
-    electrodes_cell(1)=new_electrodes(2).Name
+    electrodes_cell(1)=new_electrodes(2).Name;
 else
     %this works as many sources/drains as required
     for i = 1:length(new_electrodes)
@@ -72,7 +72,7 @@ p3.LineWidth=1.5;
 if network_load=='a'
     Adj=(Sim.Data.AdjMat{IndexTime});%we need to keep a copy of the original Adj matrix (unthresholded) to find all the currents - this is the NON BINARISED Adj matrix
 else
-    Adj=Sim.SelLayout.AdjMat;
+    Adj=Graph.AdjMat;%Sim.SelLayout.AdjMat;
 end
 Adj2=Adj(threshold,threshold);
 currs=(abs(Sim.Data.Currents{IndexTime}));

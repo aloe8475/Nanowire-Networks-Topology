@@ -255,7 +255,7 @@ else
         if strcmp(network_load,'a') %if adrian data structure
             network(K)=temp.SelNet;
         elseif strcmp(network_load,'z') %if zdenka data structure
-            network(K)=temp;
+            network(K)=temp.SelNet;
         end
         simulations(K)=network(K).Simulations;
         clear temp
@@ -350,7 +350,9 @@ IndexTime=size(Sim.Data,1);%input(['What Timestamp do you want to analyse? 1-' n
 
 %% Network View
 % Function that plots network view of current and resistance
-[f2, f3, Adj, NumEl, Explore] = network_view(Sim,IndexTime, NodeList,network_load);
+% [f2, f3, Adj, NumEl, Explore] = network_view(Sim,IndexTime, NodeList,network_load);
+[Adj, NumEl, Explore] = Multinetwork_view(Sim,IndexTime, NodeList,network_load);
+
 fprintf('Network View Analysis Complete \n');
 close all
 %% Overlay Graph Theory:
@@ -378,7 +380,7 @@ end
 if threshold_network=='t'
     [f4, f5, f6, G, Adj, Adj2, Explore, highlightElec, new_electrodes] = graph_view_threshold(Sim,Graph,IndexTime,Explore,G, threshold_network, threshold, drain_exist);
 else
-    [f4, f5, f6, G, Adj, Explore, highlightElec, new_electrodes] = graph_view(Sim,IndexTime,Explore,G, threshold_network,drain_exist,network_load);
+    [f4, f5, f6, G, Adj, Explore, highlightElec, new_electrodes] = Multigraph_view(Sim,IndexTime,Explore,G, threshold_network,drain_exist,network_load);
 end
 close all
 %% Graph Theory View
@@ -388,7 +390,7 @@ if threshold_network=='t'
     fprintf('Graph Theory Complete \n');
     
 else
-    [f7, f8, f9, f10, f11, f12,f13,f14, Explore, sourceElec, drainElec]= graph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore, Graph, highlightElec, new_electrodes,drain_exist,[],network_load);
+    [f7, f8, f9, f10, f11, f12,f13,f14, Explore, sourceElec, drainElec]= Multigraph_theory_explore(Sim,G,Adj,IndexTime,threshold_network, Explore, Graph, highlightElec, new_electrodes,drain_exist,[],network_load);
     fprintf('Graph Theory Complete \n');
 end
 close all
@@ -662,14 +664,14 @@ if loop==0
     save_directory=['..\Data\Explore Analysis\Continuous DC\'];
 elseif loop ==1
     if network_load=='z'
-        save_directory=['..\Data\Explore Analysis\MultiNetwork Analysis\' num2str(size(currentSim.SelLayout.AdjMat,2)) 'nw Alternate NWs\'];
+        save_directory=['..\Data\Explore Analysis\MultiNetwork Analysis\' num2str(network.NetworkSettings.Number) 'nw Alternate NWs\'];
     else
         save_directory=['..\Data\Explore Analysis\MultiNetwork Analysis\' num2str(network.NetworkSettings.Number) 'nw Alternate NWs\'];
     end 
 end
 if strcmp(network_load,'z')%Zdenka Code:
         network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
-    save([save_directory 'Zdenka_' num2str(network.Name) 'Length_' num2str(network.NetworkSettings.Length) '_Disp_' num2str(network.NetworkSettings.Disp) '_Sim_' num2str(simNum) '_Source_' num2str(Explore.GraphView.ElectrodePosition(1)) '_Drain_' num2str(Explore.GraphView.ElectrodePosition(2)) '_Explore_Timestamp_' num2str(Explore.IndexTime)],'Explore');
+    save([save_directory 'Zdenka_' num2str(network.Name) 'Length_' num2str(network.NetworkSettings.Length) '_Disp_' num2str(network.NetworkSettings.Disp) '_Sim_' num2str(simNum) '_Source_' num2str(Explore{1}.GraphView.ElectrodePosition(1)) '_Drain_' num2str(Explore{1}.GraphView.ElectrodePosition(2)) '_Explore_Timestamp_' num2str(Explore{1}.IndexTime)],'Explore');
 elseif strcmp(network_load,'a') %adrian code
     network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
     if loop

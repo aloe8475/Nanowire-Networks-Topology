@@ -13,11 +13,13 @@ switch computer
         dataPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Networks\Zdenka Networks';
         simPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Simulations\Zdenka';
     case ''
+%         dataPath='/import/silo2/aloe8475/Documents/CODE/Data/Raw/Networks/Zdenka Networks/';
         dataPath='/headnode2/aloe8475/CODE/Data/Raw/Networks/Zdenka Networks/';
         if exist('biasType','var')
             switch biasType
                 case 'TimeDelay'
                     simPath='/headnode2/aloe8475/CODE/Data/Raw/Simulations/Zdenka/Variable Time Delay/';%'/suphys/aloe8475/Documents/CODE/Data/Raw/Simulations/Zdenka';
+%                      simPath='/import/silo2/aloe8475/Documents/CODE/Data/Raw/Simulations/Zdenka/Variable Time Delay/';
                 case 'DCandWait'
                     simPath='/headnode2/aloe8475/CODE/Data/Raw/Simulations/Zdenka/10 Square Pulses/';
                 case 'DC'
@@ -25,6 +27,7 @@ switch computer
             end
         else
             simPath='/headnode2/aloe8475/CODE/Data/Raw/Simulations/Zdenka/';
+% simPath='/import/silo2/aloe8475/Documents/CODE/Data/Raw/Simulations/Zdenka/Variable Time Delay/';
         end 
     case 'LAPTOP-S1BV3HR7'
         dataPath='D:\alon_\Research\PhD\CODE\Zdenka Code\atomic-switch-network-1.3-beta\examples';
@@ -99,7 +102,8 @@ else
     sims_load='y';
 end
 if sims_load=='y'
-    load_cluster='y'; %Load data from Cluster
+
+    load_cluster='n'; %Load data from Cluster
     
     % Delete default simulation data:
     network(1).Simulations = [];
@@ -109,8 +113,12 @@ if sims_load=='y'
     end
     if isempty(varargin)
         explore_network=lower(input('Do you want Training + Testing Data, or Just Explore Data? - T or E \n','s'));
+                        fprintf('Loading Network & Simulation Data \n');
+
     else
-        explore_network='e';
+        explore_network='e'; %explore only
+                        fprintf('Loading Network & Simulation Data \n');
+
     end
     %Select which Simulation to Load
     sim_loaded=1;
@@ -182,7 +190,9 @@ if sims_load=='y'
         end
         network.Simulations=temp;
         for i=1:length(network.Simulations)
+            for j = 1:length(network.Simulations{i})
             network.Simulations{i}.Type='Explore Simulation';
+            end 
         end
         %Need to change to only allow explore of 1 network
         clear SelSims;

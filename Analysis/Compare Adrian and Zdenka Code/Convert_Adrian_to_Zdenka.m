@@ -1,17 +1,19 @@
 %% Convert Adrian Code to Zdenka Code (Connectivity):
 clear all
 
+numWires=2000;
+
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2' %if on desktop at uni - Alon
-        loadPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Networks\Adrian Networks';        
+        loadPath=['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Networks\Adrian Networks\' num2str(numWires) 'nw Alternate NWs\'];       
+        savePath=['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Networks\Zdenka Networks\' num2str(numWires) 'nw Alternate NWs\'];
         cd(loadPath)
-        waitfor(msgbox('Select the Network saved data'));
-        [FileName,PathName] = uigetfile('*.mat','Select the Network saved data');
-        count=1;
-        f{count}=fullfile(PathName,FileName);
-        load(f{count});
-        SelSims=SelNet.Simulations;
+%         waitfor(msgbox('Select the Network saved data'));
+%         [FileName,PathName] = uigetfile('*.mat','Select the Network saved data');
+%         count=1;
+%         f{count}=fullfile(PathName,FileName);
+%         load(f{count});
         
     case '' %if on linux
         currentPath='/suphys/aloe8475/Documents/CODE/Analysis';
@@ -21,10 +23,17 @@ switch computer
         %case '' %--- Add other computer paths (e.g. Mike)
 end
 
-currSim=input('Which Simulation do you want to convert? \n?');
+mat = dir('*.mat'); 
+progressbar
 
-LayoutSim=SelSims{currSim}.SelLayout;
-LayoutNet=SelNet.LayOut;
+        for q = 1:length(mat) 
+           load(mat(q).name); 
+           SelSims{q}=SelNet.Simulations;
+           network{q}=SelNet;
+currSim=1;%input('Which Simulation do you want to convert? \n?');
+
+LayoutSim=SelSims{q}{currSim}.SelLayout;
+LayoutNet=network{q}.LayOut;
 
 %'xc', 'yc', 'xi', 'yi', 'xa', 'ya', 'xb', 'yb'
 % xc=LayoutSim.CX;
@@ -80,8 +89,11 @@ yi=yi(yi~=0)';
 length_x=15;
 length_y=15;
 %%
-save(['AdriantoZdenka' num2str(number_of_wires) 'nw_simulation' num2str(currSim) '.mat']);
+save([savePath 'AdriantoZdenka_' num2str(height(network{q}.Graph.Nodes)) '_Length' num2str(network{q}.NetworkSettings.Length) '_Disp_' num2str(network{q}.NetworkSettings.Disp) '_simulation' num2str(currSim) '.mat']);
+progressbar(q/length(mat));
 
+clearvars -except mat savePath loadPath q 
+        end
 %%
 % Connectivity.WhichMatrix       = 'nanoWires';    % 'nanoWires' \ 'randAdjMat'
 % Connectivity.filename=['AdriantoZdenka' num2str(number_of_wires) 'nw_simulation' num2str(currSim) '.mat'];

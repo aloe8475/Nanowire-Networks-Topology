@@ -83,7 +83,7 @@ for currentSimulation=1:length(simulations)
             analysis_type='e';%lower(input('Which analysis would you like to perform? G - graph, E - Explore Network,L - LDA, N - none \n','s'));
         elseif explore_network=='e' % we don't want to allow LDA if just exploring
             %% CHANGE BETWEEN T AND E HERE
-            analysis_type='e'; %lower(input('Which analysis would you like to perform? T = Time b/w Pulses, E = Early/Mid/Late/Never \n','s'));
+            analysis_type='t'; %lower(input('Which analysis would you like to perform? T = Time b/w Pulses, E = Early/Mid/Late/Never \n','s'));
         end
         if analysis_type=='g'
             %% Graph Analysis

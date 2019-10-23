@@ -147,9 +147,6 @@ if length(StimulusSource)>1%if we want multiple electrodes
     [Signals{4,1}, Stimulus{4}] = getStimulusMulti(StimulusDrain, SimulationOptions);
 end
 
-%% Simulate:
-fprintf('Running simulation ...')
-
 %% Initialize snapshot time stamps:
 if SimulationOptions.takingSnapshots
     snapshotPeriod   = 1*SimulationOptions.dt; % (sec) make it a multiple integer of dt
@@ -168,7 +165,7 @@ end
 
 
 %Convert Zdenka's structure to Adrian's Structure:
-SelSims=Convert_Zdenka_to_Adrian(SelSims,snapshots,SimulationOptions,Connectivity,Components,Stimulus);
+SelSims=Convert_Zdenka_to_Adrian(SelSims,snapshots,SimulationOptions,Connectivity,Components,Stimulus,Signals);
 if length(StimulusSource)>1
     SelSims.Settings.SigType{1} = Stimulus{1}.BiasType;
     SelSims.Settings.SigType{2} = Stimulus{2}.BiasType;
@@ -176,7 +173,6 @@ else
     SelSims.Settings.SigType = Stimulus{1}.BiasType;
 end
 SelSims.NumberOfNodes=Connectivity.NumberOfNodes;
-fprintf('\n')
 
 %% Save Simulation
 % run DataExport.m

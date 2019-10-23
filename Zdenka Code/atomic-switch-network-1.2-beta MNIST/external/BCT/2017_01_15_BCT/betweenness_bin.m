@@ -1,4 +1,4 @@
-function BC=betweenness_bin(G)
+function [BC, normBC]=betweenness_bin(G)
 %BETWEENNESS_BIN    Node betweenness centrality
 %
 %   BC = betweenness_bin(A);
@@ -50,4 +50,5 @@ for d=diam:-1:2
     DP=DP + DPd1;           %DPd1: dependencies on vertices |d-1| from source
 end
 
-BC=sum(DP,1);               %compute betweenness
+BC=sum(DP,1); %compute betweenness
+normBC=BC/((n-1)*(n-2)); %compute normalised betweenness

@@ -59,12 +59,12 @@ p.EdgeCData=cc3;
 
 else
     clim=[min(min(Sim.Data.Currents{IndexTime})) max(max(Sim.Data.Currents{IndexTime}))];
-    p.EdgeCData=cc;
+%     p.EdgeCData=cc;
 
 end 
-colormap(currAx,gcurrmap);%gcurrmap
-colorbar(currAx);
-caxis(currAx,clim);
+% colormap(currAx,gcurrmap);%gcurrmap
+% colorbar(currAx);
+% caxis(currAx,clim);
 
 %Highlight Electrodes:
 node_indices=find(threshold==1); %find nodes with threshold == 1

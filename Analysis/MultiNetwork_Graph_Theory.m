@@ -19,11 +19,9 @@
 
 dbstop if error
 close all
-
-
+loadDataMulti=lower(input('Would you like to compare multiple iterations of a network? \n','s'));
 loadData=lower(input('Would you like to load cross-network data? \n','s'));
 if loadData=='y'
-    loadDataMulti=lower(input('Would you like to compare multiple iterations of a network? \n','s'));
     while 1
         if loadDataMulti=='y'
             currMultiNet=input('Which size Network would you like to load iterations from? 100, 500, 1000 or 2000? \n');
@@ -39,9 +37,10 @@ if loadData=='y'
                     savePath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\Ordered+Random Data\';
                     fig_dir='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Figures\Explore Analysis\Cross-Network Explore\Graph Theory\';
                 elseif loadData=='y' & loadDataMulti=='y'
-                    explore_location_origin='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\';
+                    explore_location_origin='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\Continuous DC\';
                     explore_location=['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\MultiNetwork Analysis\' num2str(currMultiNet) 'nw Alternate NWs\'];
-                    savePath=['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\Multi-Network Data\'];
+                    savePath=['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\MultiNetwork Analysis\'];
+                    loadPathRandomOrdered='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\Ordered+Random Data\';
                     fig_dir=['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Figures\Explore Analysis\Cross-Network Explore\Graph Theory\' num2str(currMultiNet) 'nw Alternate NWs\'];
                 end
             case '' %if on linux
@@ -113,16 +112,16 @@ if loadData=='y'
             %             e500=load([explore_location_origin 'Adrian_Net_Sx20_NoW500_0330-2019_111659__Sim_1_SourceElectrode_18_DrainElectrode_430_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
             %             e1000=load([explore_location_origin 'Adrian_Net_Sx20_NoW1000_0606-2019_113353__Sim_1_SourceElectrode_32_DrainElectrode_1000_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
             %             e2000=load([explore_location_origin 'Adrian_Net_Sx20_NoW2000_0618-2019_125103__Sim_1_SourceElectrode_158_DrainElectrode_1820_Exploration_Analysis_ Timestamp_400_26-Jun-2019.mat']);
-            e100=load([explore_location 'Zdenka_Net_Sx20_NoW109_0930-2019_110329_Length_6_Disp_0_Sim_1_Source_99_Drain_36_Explore_Timestamp_200.mat']);
-            e500=load([explore_location 'Zdenka_Net_Sx20_NoW500_0330-2019_111659_Length_6_Disp_0_Sim_1_Source_498_Drain_435_Explore_Timestamp_200.mat']);
-            e1000=load([explore_location 'Zdenka_Net_Sx20_NoW1000_0606-2019_113353_Length_6_Disp_0_Sim_1_Source_997_Drain_408_Explore_Timestamp_200.mat']);
-            e2000=load([explore_location 'Zdenka_Net_Sx20_NoW2000_0618-2019_125103_Length_6_Disp_0_Sim_1_Source_1999_Drain_935_Explore_Timestamp_200.mat']);
+            e100=load([explore_location_origin 'Zdenka_Net_Sx20_NoW100_0930-2019_110329_Length_6_Disp_0_Sim_1_Source_99_Drain_36_Explore_Timestamp_200.mat']);
+            e500=load([explore_location_origin 'Zdenka_Net_Sx20_NoW500_0330-2019_111659_Length_6_Disp_0_Sim_1_Source_498_Drain_435_Explore_Timestamp_200.mat']);
+            e1000=load([explore_location_origin 'Zdenka_Net_Sx20_NoW1000_0606-2019_113353_Length_6_Disp_0_Sim_1_Source_997_Drain_408_Explore_Timestamp_200.mat']);
+            e2000=load([explore_location_origin 'Zdenka_Net_Sx20_NoW2000_0618-2019_125103_Length_6_Disp_0_Sim_1_Source_1999_Drain_935_Explore_Timestamp_200.mat']);
             
             fprintf('Data Loaded \n');
             
             cd(explore_location);
             fprintf(['Loading Multi Network Data from Network size ' num2str(currMultiNet) '\n']);
-            dinfo = dir('Adrian*.mat');
+            dinfo = dir('Zdenka*.mat');
             for K = 1 : length(dinfo) %Load all files in selected folder
                 thisfile = dinfo(K).name;
                 destfile = fullfile(explore_location, thisfile);
@@ -153,23 +152,23 @@ if loadDataMulti=='n' %if we are doing our normal analysis without multiple netw
     human=humanFun();
     AgNW=AgNWFun(e100, e500, e1000, e2000);
     if loadData == 'y'
-        [Net, random, ordered,network]=randomOrdered(savePath,currentLocation,AgNW);%e100,e500,e1000,e2000);
+        [sizeNetwork,randomOrdered,randomOrdered100]=randomOrderedFun(loadPathRandomOrdered,currentLocation,AgNW,loadDataMulti);%e100,e500,e1000,e2000);
     end
-  
+    
     %Plot graphs
-    plotAll(Net,random,ordered, human, e100, e500, e1000, e2000, AgNW, network,cElegans,ANN,fig_dir)
+    plotAll(sizeNetwork,randomOrdered,randomOrdered100, human, e100, e500, e1000, e2000, AgNW,cElegans,ANN,fig_dir)
     
 else % if we are looping through
     loop = 1;
     ANN=AI(e500,savePath,loop);
     cElegans=cElegansFun();
     human=humanFun();
-    if loadData == 'y'
-        [Net, random, ordered,network]=randomOrdered(savePath,currentLocation,e100,e500,e1000,e2000);
-    end
     AgNW=AgNWFunMulti(e100Multi, e500Multi, e1000Multi, e2000Multi);    %function for looping
+    %     if loadData == 'y'
+    [sizeNetwork,randomOrdered,randomOrdered100]=randomOrderedFun(loadPathRandomOrdered,currentLocation,AgNW,loadDataMulti);
+    %     end
     
-    plotMulti(Net,random,ordered, human, e100Multi, e500Multi, e1000Multi, e2000Multi, AgNW, network,cElegans,ANN,fig_dir)
+    plotMulti(sizeNetwork,randomOrdered,randomOrdered100, human, e100Multi, e500Multi, e1000Multi, e2000Multi, AgNW,cElegans,ANN,fig_dir)
 end
 
 %% TO DO
@@ -388,103 +387,89 @@ human.AvgMZ=0.0001; %Bertolero, Yeo & D'Esposito - 2015
 %Circuit Rank
 end
 % Random and Ordered Graph Analysis
-function [Net, random, ordered,network]=randomOrdered(savePath,currentLocation,AgNW)
+function [sizeNetwork,randomOrdered, randomOrdered100,network]=randomOrderedFun(savePath,currentLocation,AgNW,loadDataMulti)
 cd(currentLocation)
 i=1;
 while 1
-%     sizeNetwork=input('What Size Random/Ordered Networks would you like to create/load? 100, 500, 1000 or 2000? \n');
+    %     sizeNetwork=input('What Size Random/Ordered Networks would you like to create/load? 100, 500, 1000 or 2000? \n');
     createNewRand=lower(input('Would you like to create new Random and Ordered graphs? (Note this will take 4+ Hours) \n','s'));
     loadPath=savePath;
     % save the data for each network & save the network size in a different
     % variable (sizeNetwork).
-%     switch sizeNetwork
-%         case 100
-%             i=1;% if we accidentally load the same network twice, this will override it
-%             network{i}=e100;
-%             Net(i).sizeNetwork=100;
-%         case 500
-%             i=2;
-%             network{i}=e500;
-%             
-%             Net(i).sizeNetwork=500;
-%         case 1000
-%             i=3;
-%             network{i}=e1000;
-%             
-%             Net(i).sizeNetwork=1000;
-%         case 2000
-%             i=4;
-%             network{i}=e2000;
-%             
-%             Net(i).sizeNetwork=2000;
-%     end
-for k = 1:length(AgNW.NumWires)
-    Net(k).sizeNetwork=AgNW.NumWires(k);
-end 
+    %     switch sizeNetwork
+    %         case 100
+    %             i=1;% if we accidentally load the same network twice, this will override it
+    %             network{i}=e100;
+    %             sizeNetwork=100;
+    %         case 500
+    %             i=2;
+    %             network{i}=e500;
+    %
+    %             sizeNetwork=500;
+    %         case 1000
+    %             i=3;
+    %             network{i}=e1000;
+    %
+    %             sizeNetwork=1000;
+    %         case 2000
+    %             i=4;
+    %             network{i}=e2000;
+    %
+    %             sizeNetwork=2000;
+    %     end
+    for k = 1:length(AgNW.NumWires)
+        sizeNetwork(k)=AgNW.NumWires(k);
+    end
     if createNewRand=='n'
-        if exist([loadPath 'Random_Ordered_Graphs_' num2str(Net(i).sizeNetwork) 'nw.mat'], 'file') == 2 | exist([loadPath 'Random_Ordered_Graphs_ALL_networks.mat'], 'file') == 2 %&& exist([loadPath 'Random_Graphs_' num2str(Net(i).sizeNetwork) 'nw.mat'],'file') == 2 %2 because .mat file
-            while 1
-                [a b]=find([Net.sizeNetwork]==Net(i).sizeNetwork);
-                if sum(a)>1 %if we load the same network twice
-                    waitfor(msgbox('Error: Cannot load same network twice. Please select a different Network'));
-                else
-                    fprintf(['Loading Ordered and Random Graphs (' num2str(Net(i).sizeNetwork) 'nodes)... \n \n']);
-%                     load([loadPath 'Ordered_Graphs_' num2str(Net(i).sizeNetwork) 'nw.mat']);
-                    load([loadPath 'Random_Ordered_Graphs_' num2str(Net(i).sizeNetwork) 'nw.mat']);
-                    break;
-                end
-            end
+        if exist([loadPath 'Random_Ordered_Graphs_' num2str(sizeNetwork) 'nw.mat'], 'file') == 2 | exist([loadPath 'Random_Ordered_Graphs_ALL_networks.mat'], 'file') == 2 %&& exist([loadPath 'Random_Graphs_' num2str(sizeNetwork) 'nw.mat'],'file') == 2 %2 because .mat file
+            
+            fprintf(['Loading Ordered and Random Graphs (' num2str(sizeNetwork) 'nodes)... \n \n']);
+            %                     load([loadPath 'Ordered_Graphs_' num2str(sizeNetwork) 'nw.mat']);
+            %                     load([loadPath 'Random_Ordered_Graphs_' num2str(sizeNetwork) 'nw.mat']);
+            load([loadPath 'Random_Ordered_Graphs_ALL_networks.mat']);
+            break;
+            
+            
         else
             fprintf('Ordered and Random Graphs have not been created yet \n');
             fprintf('Creating New Graphs \n');
-%             [random, ordered, randomOrdered100, ordered100, Parameters]=createRandom_Ordered_Graphs(Net(i).sizeNetwork,AgNW);
-            [random, ordered, randomOrdered100, Parameters]=createRandom_Ordered_Graphs(AgNW);
-
+            %             [random, ordered, randomOrdered100, ordered100, Parameters]=createRandom_Ordered_Graphs(sizeNetwork,AgNW);
+            if loadDataMulti=='n'
+                [randomOrdered, randomOrdered100, Parameters]=createRandom_Ordered_Graphs(AgNW);
+            else
+                [randomOrdered, randomOrdered100, Parameters]=createRandom_Ordered_Graphs_Multi(AgNW);
+            end
+            
         end
     else
-        if exist([loadPath 'Random_Ordered_Graphs_' num2str(Net(i).sizeNetwork) 'nw.mat'], 'file') == 2 | exist([loadPath 'Random_Ordered_Graphs_ALL_networks.mat'], 'file') == 2 %%&& exist([loadPath 'Random_Graphs_' num2str(Net(i).sizeNetwork) 'nw.mat'],'file') == 2 %2 because .mat file
-            overwrite=lower(input(['Graphs (' num2str(Net(i).sizeNetwork) 'nodes) have already been created, would you like to overwrite? \n'],'s'));
+        if exist([loadPath 'Random_Ordered_Graphs_' num2str(sizeNetwork) 'nw.mat'], 'file') == 2 | exist([loadPath 'Random_Ordered_Graphs_ALL_networks.mat'], 'file') == 2 %%&& exist([loadPath 'Random_Graphs_' num2str(sizeNetwork) 'nw.mat'],'file') == 2 %2 because .mat file
+            overwrite=lower(input(['Graphs (' num2str(sizeNetwork) 'nodes) have already been created, would you like to overwrite? \n'],'s'));
             if overwrite =='n'
-                fprintf(['Loading Ordered and Random Graphs (' num2str(Net(i).sizeNetwork) 'nodes) \n']);
-%                 load([loadPath 'Ordered_Graphs_' num2str(Net(i).sizeNetwork) 'nw.mat']);
-                load([loadPath 'Random_Ordered_Graphs_' num2str(Net(i).sizeNetwork) 'nw.mat']);
+                fprintf(['Loading Ordered and Random Graphs (' num2str(sizeNetwork) 'nodes) \n']);
+                %                 load([loadPath 'Ordered_Graphs_' num2str(sizeNetwork) 'nw.mat']);
+%                 load([loadPath 'Random_Ordered_Graphs_' num2str(sizeNetwork) 'nw.mat']);
+            load([loadPath 'Random_Ordered_Graphs_ALL_networks.mat']);
             else
                 fprintf('Creating New Graphs \n');
-%                 [random, ordered, randomOrdered100, ordered100, Parameters]=createRandom_Ordered_Graphs(Net(i).sizeNetwork,AgNW);
-                [random, ordered, randomOrdered100, Parameters]=createRandom_Ordered_Graphs(AgNW);
-
+                %                 [random, ordered, randomOrdered100, ordered100, Parameters]=createRandom_Ordered_Graphs(sizeNetwork,AgNW);
+                if loadDataMulti=='n'
+                    [randomOrdered, randomOrdered100, Parameters]=createRandom_Ordered_Graphs(AgNW);
+                else
+                    [randomOrdered, randomOrdered100, Parameters]=createRandom_Ordered_Graphs_Multi(AgNW);
+                end
                 fprintf('New Graphs Created \n');
             end
         else
             fprintf('Creating New Graphs \n');
-            [random, ordered, randomOrdered100, Parameters]=createRandom_Ordered_Graphs(AgNW);
+            if loadDataMulti=='n'
+                [randomOrdered, randomOrdered100, Parameters]=createRandom_Ordered_Graphs(AgNW);
+            else
+                [randomOrdered, randomOrdered100, Parameters]=createRandom_Ordered_Graphs_Multi(AgNW);
+            end
             fprintf('New Graphs Created \n');
         end
     end
     %save in struct so we can load multiple networks at once:
-    if Net(i).sizeNetwork == 100 && i == 1
-        Net(i).randomOrdered100=randomOrdered100;
-        Net(i).randomOrdered=randomOrdered;
-%         Net(i).ordered100=ordered100;
-%         Net(i).ordered=ordered;
-    elseif Net(i).sizeNetwork == 500 && i == 2
-        Net(i).randomOrdered100=randomOrdered100;
-        Net(i).randomOrdered=randomOrdered;
-%         Net(i).ordered100=ordered100;
-%         Net(i).ordered=ordered;
-    elseif Net(i).sizeNetwork == 1000 && i == 3
-        Net(i).randomOrdered100=randomOrdered100;
-        Net(i).randomOrdered=randomOrdered;
-%         Net(i).ordered100=ordered100;
-%         Net(i).ordered=ordered;
-    elseif Net(i).sizeNetwork == 2000 && i == 4
-        Net(i).randomOrdered100=randomOrdered100;
-        Net(i).randomOrdered=randomOrdered;
-%         Net(i).ordered100=ordered100;
-%         Net(i).ordered=ordered;
-    else
-        fprintf('Error in Network sizes');
-    end
     load2=lower(input('Would you like to load another network? \n','s'));
     if load2=='n'
         break;
@@ -495,66 +480,69 @@ fprintf('Graphs Loaded... \n Creating Plots... \n');
 
 %% Random & Ordered
 %Number of Nodes
-for z=1:length(Net)
-    while isempty(Net(z).sizeNetwork) %if we only load 500, 1000 or 2000, we need to increase our counter to skip over the empty arrays.
-        z=z+1;
-    end
-    for i =1:100
-        Net(z).randomOrdered(i).numNodes=height(Net(z).randomOrdered(i).Graph.Nodes);
-%         Net(z).ordered(i).numNodes=height(Net(z).ordered(i).Graph.Nodes);
-        Net(z).randomOrdered(i).numEdges=height(Net(z).randomOrdered(i).Graph.Edges);
-%         Net(z).ordered(i).numEdges=height(Net(z).ordered(i).Graph.Edges);
-    end
-    Net(z).randomOrdered100.AvgNodes=mean([Net(z).randomOrdered(:).numNodes]);
-%     Net(z).ordered100.AvgNodes=mean([Net(z).ordered(:).numNodes]);
-    
-    %Number of Edges
-    Net(z).randomOrdered100.AvgEdges=mean([Net(z).randomOrdered(:).numEdges]);
-%     Net(z).ordered100.AvgEdges=mean([Net(z).ordered(:).numEdges]);
-    
-    % participation coefficient (mean)
-    
-    % avg and std pcoeff across 100 bootraps per node:
-    Net(z).randomOrdered100.AvgPCoeff=mean([Net(z).randomOrdered(:).P],2);
-%     Net(z).ordered100.AvgPCoeff=mean([Net(z).ordered(:).P],2);
-    Net(z).randomOrdered100.StdPCoeff=std([Net(z).randomOrdered(:).P],[],2);
-%     Net(z).ordered100.StdPCoeff=std([Net(z).ordered(:).P],[],2);
-
-    % Avg & std PCoeff (across 100 bootstraps) and across nodes:
-    Net(z).randomOrdered100.AvgAvgPCoeff=mean(mean([Net(z).randomOrdered(:).P]),2);
-%     Net(z).randomOrdered100.StdAvgPCoeff=std(mean([Net(z).random(:).P]),[],2);
-    Net(z).ordered100.AvgAvgPCoeff=mean(mean([Net(z).randomOrdered(:).P]),2);
-%     Net(z).ordered100.StdAvgPCoeff=std(mean([Net(z).ordered(:).P]),[],2);
-    %Module z-Score
-    % avg and std mz across 100 bootraps per node:
-    Net(z).randomOrdered100.AvgMZ=mean([Net(z).randomOrdered(:).MZ],2);
-%     Net(z).ordered100.AvgMZ=mean([Net(z).ordered(:).MZ],2);
-    Net(z).randomOrdered100.StdMZ=std([Net(z).randomOrdered(:).MZ],[],2);
-%     Net(z).ordered100.StdMZ=std([Net(z).ordered(:).MZ],[],2);
-    
-    %avg and std mz across 100 bootstraps and across nodes:
-    Net(z).randomOrdered100.AvgAvgMZ=mean(mean([Net(z).randomOrdered(:).MZ]),2);
-    Net(z).randomOrdered100.StdAvgMZ=std(mean([Net(z).randomOrdered(:).MZ]),[],2);
-%     Net(z).ordered100.AvgAvgMZ=mean(mean([Net(z).ordered(:).MZ]),2);
-%     Net(z).ordered100.StdAvgMZ=std(mean([Net(z).ordered(:).MZ]),[],2);
-    %Small World Prop
-    Net(z).randomOrdered100.AvgSmallWorldProp=mean([Net(z).randomOrdered(:).SmallWorldProp],2);
-    Net(z).randomOrdered100.StdSmallWorldProp=std([Net(z).randomOrdered(:).SmallWorldProp],[],2);
-%     Net(z).ordered100.AvgSmallWorldProp=mean([Net(z).ordered(:).SmallWorldProp],2);
-%     Net(z).ordered100.StdSmallWorldProp=std([Net(z).ordered(:).SmallWorldProp],[],2);
-    
-    % communicability
-    
-    % complexity (from the Sporns, Tononi and Edelman paper I sent through the other day -- still waiting on code from Olaf, but will send through when I get it).
-    
-    % betweeness_centrality
-    
-    %Average Normalised Betweenness (BC/[(N-1)(N-2)])
-    %     randomOrdered100.AvgNormBC=mean([random(:).normBC]);
-    %     randomOrdered100.StdNormBC=std([random(:).normBC]);
-    %     ordered100.AvgNormBC=mean([ordered(:).normBC]);
-    %     ordered100.StdNormBC=std([ordered(:).normBC]);
-end
+% for z=1:length(Net)
+%     while isempty(sizeNetwork) %if we only load 500, 1000 or 2000, we need to increase our counter to skip over the empty arrays.
+%         z=z+1;
+%     end
+% for i = 1:4
+% %     for j =1:11
+% %         randomOrdered.numNodes(i,j)=height(randomOrdered.Graph{i,j}.Nodes);
+% %         %         ordered(i).numNodes=height(ordered(i).Graph.Nodes);
+% %         randomOrdered.numEdges(i,j)=height(randomOrdered.Graph{i,j}.Edges);
+% %         %         ordered(i).numEdges=height(ordered(i).Graph.Edges);
+% %     end
+% %     
+% %     randomOrdered100.AvgNodes=mean([randomOrdered.numNodes{i,:}]);
+% %     %     ordered100.AvgNodes=mean([ordered(:).numNodes]);
+% %     
+% %     %Number of Edges
+% %     randomOrdered100.AvgEdges=mean([randomOrdered.numEdges{i,:}]);
+%     %     ordered100.AvgEdges=mean([ordered(:).numEdges]);
+%     
+%     % participation coefficient (mean)
+%     
+%     % avg and std pcoeff across 100 bootraps per node:
+%     randomOrdered100.AvgPCoeff(i,:)=mean([randomOrdered.P{i,:}],2);
+%     %     ordered100.AvgPCoeff=mean([ordered(:).P],2);
+%     randomOrdered100.StdPCoeff(i,:)=std([randomOrdered.P{i,:}],[],2);
+%     %     ordered100.StdPCoeff=std([ordered(:).P],[],2);
+%     
+%     % Avg & std PCoeff (across 100 bootstraps) and across nodes:
+%     randomOrdered100.AvgAvgPCoeff(i,:)=mean(mean([randomOrdered.P{i,:}]),2);
+%     %     randomOrdered100.StdAvgPCoeff=std(mean([random(:).P]),[],2);
+%     %     ordered100.AvgAvgPCoeff=mean(mean([randomOrdered(:).P]),2);
+%     %     ordered100.StdAvgPCoeff=std(mean([ordered(:).P]),[],2);
+%     %Module z-Score
+%     % avg and std mz across 100 bootraps per node:
+%     randomOrdered100.AvgMZ(i,:)=mean([randomOrdered.MZ{i,:}],2);
+%     %     ordered100.AvgMZ=mean([ordered(:).MZ],2);
+%     randomOrdered100.StdMZ(i,:)=std([randomOrdered.MZ{i,:}],[],2);
+%     %     ordered100.StdMZ=std([ordered(:).MZ],[],2);
+%     
+%     %avg and std mz across 100 bootstraps and across nodes:
+%     randomOrdered100.AvgAvgMZ(i,:)=mean(mean([randomOrdered.MZ{i,:}]),2);
+%     randomOrdered100.StdAvgMZ(i,:)=std(mean([randomOrdered.MZ{i,:}]),[],2);
+%     %     ordered100.AvgAvgMZ=mean(mean([ordered(:).MZ]),2);
+%     %     ordered100.StdAvgMZ=std(mean([ordered(:).MZ]),[],2);
+%     %Small World Prop
+%     randomOrdered100.AvgSmallWorldProp(i,:)=mean([randomOrdered.SmallWorldProp{i,:}],2);
+%     randomOrdered100.StdSmallWorldProp(i,:)=std([randomOrdered.SmallWorldProp{i,:}],[],2);
+%     %     ordered100.AvgSmallWorldProp=mean([ordered(:).SmallWorldProp],2);
+%     %     ordered100.StdSmallWorldProp=std([ordered(:).SmallWorldProp],[],2);
+%     
+%     % communicability
+%     randomOrdered100.AvgCOMM(i,:)=mean([randomOrdered.COMM{i,:}],2);
+%     randomOrdered100.StdCOMM(i,:)=std([randomOrdered.COMM{i,:}],[],2);
+%     % complexity (from the Sporns, Tononi and Edelman paper I sent through the other day -- still waiting on code from Olaf, but will send through when I get it).
+%     
+%     % betweeness_centrality
+%     
+%     %Average Normalised Betweenness (BC/[(N-1)(N-2)])
+%     %     randomOrdered100.AvgNormBC=mean([random(:).normBC]);
+%     %     randomOrdered100.StdNormBC=std([random(:).normBC]);
+%     %     ordered100.AvgNormBC=mean([ordered(:).normBC]);
+%     %     ordered100.StdNormBC=std([ordered(:).normBC]);
+% end
 end
 % Silver Nanowire Networks Analysis
 function AgNW=AgNWFun(e100, e500, e1000, e2000)
@@ -582,6 +570,7 @@ function AgNW=AgNWFunMulti(e100Multi, e500Multi, e1000Multi, e2000Multi)
 
 for z = 1:length(e100Multi.Explore)
     GlobalClust(z)=e100Multi.Explore{z}.GraphTheory.GlobalClust;
+    
     AvgPath(z)=e100Multi.Explore{z}.GraphTheory.AvgPath;
     CircuitRank(z)=e100Multi.Explore{z}.GraphTheory.CircuitRank;
     SmallWorldProp(z)=e100Multi.Explore{z}.GraphTheory.SmallWorldProp;
@@ -593,8 +582,8 @@ for z = 1:length(e100Multi.Explore)
 end
 e100.AvgGlobalClust=mean([GlobalClust]);
 e100.StdGlobalClust=std([GlobalClust])./sqrt(length([GlobalClust]));
-e100.AvgDEG=mean([Degree]);
-e100.StdDEG=std([Degree])./sqrt(length([Degree]));
+e100.AvgDEG=mean([Degree{:}]);
+e100.StdDEG=std([Degree{:}])./sqrt(length([Degree{z}]));
 e100.AvgAvgPath=mean([AvgPath]);
 e100.StdAvgPath=std([AvgPath])./sqrt(length([AvgPath]));
 e100.AvgCircuitRank=mean([CircuitRank]);
@@ -622,8 +611,8 @@ for z = 1:length(e500Multi.Explore)
 end
 e500.AvgGlobalClust=mean([GlobalClust]);
 e500.StdGlobalClust=std([GlobalClust])./sqrt(length([GlobalClust]));
-e500.AvgDEG=mean([Degree]);
-e500.StdDEG=std([Degree])./sqrt(length([Degree]));
+e500.AvgDEG=mean([Degree{:}]);
+e500.StdDEG=std([Degree{:}])./sqrt(length([Degree{:}]));
 e500.AvgAvgPath=mean([AvgPath]);
 e500.StdAvgPath=std([AvgPath])./sqrt(length([AvgPath]));
 e500.AvgCircuitRank=mean([CircuitRank]);
@@ -651,8 +640,8 @@ for z = 1:length(e1000Multi.Explore)
 end
 e1000.AvgGlobalClust=mean([GlobalClust]);
 e1000.StdGlobalClust=std([GlobalClust])./sqrt(length([GlobalClust]));
-e1000.AvgDEG=mean([Degree]);
-e1000.StdDEG=std([Degree])./sqrt(length([Degree]));
+e1000.AvgDEG=mean([Degree{:}]);
+e1000.StdDEG=std([Degree{:}])./sqrt(length([Degree{:}]));
 e1000.AvgAvgPath=mean([AvgPath]);
 e1000.StdAvgPath=std([AvgPath])./sqrt(length([AvgPath]));
 e1000.AvgCircuitRank=mean([CircuitRank]);
@@ -680,8 +669,8 @@ for z = 1:length(e2000Multi.Explore)
 end
 e2000.AvgGlobalClust=mean([GlobalClust]);
 e2000.StdGlobalClust=std([GlobalClust])./sqrt(length([GlobalClust]));
-e2000.AvgDEG=mean([Degree]);
-e2000.StdDEG=std([Degree])./sqrt(length([Degree]));
+e2000.AvgDEG=mean([Degree{:}]);
+e2000.StdDEG=std([Degree{:}])./sqrt(length([Degree{:}]));
 e2000.AvgAvgPath=mean([AvgPath]);
 e2000.StdAvgPath=std([AvgPath])./sqrt(length([AvgPath]));
 e2000.AvgCircuitRank=mean([CircuitRank]);
@@ -698,8 +687,8 @@ e2000.StdMZ=std(vertcat(MZ{:}));
 %Combine all
 AgNW.AvgGlobalClust=[e100.AvgGlobalClust e500.AvgGlobalClust e1000.AvgGlobalClust e2000.AvgGlobalClust];
 AgNW.StdGlobalClust=[e100.StdGlobalClust e500.StdGlobalClust e1000.StdGlobalClust e2000.StdGlobalClust];
-AgNW.AvgDegree=[e100.AvgDegree e500.AvgDegree e1000.AvgDegree e2000.AvgDegree];
-AgNW.StdDegree=[e100.StdDegree e500.StdDegree e1000.StdDegree e2000.StdDegree];
+AgNW.AvgDegree=[e100.AvgDEG e500.AvgDEG e1000.AvgDEG e2000.AvgDEG];
+AgNW.StdDegree=[e100.StdDEG e500.StdDEG e1000.StdDEG e2000.StdDEG];
 AgNW.AvgAvgPath=[e100.AvgAvgPath e500.AvgAvgPath e1000.AvgAvgPath e2000.AvgAvgPath];
 AgNW.StdAvgPath=[e100.StdAvgPath e500.StdAvgPath e1000.StdAvgPath e2000.StdAvgPath];
 AgNW.AvgCircuitRank=[e100.AvgCircuitRank e500.AvgCircuitRank e1000.AvgCircuitRank e2000.AvgCircuitRank];
@@ -712,11 +701,12 @@ AgNW.AvgPCoeff=[e100.AvgPCoeff e500.AvgPCoeff e1000.AvgPCoeff e2000.AvgPCoeff];
 AgNW.StdPCoeff=[e100.StdPCoeff e500.StdPCoeff e1000.StdPCoeff e2000.StdPCoeff];
 AgNW.AvgMZ=[e100.AvgMZ e500.AvgMZ e1000.AvgMZ e2000.AvgMZ];
 AgNW.StdMZ=[e100.StdMZ e500.StdMZ e1000.StdMZ e2000.StdMZ];
-
+%NEED TO CHANGE LENGTH OF WIRES HERE:
+AgNW.NumWires=[100 500 1000 2000];%[length(e100Multi.Explore{1}.GraphView.AdjMat) length(e500Multi.Explore{1}.GraphView.AdjMat) length(e1000Multi.Explore{1}.GraphView.AdjMat) length(e2000Multi.Explore{1}.GraphView.AdjMat)];
 end
 
 %% Plot:
-function plotAll(Net, random, ordered, human, e100, e500, e1000, e2000, AgNW,network,cElegans,ANN,fig_dir)
+function plotAll(Net, randomOrdered100, human, e100, e500, e1000, e2000, AgNW,cElegans,ANN,fig_dir)
 
 % DEGREE
 fDeg=figure;
@@ -782,44 +772,44 @@ while 1
         case 2000
             plotNet=4;
     end
-%     if plotNet<3 %if we only want 100 & 500 networks
-        y=[Net(plotNet).randomOrdered100.AvgGlobalClust ANN.GlobalClust ANN.GlobalClust_Trained cElegans.GlobalClust human.GlobalClust  e100.Explore.GraphTheory.GlobalClust e500.Explore.GraphTheory.GlobalClust e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
-                %Net(plotNet).ordered100.AvgGlobalClust
-                %Net(plotNet).ordered100.AvgPath
-        x=[Net(plotNet).randomOrdered100.AvgPath ANN.AvgPath ANN.AvgPath_Trained cElegans.AvgPath human.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
-        %                p=gscatter(x,y);
-        %     hold on
-        for i=1:length(x)
-            %           s(i+1)=scatter(nanmean(categories.Clust{i}),categories.PathLength{i,j},[],clrs2{1}(i,:));
-            s(i)=scatter(x(:,i),y(:,i),[],clrs2{1}(i,:));
-            hold on
-            e=errorbar(x(1), y(1),Net(plotNet).randomOrdered100.StdPath);
-            e2=errorbar(x(1), y(1),Net(plotNet).randomOrdered100.StdGlobalClust,'horizontal');
-%             e3=errorbar(x(5), y(5),Net(plotNet).ordered100.StdPath);
-%             e4=errorbar(x(5), y(5),Net(plotNet).ordered100.StdGlobalClust,'horizontal');
-            e.Color=clrs2{1}(i,:);
-            e2.Color=clrs2{1}(i,:);
-%             e3.Color=clrs2{1}(i,:);
-%             e4.Color=clrs2{1}(i,:);
-        end
-                text(x,y,{[num2str(Net(plotNet).sizeNetwork) 'node Watts-Strogats'],'500node ANN Untrained','500node ANN Trained','C. Elegans Nw', 'Human Nw (mm-scale regions)','100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
-
-        %     hold on
-        %     e=errorbar(x(1), y(1),Net(plotNet).randomOrdered100.StdPath);
-        %     e2=errorbar(x(1), y(1),Net(plotNet).randomOrdered100.StdGlobalClust,'horizontal');
-
-        %[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw']
-        
-%     else %if we want all 100, 500, 1000 and 2000 networks plotted
-%         y=[ ANN.GlobalClust ANN.GlobalClust_Trained cElegans.GlobalClust human.GlobalClust  e100.Explore.GraphTheory.GlobalClust e500.Explore.GraphTheory.GlobalClust e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
-%         x=[ANN.AvgPath ANN.AvgPath_Trained cElegans.AvgPath human.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
-%         % xlim([0.05 0.6])
-%         % ylim([2 16])
-%         p=gscatter(x,y);
-%         
-%         hold on
-%         text(x,y,{'500node ANN Untrained','500node ANN Trained','C. Elegans Nw', 'Human Nw (mm-scale regions)','100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
-%     end
+    %     if plotNet<3 %if we only want 100 & 500 networks
+    y=[randomOrdered100.AvgGlobalClust{plotNet,:} ANN.GlobalClust ANN.GlobalClust_Trained cElegans.GlobalClust human.GlobalClust  e100.Explore.GraphTheory.GlobalClust e500.Explore.GraphTheory.GlobalClust e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
+    %ordered100.AvgGlobalClust
+    %ordered100.AvgPath
+    x=[randomOrdered100.AvgPath{plotNet,:} ANN.AvgPath ANN.AvgPath_Trained cElegans.AvgPath human.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
+    %                p=gscatter(x,y);
+    %     hold on
+    for i=1:length(x)
+        %           s(i+1)=scatter(nanmean(categories.Clust{i}),categories.PathLength{i,j},[],clrs2{1}(i,:));
+        s(i)=scatter(x(:,i),y(:,i),[],clrs2{1}(i,:));
+        hold on
+        e=errorbar(x(1), y(1),randomOrdered100.StdPath);
+        e2=errorbar(x(1), y(1),randomOrdered100.StdGlobalClust,'horizontal');
+        %             e3=errorbar(x(5), y(5),ordered100.StdPath);
+        %             e4=errorbar(x(5), y(5),ordered100.StdGlobalClust,'horizontal');
+        e.Color=clrs2{1}(i,:);
+        e2.Color=clrs2{1}(i,:);
+        %             e3.Color=clrs2{1}(i,:);
+        %             e4.Color=clrs2{1}(i,:);
+    end
+    text(x,y,{[num2str(sizeNetwork) 'node Watts-Strogats'],'500node ANN Untrained','500node ANN Trained','C. Elegans Nw', 'Human Nw (mm-scale regions)','100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
+    
+    %     hold on
+    %     e=errorbar(x(1), y(1),randomOrdered100.StdPath);
+    %     e2=errorbar(x(1), y(1),randomOrdered100.StdGlobalClust,'horizontal');
+    
+    %[num2str(sizeNetwork) 'node Ordered Nw']
+    
+    %     else %if we want all 100, 500, 1000 and 2000 networks plotted
+    %         y=[ ANN.GlobalClust ANN.GlobalClust_Trained cElegans.GlobalClust human.GlobalClust  e100.Explore.GraphTheory.GlobalClust e500.Explore.GraphTheory.GlobalClust e1000.Explore.GraphTheory.GlobalClust e2000.Explore.GraphTheory.GlobalClust];
+    %         x=[ANN.AvgPath ANN.AvgPath_Trained cElegans.AvgPath human.AvgPath e100.Explore.GraphTheory.AvgPath, e500.Explore.GraphTheory.AvgPath, e1000.Explore.GraphTheory.AvgPath e2000.Explore.GraphTheory.AvgPath];
+    %         % xlim([0.05 0.6])
+    %         % ylim([2 16])
+    %         p=gscatter(x,y);
+    %
+    %         hold on
+    %         text(x,y,{'500node ANN Untrained','500node ANN Trained','C. Elegans Nw', 'Human Nw (mm-scale regions)','100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
+    %     end
     ylabel('Global Clustering Coefficient');
     xlabel('Global Mean Path Length');
     p.MarkerEdgeColor='b';
@@ -834,17 +824,17 @@ end
 
 fprintf('Figure 1 Complete \n');
 
-% %Small World Log
+%% Small World Log
 % f1=figure;
 % logx=log10(x);
 % logy=log10(y);
 % p1=gscatter(logx,y);
 % hold on
 % hold on
-% e=errorbar(logx(1), y(1),Net(plotNet).randomOrdered100.StdPath);
-% e2=errorbar(logx(1), y(1),Net(plotNet).randomOrdered100.StdGlobalClust);
-% errorbar(logx(3), y(3),Net(plotNet).ordered100.StdPath);
-% errorbar(logx(3), y(3),Net(plotNet).ordered100.StdGlobalClust);
+% e=errorbar(logx(1), y(1),randomOrdered100.StdPath);
+% e2=errorbar(logx(1), y(1),randomOrdered100.StdGlobalClust);
+% errorbar(logx(3), y(3),ordered100.StdPath);
+% errorbar(logx(3), y(3),ordered100.StdGlobalClust);
 % % xlim([0.05 0.6])
 % % ylim([2 16])
 % %     ylim([0,max(y)]);
@@ -861,10 +851,10 @@ smallWorldPropOrdered=[];
 
 for i = 1:plotNet
     %Circuit Rank:
-    smallWorldPropOrderedRandom=[smallWorldPropOrderedRandom Net(i).randomOrdered100.AvgSmallWorldProp];
-%     smallWorldPropOrdered=[smallWorldPropOrdered Net(i).ordered100.AvgSmallWorldProp];
-    randomLabel{i}=[num2str(Net(i).sizeNetwork) ' Watts-Strogatz Nw'];
-%     orderedLabel{i}=[num2str(Net(i).sizeNetwork) ' Ordered Nw'];
+    smallWorldPropOrderedRandom=[smallWorldPropOrderedRandom randomOrdered100.AvgSmallWorldProp];
+    %     smallWorldPropOrdered=[smallWorldPropOrdered ordered100.AvgSmallWorldProp];
+    randomLabel{i}=[num2str(sizeNetwork) ' Watts-Strogatz Nw'];
+    %     orderedLabel{i}=[num2str(sizeNetwork) ' Ordered Nw'];
 end
 
 %Small World Prop
@@ -874,8 +864,8 @@ x=[smallWorldPropOrderedRandom  ANN.SmallWorldProp cElegans.SmallWorldProp AgNW.
 p2=bar(x);
 hold on
 for i = 1:plotNet
-    e=errorbar(x(1), Net(i).randomOrdered100.StdSmallWorldProp);
-%     e2=errorbar(x(2),Net(i).ordered100.StdSmallWorldProp);
+    e=errorbar(x(1), randomOrdered100.StdSmallWorldProp);
+    %     e2=errorbar(x(2),ordered100.StdSmallWorldProp);
     % xlim([0.05 0.6])
     % ylim([2 16])
     hold on
@@ -889,15 +879,15 @@ ylabel('Small World Prop');
 
 
 fprintf('Figure 2 Complete \n');
-
+%% 
 
 f3=figure;
 circuitRankRandom=[];
 circuitRankOrdered=[];
 for i = 1:plotNet
     %Circuit Rank:
-    circuitRankRandom=[circuitRankRandom Net(i).randomOrdered(1).CircuitRank];
-%     circuitRankOrdered=[circuitRankOrdered Net(i).ordered(1).CircuitRank];
+    circuitRankRandom=[circuitRankRandom randomOrdered(1).CircuitRank];
+    %     circuitRankOrdered=[circuitRankOrdered ordered(1).CircuitRank];
 end
 
 circuitRank=[circuitRankRandom circuitRankOrdered ANN.CircuitRank AgNW.CircuitRank];
@@ -916,7 +906,7 @@ end
 hold on
 %Average Participation Coefficient & Module z-Score
 fprintf('Figure 3 Complete \n');
-
+%% 
 f4=figure;
 
 PRandom=[];
@@ -930,14 +920,14 @@ stdMZOrdered=[];
 
 for i = 1:plotNet
     %Circuit Rank:
-    PRandom=[PRandom Net(i).randomOrdered100.AvgAvgPCoeff];
-%     POrdered=[POrdered Net(i).ordered100.AvgAvgPCoeff];
-    stdPRandom=[stdPRandom Net(i).randomOrdered100.StdAvgPCoeff];
-%     stdPOrdered=[stdPOrdered Net(i).ordered100.StdAvgPCoeff];
-    MZRandom=[MZRandom Net(i).randomOrdered100.AvgAvgMZ];
-%     MZOrdered=[MZOrdered Net(i).ordered100.AvgAvgMZ];
-    stdMZRandom=[stdMZRandom Net(i).randomOrdered100.StdAvgMZ];
-%     stdMZOrdered=[stdMZOrdered Net(i).ordered100.StdAvgMZ];
+    PRandom=[PRandom randomOrdered100.AvgAvgPCoeff];
+    %     POrdered=[POrdered ordered100.AvgAvgPCoeff];
+    stdPRandom=[stdPRandom randomOrdered100.StdAvgPCoeff];
+    %     stdPOrdered=[stdPOrdered ordered100.StdAvgPCoeff];
+    MZRandom=[MZRandom randomOrdered100.AvgAvgMZ];
+    %     MZOrdered=[MZOrdered ordered100.AvgAvgMZ];
+    stdMZRandom=[stdMZRandom randomOrdered100.StdAvgMZ];
+    %     stdMZOrdered=[stdMZOrdered ordered100.StdAvgMZ];
 end
 % POrdered stdMZOrdered MZOrdered
 
@@ -966,7 +956,16 @@ fprintf('Figure 4 Complete \n');
 f5=figure;
 for i=1:plotNet
     subplot(2,2,i)
-    guimera(network{i},Net,i); %change network here
+    if i == 1
+        network{i}=e100;
+    elseif i==2
+        network{i}=e500;
+    elseif i==3
+        network{i}=e1000;
+    elseif i==4
+        network{i}=e2000;
+    end
+    guimera(network{i},randomOrdered100,i); %change network here
     fprintf(['Figure 5 part ' num2str(i) ' Complete \n']);
 end
 
@@ -974,7 +973,7 @@ fprintf('Figure 5 Complete \n');
 
 % %Communicability
 % f6=figure;
-% COMM=[Net(plotNet).randomOrdered100.AvgCOMM(1) Net(plotNet).ordered100.AvgCOMM(1) AgNW.AvgCOMM];
+% COMM=[randomOrdered100.AvgCOMM(1) ordered100.AvgCOMM(1) AgNW.AvgCOMM];
 % stdCOMM=[0 0 AgNW.StdCOMM];
 % p6=bar(log10(COMM));
 % hold on
@@ -982,10 +981,10 @@ fprintf('Figure 5 Complete \n');
 % e.LineStyle='none';
 % % xlim([0.05 0.6])
 % % ylim([2 16])
-% xticklabels({[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'});
+% xticklabels({[num2str(sizeNetwork) 'node Random Nw'],[num2str(sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'});
 % ylabel('Log10 Communicability');
 fprintf('Figure 6 Complete \n');
-
+%% 
 %Betweenness Centrality
 
 f7=figure;
@@ -995,12 +994,12 @@ BCRandomstd=[];
 BCOrderedstd=[];
 for i = 1:plotNet
     %Circuit Rank:
-    BCRandom=[BCRandom Net(i).randomOrdered100.AvgBC];
-%     BCOrdered=[BCOrdered Net(i).ordered100.AvgBC];
-    BCRandomstd=[BCRandomstd Net(i).randomOrdered100.StdBC];
-%     BCOrderedstd=[BCOrderedstd Net(i).ordered100.StdBC];
-    randomLabel{i}=[num2str(Net(i).sizeNetwork) ' Random Nw'];
-%     orderedLabel{i}=[num2str(Net(i).sizeNetwork) ' Ordered Nw'];
+    BCRandom=[BCRandom [randomOrdered100.AvgBC(i,:)]];
+    %     BCOrdered=[BCOrdered ordered100.AvgBC];
+    BCRandomstd=[BCRandomstd [randomOrdered100.StdBC(i,:)]];
+    %     BCOrderedstd=[BCOrderedstd ordered100.StdBC];
+    randomLabel{i}=[num2str(sizeNetwork) ' Random Nw'];
+    %     orderedLabel{i}=[num2str(sizeNetwork) ' Ordered Nw'];
 end
 %BCOrdered BCOrderedstd
 BC=[BCRandom  ANN.avgBC cElegans.avgBC AgNW.AvgBC];
@@ -1061,7 +1060,7 @@ set(f7,'Position',[0 0 1920 1080]);
 print(f7,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Betweenness Centrality all networks.pdf']);
 
 end
-function plotMulti(Net,random,ordered, human, e100Multi, e500Multi, e1000Multi, e2000Multi, AgNW, network,cElegans,ANN,fig_dir,loop)
+function plotMulti(sizeNetwork,randomOrdered,randomOrdered100, human, e100Multi, e500Multi, e1000Multi, e2000Multi, AgNW,cElegans,ANN,fig_dir,loop)
 % if we are looping through all networks:
 f=figure;
 
@@ -1070,6 +1069,7 @@ while 1
     switch plotNet
         case 100
             plotNet=1;
+            
         case 500
             plotNet=2;
         case 1000
@@ -1077,22 +1077,23 @@ while 1
         case 2000
             plotNet=4;
     end
-    
-    y=[Net(plotNet).random100.AvgGlobalClust ANN.GlobalClust ANN.GlobalClust_Trained cElegans.GlobalClust human.GlobalClust Net(plotNet).ordered100.AvgGlobalClust AgNW.AvgGlobalClust];
-    x=[Net(plotNet).random100.AvgPath ANN.AvgPath ANN.AvgPath_Trained cElegans.AvgPath human.AvgPath Net(plotNet).ordered100.AvgPath AgNW.AvgAvgPath];
+                AgNWidx=length(randomOrdered.GlobalClust(plotNet,:))+3;
+%                 ANN.GlobalClust_Trained ANN.AvgPath_Trained
+    y=[randomOrdered.GlobalClust{plotNet,:} ANN.GlobalClust  cElegans.GlobalClust  AgNW.AvgGlobalClust];
+    x=[randomOrdered.AvgPath{plotNet,:} ANN.AvgPath  cElegans.AvgPath AgNW.AvgAvgPath];
     p=gscatter(x,y);
     hold on
-    errorbar(x(1), y(1),Net(plotNet).random100.StdPath);
-    errorbar(x(1), y(1),Net(plotNet).random100.StdGlobalClust,'horizontal');
-    errorbar(x(6), y(6),Net(plotNet).ordered100.StdPath);
-    errorbar(x(6), y(6),Net(plotNet).ordered100.StdGlobalClust,'horizontal');
-    e1=errorbar(x(7:end), y(7:end),AgNW.StdAvgPath);
-    e2=errorbar(x(7:end), y(7:end),AgNW.StdGlobalClust,'horizontal');
-    e1.LineStyle='none';
-    e2.LineStyle='none';
-    % xlim([0.05 0.6])
+%     e1=errorbar(x(1), y(1),randomOrdered100.StdPath(plotNet));
+%     e2=errorbar(x(1), y(1),randomOrdered100.StdGlobalClust(plotNet),'horizontal');
+
     % ylim([2 16])
-    text(x,y,{[num2str(Net(plotNet).sizeNetwork) 'node Random Nw'],'500node ANN Untrained','500node ANN Trained','C. Elegans Nw', 'Human Nw (mm-scale regions)',[num2str(Net(plotNet).sizeNetwork) 'node Ordered Nw'],'100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
+    for m = 1:length(randomOrdered.GlobalClust(plotNet,:)) %for each watts strogatz point
+        if m == 1 | m == length(randomOrdered.GlobalClust(plotNet,:))
+        label{m}=[num2str(AgNW.NumWires(plotNet)) ' Node WS: ?=' num2str((m-1)*0.1)];
+        end 
+    end 
+    
+    text(x,y,{label{:},'500node ANN Untrained','C. Elegans Nw','100nw','500nw','1000nw','2000nw'},'VerticalAlignment','bottom','HorizontalAlignment','left')
     ylabel('Global Clustering Coefficient');
     xlabel('Global Mean Path Length');
     p.MarkerEdgeColor='b';
@@ -1104,35 +1105,51 @@ while 1
         break;
     end
 end
-
+    e3=errorbar(x(AgNWidx:length(x)),y(AgNWidx:length(y)),AgNW.StdGlobalClust,'horizontal');
+    e4=errorbar(x(AgNWidx:length(x)),y(AgNWidx:length(y)),AgNW.StdAvgPath);
+    
+%     e1=errorbar(x(7:end), y(7:end),AgNW.StdAvgPath);
+%     e2=errorbar(x(7:end), y(7:end),AgNW.StdGlobalClust,'horizontal');
+    e3.LineStyle='none';
+    e4.LineStyle='none';
+    e3.Color='black';
+    e4.Color='black';
+    % xlim([0.05 0.6])
 fprintf('Figure 1 Complete \n');
 
-smallWorldPropRandom=[];
-smallWorldPropOrdered=[];
+%%
+%Small World Prop
+
+
+smallWorldPropRandomOrdered=[];
+% smallWorldPropOrdered=[];
 
 for i = 1:plotNet
     %Circuit Rank:
-    smallWorldPropRandom=[smallWorldPropRandom Net(i).random100.AvgSmallWorldProp];
-    smallWorldPropOrdered=[smallWorldPropOrdered Net(i).ordered100.AvgSmallWorldProp];
-    randomLabel{i}=[num2str(Net(i).sizeNetwork) ' Random Nw'];
-    orderedLabel{i}=[num2str(Net(i).sizeNetwork) ' Ordered Nw'];
+    smallWorldPropRandomOrdered=[smallWorldPropRandomOrdered randomOrdered100.AvgSmallWorldProp(i,:)];
+    %     smallWorldPropOrdered=[smallWorldPropOrdered ordered100.AvgSmallWorldProp];
+    randomOrderedLabel{i}=[num2str(sizeNetwork(i)) ' Watts-Strogatz Nw'];
+    %     orderedLabel{i}=[num2str(sizeNetwork) ' Ordered Nw'];
 end
-
-%Small World Prop
 f2=figure;
 
-x=[smallWorldPropRandom smallWorldPropOrdered  ANN.SmallWorldProp cElegans.SmallWorldProp AgNW.AvgSmallWorldProp];
+x=[smallWorldPropRandomOrdered  ANN.SmallWorldProp cElegans.SmallWorldProp AgNW.AvgSmallWorldProp];
 p2=bar(x);
 hold on
 for i = 1:plotNet
-    e=errorbar(x(1), Net(i).random100.StdSmallWorldProp);
-    e2=errorbar(x(2),Net(i).ordered100.StdSmallWorldProp);
-    e3=errorbar(x(5:end),AgNW.StdSmallWorldProp);
+    e=errorbar(x(i), randomOrdered100.StdSmallWorldProp(i,:));
+    %     e2=errorbar(x(2),ordered100.StdSmallWorldProp);
+
     % xlim([0.05 0.6])
     % ylim([2 16])
+    
     hold on
+        e3=errorbar((plotNet+3):length(x),x(plotNet+3:end),AgNW.StdSmallWorldProp);
+
 end
-xticklabels([randomLabel,orderedLabel,'500node Artificial Neural Nw','C. Elegans Nw','100nw','500nw','1000nw','2000nw']);
+
+e3.LineStyle='none';
+xticklabels([randomOrderedLabel(1:plotNet),'500node Artificial Neural Nw','C. Elegans Nw','100nw','500nw','1000nw','2000nw']);
 
 set(gca, 'XTickLabelRotation', 45)
 
@@ -1141,20 +1158,22 @@ ylabel('Small World Prop');
 
 fprintf('Figure 2 Complete \n');
 
-
+%%
 f3=figure;
-circuitRankRandom=[];
-circuitRankOrdered=[];
+circuitRankRandomOrdered=[];
+% circuitRankOrdered=[];
 for i = 1:plotNet
     %Circuit Rank:
-    circuitRankRandom=[circuitRankRandom Net(i).random(1).CircuitRank];
-    circuitRankOrdered=[circuitRankOrdered Net(i).ordered(1).CircuitRank];
+    circuitRankRandomOrdered=[circuitRankRandomOrdered randomOrdered.CircuitRank{i}];
+    %     circuitRankOrdered=[circuitRankOrdered ordered(1).CircuitRank];
 end
 
-circuitRank=[circuitRankRandom circuitRankOrdered ANN.CircuitRank AgNW.AvgCircuitRank];
+circuitRank=[circuitRankRandomOrdered ANN.CircuitRank AgNW.AvgCircuitRank];
 p3=bar(circuitRank);
-errorbar(circuitRank(4:end), AgNW.StdSmallWorldProp);
-xticklabels([randomLabel orderedLabel {'500node Artificial Neural Nw','100nw', '500nw', '1000nw','2000nw'}]);
+hold on
+e3=errorbar(3:6,circuitRank(3:end), AgNW.StdCircuitRank);
+e3.LineStyle='none';
+xticklabels([randomOrderedLabel(1:plotNet) {'500node Artificial Neural Nw','100nw', '500nw', '1000nw','2000nw'}]);
 set(gca, 'XTickLabelRotation', 45)
 
 ylabel('Circuit Rank');
@@ -1167,41 +1186,41 @@ end
 hold on
 %Average Participation Coefficient & Module z-Score
 fprintf('Figure 3 Complete \n');
-
+%% 
 f4=figure;
 
 PRandom=[];
-POrdered=[];
+% POrdered=[];
 MZRandom=[];
-MZOrdered=[];
+% MZOrdered=[];
 stdPRandom=[];
-stdPOrdered=[];
+% stdPOrdered=[];
 stdMZRandom=[];
-stdMZOrdered=[];
+% stdMZOrdered=[];
 
 for i = 1:plotNet
     %Circuit Rank:
-    PRandom=[PRandom Net(i).random100.AvgAvgPCoeff];
-    POrdered=[POrdered Net(i).ordered100.AvgAvgPCoeff];
-    stdPRandom=[stdPRandom Net(i).random100.StdAvgPCoeff];
-    stdPOrdered=[stdPOrdered Net(i).ordered100.StdAvgPCoeff];
-    MZRandom=[MZRandom Net(i).random100.AvgAvgMZ];
-    MZOrdered=[MZOrdered Net(i).ordered100.AvgAvgMZ];
-    stdMZRandom=[stdMZRandom Net(i).random100.StdAvgMZ];
-    stdMZOrdered=[stdMZOrdered Net(i).ordered100.StdAvgMZ];
+    PRandom=[PRandom mean(randomOrdered100.AvgPCoeff(i,:))];
+    %     POrdered=[POrdered ordered100.AvgAvgPCoeff];
+    stdPRandom=[stdPRandom std(randomOrdered100.AvgPCoeff(i,:))];
+    %     stdPOrdered=[stdPOrdered ordered100.StdAvgPCoeff];
+    MZRandom=[MZRandom mean(randomOrdered100.AvgMZ(i,:))];
+    %     MZOrdered=[MZOrdered ordered100.AvgAvgMZ];
+    stdMZRandom=[stdMZRandom std(randomOrdered100.AvgMZ(i,:))];
+    %     stdMZOrdered=[stdMZOrdered ordered100.StdAvgMZ];
 end
 
-PCoeff=[PRandom POrdered  ANN.avgP cElegans.avgP human.AvgP human.PLocalHubs human.PLocalHubs human.PConnectorHubs human.PConnectorHubs  mean(AgNW.AvgPCoeff)];
-stdPCoeff=[PRandom POrdered  ANN.avgP cElegans.avgP, 0, 0, 0, 0, 0,  std(AgNW.AvgPCoeff)];
-stdMZ=[stdMZRandom stdMZOrdered ANN.stdMZ cElegans.stdMZ,0,0,0,0,0, mean(AgNW.AvgMZ)];
-MZ=[MZRandom MZOrdered ANN.avgMZ cElegans.avgMZ human.AvgMZ human.MZHubs human.MZNonHubs human.MZHubs human.MZNonHubs  std(AgNW.AvgMZ)];
+PCoeff=[PRandom ANN.avgP cElegans.avgP human.PLocalHubs human.PLocalHubs human.PConnectorHubs human.PConnectorHubs AgNW.AvgPCoeff];
+stdPCoeff=[PRandom ANN.avgP cElegans.avgP, 0, 0, 0, 0, 0, AgNW.StdPCoeff];
+stdMZ=[stdMZRandom ANN.stdMZ cElegans.stdMZ,0,0,0,0,0, AgNW.AvgMZ];
+MZ=[MZRandom ANN.avgMZ cElegans.avgMZ human.MZHubs human.MZNonHubs human.MZHubs human.MZNonHubs  AgNW.StdMZ];
 
 p4=gscatter(PCoeff,MZ);
 % e=errorbar(MZ, stdMZ);
 % e2=errorbar(PCoeff,stdPCoeff);
 
 %High PCoeff = Hubs / Central areas (Power et al., 2013)
-text(PCoeff,MZ,[randomLabel, orderedLabel, '500node Artificial Neural Nw', 'C. Elegans Nw', 'Human Average', 'Human Connector Local Provincial Hub','Human Local Peripheral Node','Human Connector Hub','Human Satellite Connector', '100nw Avg', '500nw Avg', '1000nw Avgs','2000nw Avg'],'NorthWest');
+text(PCoeff,MZ,[randomOrderedLabel(1:plotNet), '500node Artificial Neural Nw', 'C. Elegans Nw', 'Human Connector Local Provincial Hub','Human Local Peripheral Node','Human Connector Hub','Human Satellite Connector', '100nw Avg', '500nw Avg', '1000nw Avgs','2000nw Avg'],'NorthWest');
 xlabel('Average Participant Coefficient Coefficient');
 ylabel('Average Module z-Score');
 p4.MarkerEdgeColor='b';
@@ -1215,32 +1234,41 @@ fprintf('Figure 4 Complete \n');
 f5=figure;
 for i=1:plotNet
     subplot(2,2,i)
-    guimera(network{i},Net,i,AgNW); %change network here
+    if i == 1
+        network{i}=e100;
+    elseif i==2
+        network{i}=e500;
+    elseif i==3
+        network{i}=e1000;
+    elseif i==4
+        network{i}=e2000;
+    end
+    guimera(network{i},randomOrdered100,i,sizeNetwork(i),AgNW); %change network here
     fprintf(['Figure 5 part ' num2str(i) ' Complete \n']);
 end
 
 fprintf('Figure 5 Complete \n');
 
-
+%%
 %Betweenness Centrality
 
 f7=figure;
 BCRandom=[];
-BCOrdered=[];
+% BCOrdered=[];
 BCRandomstd=[];
-BCOrderedstd=[];
+% BCOrderedstd=[];
 for i = 1:plotNet
     %Circuit Rank:
-    BCRandom=[BCRandom Net(i).random100.AvgBC];
-    BCOrdered=[BCOrdered Net(i).ordered100.AvgBC];
-    BCRandomstd=[BCRandomstd Net(i).random100.StdBC];
-    BCOrderedstd=[BCOrderedstd Net(i).ordered100.StdBC];
-    randomLabel{i}=[num2str(Net(i).sizeNetwork) ' Watts-Strogatz Nw'];
-    orderedLabel{i}=[num2str(Net(i).sizeNetwork) ' Ordered Nw'];
+    BCRandom=[BCRandom randomOrdered100.AvgBC(i,:)];
+    %     BCOrdered=[BCOrdered ordered100.AvgBC];
+    BCRandomstd=[BCRandomstd randomOrdered100.StdBC(i,:)];
+    %     BCOrderedstd=[BCOrderedstd ordered100.StdBC];
+    randomOrderedLabel{i}=[num2str(sizeNetwork(i)) ' Watts-Strogatz Nw'];
+    %     orderedLabel{i}=[num2str(sizeNetwork(i)) ' Ordered Nw'];
 end
-% 
-BC=[BCRandom BCOrdered ANN.avgBC cElegans.avgBC AgNW.AvgBC];
-stdBC=[BCRandomstd BCOrderedstd  ANN.stdBC cElegans.stdBC AgNW.StdBC];
+%
+BC=[BCRandom ANN.avgBC cElegans.avgBC AgNW.AvgBC];
+stdBC=[BCRandomstd ANN.stdBC cElegans.stdBC AgNW.StdBC];
 p7=bar(BC);
 hold on
 e=errorbar(BC, stdBC);
@@ -1249,7 +1277,7 @@ e.LineStyle='none';
 % ylim([2 16])
 %
 
-xticklabels({randomLabel{:},orderedLabel{:},'500node Artificial Neural Nw','C. Elegans Nw','100nw','500nw','1000nw','2000nw'});
+xticklabels({randomOrderedLabel{:},'500node Artificial Neural Nw','C. Elegans Nw','100nw','500nw','1000nw','2000nw'});
 set(gca, 'XTickLabelRotation', 45)
 ylabel('Betweenness Centrality');
 hold on
@@ -1276,7 +1304,7 @@ print(f4,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Participant Coefficien
 print(f7,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Betweenness Centrality all networks with Variance.pdf']);
 end
 
-function guimera(network, Net,plotNet,varargin)
+function guimera(network, randomOrdered100,plotNet,sizeNetwork,varargin)
 % Set up rectangles:
 xR1=[0 0.025 0.025 0];
 xR2=[0.025 0.625 0.625 0.025];
@@ -1301,10 +1329,10 @@ R7=patch(xR7,yR567,[0.7 0.7 0.7],'LineStyle','none','FaceAlpha',0.2);
 
 PCoeff=[network.Explore.GraphTheory.P];
 MZ=[network.Explore.GraphTheory.MZ];
-PCoeffRandom=Net(plotNet).randomOrdered100.AvgPCoeff;
-PCoeffOrdered= Net(plotNet).ordered100.AvgPCoeff;
-MZRandom=Net(plotNet).randomOrdered100.AvgMZ;
-MZOrdered=Net(plotNet).ordered100.AvgMZ;
+PCoeffRandom=randomOrdered100.AvgPCoeff;
+% PCoeffOrdered= ordered100.AvgPCoeff;
+MZRandom=randomOrdered100.AvgMZ;
+% MZOrdered=ordered100.AvgMZ;
 
 for i = 1:length(PCoeff)
     if MZ(i)<2.5 && PCoeff(i)>=0 && PCoeff(i)<0.025
@@ -1352,7 +1380,8 @@ if isempty(varargin)
         end
     end
 else
-    for i = 1:length(varargin)
+    AgNW=varargin{1};
+    for i = 1:length(AgNW)
         switch RegionsMap(i)
             case 1
                 r1=scatter(AgNW.AvgPCoeff(i),AgNW.AvgMZ(i),'black','filled');
@@ -1381,6 +1410,6 @@ end
 ylim([-3 8]);
 xlabel('Participant Coefficient')
 ylabel('Within-Module Degree z-Score');
-title([num2str(Net(plotNet).sizeNetwork) 'nw Network']);
+title([num2str(sizeNetwork) 'nw Network']);
 hold on
 end

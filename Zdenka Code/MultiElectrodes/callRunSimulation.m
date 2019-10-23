@@ -77,6 +77,8 @@ switch simType
             fprintf([num2str(i) '\n']);
             for j = 1:numTimes
                 timeDelay = j*0.05;
+                                %% Simulate:
+                fprintf(['Running simulation ' num2str(j) '...'])
                 SelSims{i,j}=runSimulation(SimSettings,contactn, timeDelay,randseed,biasType,numNanowires,inputVoltage);
             end
         end
@@ -102,6 +104,8 @@ switch simType
             fprintf([num2str(i) '\n']);
             for j = 1:numTimes
                 timeDelay = j*0.05;
+                %% Simulate:
+                fprintf(['Running simulation ' num2str(j) '...'])
                 SelSims{i,j}=runSimulation(SimSettings,tempcontact, timeDelay,randseed,biasType,numNanowires,inputVoltage);
             end
             clear tempcontact

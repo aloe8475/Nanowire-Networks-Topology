@@ -14,8 +14,9 @@
 % 26/06/2019 - Added Participant coefficient, Small World Propensity and
 % Betweenness centrality measures.
 %-------------------------------------------------------------------------
+dbstop if error
 
-
+% addpath(genpath('../../../'));
 close all;
 
 set(0,'DefaultFigureVisible','on')
@@ -25,13 +26,14 @@ computer=getenv('computername');
 switch computer
     case 'W4PT80T2'
         dataPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\';
-    case ''
-        dataPath='/suphys/aloe8475/Documents/CODE/Data/Explore Analysis/';
+    case '' %linux LVM
+        dataPath='/import/silo2/aloe8475/Documents/CODE/Data/Explore Analysis/Time Delay Analysis';
+        
     case 'LAPTOP-S1BV3HR7'
         dataPath='D:\alon_\Research\PhD\CODE\Data\Explore Analysis\';
 end
 cd(dataPath)
-load_data_question=lower(input('Load data? N - None, D - Explore Data \n','s'));
+load_data_question=lower(input('Load data? N - None, D - Explore Data, C - Cluster Data \n','s'));
 if load_data_question=='d'
     clear all;
     if ~exist('netCOMM','var')
@@ -40,9 +42,21 @@ if load_data_question=='d'
         f=fullfile(PathName,FileName);
         load(f);
     end
-end
-
+elseif load_data_question=='c'
+    if exist('ExploreClusterData.mat','file')
+            fprintf('Loading Cluster Data... \n');
+        load('ExploreClusterData.mat');
+            fprintf('Data Loaded \n');
+    else    
+    fprintf('Loading Cluster Data... \n');
+    [Explore,threshold,temp,Sim]=loadSimulationsFromCluster();
+    fprintf('Data Loaded \n');
+    analysis_type=temp{1}; %assuming analysis type is same across all loads of one simulation
+    save('ExploreClusterData.mat','Explore','analysis_type','threshold','Sim');
+    end
+end 
 %% Initialise Variables:
+fprintf('Running Analysis \n');
 numSimulations=length(Explore{1});
 gRemovedEdges=cell(length(Explore),numSimulations);
 gOriginal=cell(length(Explore),numSimulations);
@@ -73,6 +87,7 @@ for j = 1:length(Explore)
         
         % Store the 'class' of time for the current time.
         if ~isempty(Explore{j}{i})
+            fprintf('a');
             idxTime{j}.Time(i)=Explore{j}{i}.IndexTime;
             
             if analysis_type == 't'
@@ -116,6 +131,7 @@ for j = 1:length(Explore)
             end
             
         else
+            fprintf('b');
             if analysis_type == 'e'
                 idxTime{j}.Time(i)=NaN;
                 if j==length(Explore)
@@ -171,7 +187,7 @@ for j = 1:length(Explore)
                     else
                         class{counter}{i}=class{counter-1}{i};
                     end
-                elseif j==length(Explore)
+                elseif j==length(Explore{i})
                     counter = 4;
                     if ~isnan(idxTime{j}.Time(i))
                         class{counter}{i}='Fourth Pulse';
@@ -510,6 +526,9 @@ for j = 1:length(Explore)
     end
 end
 
+fprintf('Analysis Complete \n'); 
+fprintf('Generating Plots... \n');
+
 %% Reshape Data
 if equalGroups
 % DEGREE
@@ -585,8 +604,8 @@ if analysis_type == 'e'
                 end
             end
         end
-        categories.originalGraphs.explanation="Each Cell Array represents the pulse number within the category";
-        categories.connectedGraphs.explanation="Each Cell Array represents the pulse number within the category";
+        categories.originalGraphs.explanation=string('Each Cell Array represents the pulse number within the category');
+        categories.connectedGraphs.explanation=string('Each Cell Array represents the pulse number within the category');
     end
 else
     for i=1:length(classNums) %times
@@ -606,8 +625,8 @@ else
             end
         end
     end
-    categories.originalGraphs.explanation="Each Cell Array represents the pulse number";
-    categories.connectedGraphs.explanation="Each Cell Array represents the pulse number";
+    categories.originalGraphs.explanation=string('Each Cell Array represents the pulse number');
+    categories.connectedGraphs.explanation=string('Each Cell Array represents the pulse number');
 end
 
 %% Degree at endTime
