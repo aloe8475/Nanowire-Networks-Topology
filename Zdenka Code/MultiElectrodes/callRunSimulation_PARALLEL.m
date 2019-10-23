@@ -88,7 +88,7 @@ switch simType
                 exploreSavePath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\Time Delay Analysis\';
                 
             case '' %if on linux
-                linux=1; %% 0 = LVM, 1 = Cluster
+                linux=0; %% 0 = LVM, 1 = Cluster
                 if linux==1
                 savepath ='/headnode2/aloe8475/CODE/Data/Raw/Simulations/Zdenka/Variable Time Delay/';
                 loadpath ='/headnode2/aloe8475/CODE/Data/Raw/Simulations/Zdenka/10 Square Pulses/';
@@ -164,8 +164,7 @@ switch simType
         
         SimSettings.numSources=2;
         SimSettings.SimulationDuration=12;
-        %% NEED TO FIGURE OUT CONTACT NODE POSITIONS FOR LDA TOPOLOGY EXPLORATION - ALON 15/10/19
-        contactn = randi(100,[1 4]); %Placement of 4 electrodes: [Source1, Drain1, Source2, Drain2]
+        contactn = contactNodes; %Placement of 4 electrodes: [Source1, Drain1, Source2, Drain2]
         % 16/10/19 - ASK RUOMIN/JOEL/MIKE - NEED TO FIGURE OUT HOW TO TEST THE CONTACT NODES AND SELECT THEM
         % BASED ON THE DIFFERENT PARAMETERS: LowCOMM/LowCOMM, Low/Med, Low/High, Med/Low, Med/Med, Med/High, High/Low, High/Med, High/High.
         % OR can use Early/Mid/Late times from Experiment 2.

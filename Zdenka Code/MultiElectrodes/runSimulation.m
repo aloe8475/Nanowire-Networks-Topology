@@ -173,6 +173,7 @@ else
     SelSims.Settings.SigType = Stimulus{1}.BiasType;
 end
 SelSims.NumberOfNodes=Connectivity.NumberOfNodes;
+SelSims.Settings.Seed=SimulationOptions.seed;
 
 %% Save Simulation
 % run DataExport.m
