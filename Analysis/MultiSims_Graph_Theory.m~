@@ -22,11 +22,6 @@ close all;
 set(0,'DefaultFigureVisible','on')
 
 
-    %% INPUT ANALYSIS TYPE HERE:
-    % --------
-    type='Pulse'; % Time Delay, DC
-    %---------
-
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2'
@@ -48,17 +43,19 @@ if load_data_question=='d'
         load(f);
     end
 elseif load_data_question=='c'
-    if exist(['ExploreClusterData_' type '.mat'],'file')
+    if exist('ExploreClusterData.mat','file')
             fprintf('Loading Cluster Data... \n');
-        load(['ExploreClusterData_' type '.mat']);
+        load('ExploreClusterData.mat');
             fprintf('Data Loaded \n');
     else    
     fprintf('Loading Cluster Data... \n');
-
+    % --------
+    type='Pulse'; % Time Delay, DC
+    %---------
     [Explore,threshold,temp,Sim]=loadSimulationsFromCluster(type);
     fprintf('Data Loaded \n');
-    analysis_type=temp; %assuming analysis type is same across all loads of one simulation
-    save(['ExploreClusterData_' type '.mat'],'Explore','analysis_type','threshold','Sim');
+    analysis_type=temp{1}; %assuming analysis type is same across all loads of one simulation
+    save('ExploreClusterData.mat','Explore','analysis_type','threshold','Sim');
     end
 end 
 %% Initialise Variables:

@@ -22,11 +22,6 @@ close all;
 set(0,'DefaultFigureVisible','on')
 
 
-    %% INPUT ANALYSIS TYPE HERE:
-    % --------
-    type='Pulse'; % Time Delay, DC
-    %---------
-
 computer=getenv('computername');
 switch computer
     case 'W4PT80T2'
@@ -48,42 +43,45 @@ if load_data_question=='d'
         load(f);
     end
 elseif load_data_question=='c'
-    if exist(['ExploreClusterData_' type '.mat'],'file')
+    if exist('ExploreClusterData.mat','file')
             fprintf('Loading Cluster Data... \n');
-        load(['ExploreClusterData_' type '.mat']);
+        load('ExploreClusterData.mat');
             fprintf('Data Loaded \n');
     else    
-    fprintf('Loading Cluster Data... \n');
-
-    [Explore,threshold,temp,Sim]=loadSimulationsFromCluster(type);
+    fprintf('Combining Cluster Data... \n');
+    [Explore,threshold,temp,Sim]=loadSimulationsFromCluster();
     fprintf('Data Loaded \n');
-    analysis_type=temp; %assuming analysis type is same across all loads of one simulation
-    save(['ExploreClusterData_' type '.mat'],'Explore','analysis_type','threshold','Sim');
+    analysis_type=temp{1}; %assuming analysis type is same across all loads of one simulation
+    save('ExploreClusterData.mat','Sim','Explore','analysis_type','threshold','-v7.3');
     end
 end 
 %% Initialise Variables:
 fprintf('Running Analysis \n');
-numSimulations=length(Explore{1});
-gRemovedEdges=cell(length(Explore),numSimulations);
-gOriginal=cell(length(Explore),numSimulations);
-netCurrs=cell(length(Explore),numSimulations);
-netDegree=cell(length(Explore),numSimulations);
-netPathLength=cell(length(Explore),numSimulations);
-netCOMM=cell(length(Explore),numSimulations);
-netCurrs=cell(length(Explore),numSimulations);
-netPCoeff=cell(length(Explore),numSimulations);
-netMZ=cell(length(Explore),numSimulations);
-netClust=cell(length(Explore),numSimulations);
-netBC=cell(length(Explore),numSimulations);
+numSimulations=length(Explore);
+gRemovedEdges=cell(length(Explore{1}),numSimulations);
+gOriginal=cell(length(Explore{1}),numSimulations);
+netCurrs=cell(length(Explore{1}),numSimulations);
+netDegree=cell(length(Explore{1}),numSimulations);
+netPathLength=cell(length(Explore{1}),numSimulations);
+netCOMM=cell(length(Explore{1}),numSimulations);
+netCurrs=cell(length(Explore{1}),numSimulations);
+netPCoeff=cell(length(Explore{1}),numSimulations);
+netMZ=cell(length(Explore{1}),numSimulations);
+netClust=cell(length(Explore{1}),numSimulations);
+netBC=cell(length(Explore{1}),numSimulations);
 
 %if Adrian's code
 if ~exist('analysis_type','var')
     analysis_type='e';
     equalGroups=1;
-end
+else
+    equalGroups=0;
+end 
 
-% For each time point
+% For each pulse
 for j = 1:length(Explore)
+    % i = pulse
+    % j = simulation
     
     fprintf(['\n ' num2str(j) '\n ']);
     %For each Simulation
@@ -93,45 +91,45 @@ for j = 1:length(Explore)
         
         % Store the 'class' of time for the current time.
         if ~isempty(Explore{j}{i})
-            fprintf('a');
+%             fprintf('a');
             idxTime{j}.Time(i)=Explore{j}{i}.IndexTime;
             
             if analysis_type == 't'
                 %BINS
                 counter=[];
-                if j==3
+                if i==3
                     counter=1;
-                    class{counter}{i}='Third Pulse';
-                    classNums{counter}=j;
+                    class{counter}{j}='Third Pulse';
+                    classNums{counter}=i;
                     classTime{counter}=idxTime{j};
-                elseif j==4
+                elseif i==4
                     counter=2;
-                    class{counter}{i}='Mid of Time Delay';
-                    classNums{counter}=j;
+                    class{counter}{j}='Mid of Time Delay';
+                    classNums{counter}=i;
                     classTime{counter}=idxTime{j};
-                elseif j == 5
+                elseif i == 5
                     counter=3;
-                    class{counter}{i}='End of Time Delay';
-                    classNums{counter}=j;
+                    class{counter}{j}='End of Time Delay';
+                    classNums{counter}=i;
                     classTime{counter}=idxTime{j};
-                elseif j == length(Explore)
+                elseif i == length(thisExplore)
                     counter=4;
-                    class{counter}{i}='Fourth Pulse';
-                    classNums{counter}=j;
+                    class{counter}{j}='Fourth Pulse';
+                    classNums{counter}=i;
                     classTime{counter}=idxTime{j};
                 end
             else
-                if j<=(1/3)*length(Explore) %if the threshold is reached in the first three pulses, early
-                    class{j}{i}='Early';
+                if i<=(1/3)*length(Explore) %if the threshold is reached in the first three pulses, early
+                    class{i}{j}='Early';
                     classNums{1}=[1:(1/3)*length(Explore)];
-                elseif j>(1/3)*length(Explore) & j <(2/3)*length(Explore) %if the threshold is reached in the 4 mid pulses, mid
-                    class{j}{i}='Mid';
+                elseif i>(1/3)*length(Explore) & i <(2/3)*length(Explore) %if the threshold is reached in the 4 mid pulses, mid
+                    class{i}{j}='Mid';
                     classNums{2}=[round((1/3)*length(Explore)):round((2/3)*length(Explore))];
-                elseif j>=(2/3)*length(Explore) & j<length(Explore) %if the threshold is reached in the 3 last pulses, last 
-                    class{j}{i}='Late';
+                elseif i>=(2/3)*length(Explore) & i<length(Explore) %if the threshold is reached in the 3 last pulses, last 
+                    class{i}{j}='Late';
                     classNums{3}=[round(2/3*length(Explore))+1:length(Explore)-1];
-                elseif j == length(Explore) %if the threshold is reached last pulse, never
-                    class{j}{i}='Never';
+                elseif i == length(Explore) %if the threshold is reached last pulse, never
+                    class{i}{j}='Never';
                     classNums{4}=length(Explore);
                 end
             end
@@ -139,66 +137,66 @@ for j = 1:length(Explore)
         else
             fprintf('b');
             if analysis_type == 'e'
-                idxTime{j}.Time(i)=NaN;
-                if j==length(Explore)
-                    if ~isnan(idxTime{j}.Time(i))
-                        class{j}{i}='Never';
+                idxTime{i}.Time(j)=NaN; %i = time, j = simulation
+                if i==length(Explore) %if the final simulation
+                    if ~isnan(idxTime{i}.Time(j))
+                        class{i}{j}='Never';
                         classNums{4}=length(Explore);
                     else
-                        class{j}{i}=class{j-1}{i};
+                        class{i}{j}=class{i-1}{j};
                     end
-                elseif j<=(1/3)*length(Explore)
-                    if ~isnan(idxTime{j}.Time(i))
-                        class{j}{i}='Early';
+                elseif i<=(1/3)*length(Explore)
+                    if ~isnan(idxTime{i}.Time(j))
+                        class{i}{j}='Early';
                         classNums{1}=[1:(1/3)*length(Explore)];
                     else
-                        class{j}{i}=class{j-1}{i};
+                        class{i}{j}=class{i-1}{j};
                     end
-                elseif j>(1/3)*length(Explore) & j <(2/3)*length(Explore)
-                    if ~isnan(idxTime{j}.Time(i))
-                        class{j}{i}='Mid';
+                elseif i>(1/3)*length(Explore) & i <(2/3)*length(Explore)
+                    if ~isnan(idxTime{i}.Time(j))
+                        class{i}{j}='Mid';
                         classNums{2}=[round((1/3)*length(Explore)):round((2/3)*length(Explore))];
                     else
-                        class{j}{i}=class{j-1}{i};
+                        class{i}{j}=class{i-1}{h};
                     end
-                elseif j>=(2/3)*length(Explore) & j<length(Explore)
-                    if ~isnan(idxTime{j}.Time(i))
-                        class{j}{i}='Late';
+                elseif i>=(2/3)*length(Explore) & i<length(Explore)
+                    if ~isnan(idxTime{i}.Time(j))
+                        class{i}{j}='Late';
                         classNums{3}=[round(2/3*length(Explore))+1:length(Explore)-1];
                     else
-                        class{j}{i}=class{j-1}{i};
+                        class{i}{j}=class{i-1}{j};
                     end
                 end
             else
                 idxTime{j}.Time(i)=NaN;
                 counter=[];
-                if j==3
+                if i==3 %if time 3
                     counter = 1;
                     if ~isnan(idxTime{j}.Time(i))
-                        class{counter}{i}='Third Pulse';
+                        class{counter}{j}='Third Pulse';
                     else
-                        class{counter}{i}=class{counter-1}{i};
+                        class{counter}{j}=class{counter-1}{j};
                     end
-                elseif j==4
+                elseif i==4
                     counter = 2;
                     if ~isnan(idxTime{j}.Time(i))
-                        class{counter}{i}='Mid of Time Delay';
+                        class{counter}{j}='Mid of Time Delay';
                     else
-                        class{counter}{i}=class{counter-1}{i};
+                        class{counter}{j}=class{counter-1}{j};
                     end
-                elseif j==5
+                elseif i==5
                     counter = 3;
                     if ~isnan(idxTime{j}.Time(i))
-                        class{counter}{i}='End of Time Delay';
+                        class{counter}{j}='End of Time Delay';
                     else
-                        class{counter}{i}=class{counter-1}{i};
+                        class{counter}{j}=class{counter-1}{j};
                     end
-                elseif j==length(Explore{i})
+                elseif i==length(Explore{i})
                     counter = 4;
                     if ~isnan(idxTime{j}.Time(i))
-                        class{counter}{i}='Fourth Pulse';
+                        class{counter}{j}='Fourth Pulse';
                     else
-                        class{counter}{i}=class{counter-1}{i};
+                        class{counter}{j}=class{counter-1}{j};
                     end
                 end
             end
@@ -206,7 +204,7 @@ for j = 1:length(Explore)
         if ~isempty(thisExplore{i})
             
             %store graph:
-            gOriginal{j,i}=thisExplore{i}.GraphView.Graph;
+            gOriginal{i,j}=thisExplore{i}.GraphView.Graph;
             
             %% What we are doing here is finding the adj matrix, and finding the edges that have current flowing through them.
             %
@@ -242,9 +240,9 @@ for j = 1:length(Explore)
             %% connect source to drain on a copy of the adj matrix - THIS IS JOEL'S
             %CODE HE IS A LEGEND
             
-            %             if j > 0
+            %             if i > 0
             if ~isempty(idx{i}) && ~isempty(idx2{i}) %if both electrodes aren't 'empty' we check if there is any extra paths on the main connected graph
-                nonConnected(j,i)=0;
+                nonConnected(i,j)=0;
                 toDelete = false(length(Adj),1);
                 for count=1:length(Adj)
                     tempAdj=Adj;
@@ -262,24 +260,24 @@ for j = 1:length(Explore)
                 end
             else
                 % MAKE LIST + DELETE LATER
-                nonConnected(j,i)=1;
+                nonConnected(i,j)=1;
             end
             %             end
             % Save removed-edges Graphs
-            gRemovedEdges{j,i}=graph(Adj);
+            gRemovedEdges{i,j}=graph(Adj);
             %Remove zero degree nodes:
-            gRemovedEdges{j,i}=gRemovedEdges{j,i}.rmnode(find(gRemovedEdges{j,i}.degree==0));
+            gRemovedEdges{i,j}=gRemovedEdges{i,j}.rmnode(find(gRemovedEdges{i,j}.degree==0));
             %             if largestcomponent
-            %                 [bin,binsize] =conncomp(gRemovedEdges{j}{i});
+            %                 [bin,binsize] =conncomp(gRemovedEdges{j}{j});
             %                 id = binsize(bin) == max(binsize);
-            %                 gRemovedEdges{j}{i} = subgraph(gRemovedEdges{j}{i}, id);
-            %                 thisExplore{i}.GraphView.NodeIndices(~id)=[];
+            %                 gRemovedEdges{j}{j} = subgraph(gRemovedEdges{j}{j}, id);
+            %                 thisExplore{j}.GraphView.NodeIndices(~id)=[];
             %             end
             %
             
-            %     paths = allpaths(tempAdj, idx{i}, idx2{i});
+            %     paths = allpaths(tempAdj, idx{j}, idx2{j});
             %
-            % nodes = 1:length(Explore{i}.GraphView.NodeIndices);
+            % nodes = 1:length(Explore{j}.GraphView.NodeIndices);
             % for y = 1:size(paths,1)
             %     mpath = paths{y,1};
             %     mcost = paths{y,2}; %number of steps
@@ -318,13 +316,13 @@ for j = 1:length(Explore)
             
             %% Currents
             Adj2{i}=Adj;
-            %         Adj{i}=Explore{i}.GraphView.AdjMat(thisThreshold{i},thisThreshold{i});
+            %         Adj{j}=Explore{j}.GraphView.AdjMat(thisThreshold{j},thisThreshold{j});
             %
-            %         Adj2{i}=Explore{i}.GraphView.AdjMat;%convert 498x498 matrix to EdgeCData ~(1x6065)
-            %         Adj2{i}=Adj2{i}(thisThreshold{i},thisThreshold{i});
+            %         Adj2{j}=Explore{j}.GraphView.AdjMat;%convert 498x498 matrix to EdgeCData ~(1x6065)
+            %         Adj2{j}=Adj2{j}(thisThreshold{j},thisThreshold{j});
             %Find currents
             if analysis_type=='t'
-                if j>2
+                if i>2
                     boolJ=true;
                 else
                     boolJ=false;
@@ -333,7 +331,7 @@ for j = 1:length(Explore)
                 boolJ=true;
             end
             if boolJ %ONLY IF ANALYSIS_TYPE IS T
-                currs{i}=(abs(Sim{i}.Data.Currents{idxTime{j}.Time(i)}));%Find the current at the currentTime
+                currs{i}=(abs(Sim{j}.Data.Currents{idxTime{j}.Time(i)}));%Find the current at the currentTime
                 currs{i}=currs{i}(thisThreshold{i},thisThreshold{i});
                 
                 [jj,ii,~]=find(tril(Adj2{i}));
@@ -358,12 +356,12 @@ for j = 1:length(Explore)
                 stdCC3{i}=std(cc3{i});
                 
                 %% COMMUNICABILITY
-                % Adj{i}=Explore{i}.GraphView.AdjMat(thisThreshold{i},thisThreshold{i});
+                % Adj{i}=Explore{j}.GraphView.AdjMat(thisThreshold{j},thisThreshold{j});
                 COMM{i}=thisExplore{i}.GraphTheory.COMM(thisThreshold{i},thisThreshold{i});
                 %         if largestcomponent
-                [jj,ii,~]=find(tril(Adj));%{i}));
+                [jj,ii,~]=find(tril(Adj));%{j}));
                 %         else
-                %             [jj,ii,~]=find(tril(Adj{i}));
+                %             [ji,ji,~]=find(tril(Adj{i}));
                 %         end
                 %
                 com=zeros(1,length(jj));
@@ -373,8 +371,8 @@ for j = 1:length(Explore)
                 end
                 
                 % extract lower triangular part of Adjacency matrix of network
-                % Adj2{i}=Explore{i}.GraphView.AdjMat;%convert 498x498 matrix to EdgeCData ~(1x6065)
-                % Adj2{i}=Adj2{i}(thisThreshold{i},thisThreshold{i});
+                % Adj2{j}=Explore{j}.GraphView.AdjMat;%convert 498x498 matrix to EdgeCData ~(1x6065)
+                % Adj2{j}=Adj2{j}(thisThreshold{j},thisThreshold{j});
                 [jj,ii,~]=find(tril(Adj2{i})); %extract lower triangle
                 com2=zeros(1,length(jj));
                 
@@ -417,7 +415,7 @@ for j = 1:length(Explore)
                 
                 %% Degree
                 Degree{i}=thisExplore{i}.GraphTheory.DEG(thisThreshold{i});
-                %             TestDegree{j}{i}=Degree{i};
+                %             TestDegree{j}{j}=Degree{j};
                 sourceDEG{i}=Degree{i}(idx{i});
                 drainDEG{i}=Degree{i}(idx2{i});
                 
@@ -450,9 +448,9 @@ for j = 1:length(Explore)
                 %
                 
                 %     if largestcomponent
-                %     [jj,ii,~]=find(tril(Adj));%{i}));
+                %     [ji,ji,~]=find(tril(Adj));%{i}));
                 %     else
-                %         [jj,ii,~]=find(tril(Adj{i}));
+                %         [ji,ji,~]=find(tril(Adj{i}));
                 %     end
                 % %
                 %     between=zeros(1,length(jj));
@@ -462,13 +460,13 @@ for j = 1:length(Explore)
                 %     end
                 %
                 %     % extract lower triangular part of Adjacency matrix of network
-                %     % Adj2{i}=Explore{i}.GraphView.AdjMat;%convert 498x498 matrix to EdgeCData ~(1x6065)
+                %     % Adj2{i}=Explore{j}.GraphView.AdjMat;%convert 498x498 matrix to EdgeCData ~(1x6065)
                 %     % Adj2{i}=Adj2{i}(thisThreshold{i},thisThreshold{i});
-                %     [jj,ii,~]=find(tril(Adj2{i})); %extract lower triangle
+                %     [ji,ji,~]=find(tril(Adj2{i})); %extract lower triangle
                 %     between2=zeros(1,length(jj));
                 %
                 %     for k=1:length(jj)
-                %         between2(k)=Explore{i}.GraphTheory.networkThreshold(ii(k),jj(k)); %Graph.networkThreshold is just the same as the thresholded adj matrix.
+                %         between2(k)=Explore{j}.GraphTheory.networkThreshold(ii(k),jj(k)); %Graph.networkThreshold is just the same as the thresholded adj matrix.
                 %     end
                 %
                 %     %Find Graph.COMM in network
@@ -480,50 +478,50 @@ for j = 1:length(Explore)
         end %if ~isempty(thisExplore)
         
         %Combine com3 and cc3 (network comm and network currents):
-        %     netMolularity{j}=[Module{:}];
+        %     netMolularity{i}=[Module{:}];
         
         if analysis_type=='t'
-            if j>2
-                netDegree{j,i}=Degree{i};
-                netPathLength{j,i}=AvgPath{i};
-                netCOMM{j,i}=com3{i};
-                netCOMM{j,i}(netCOMM{j,i}==Inf)=0; %NEED TO DISCUSS WITH MAC
-                netCurrs{j,i}=cc3{i};
-                netPCoeff{j,i}=PCoeff{i};
-                netMZ{j,i}=MZ{i};
-                netClust{j,i}=Clust{i};
-                netBC{j,i}=BC{i};
+            if i>2
+                netDegree{i,j}=Degree{i};
+                netPathLength{i,j}=AvgPath{i};
+                netCOMM{i,j}=com3{i};
+                netCOMM{i,j}(netCOMM{i,j}==Inf)=0; %NEED TO DISCUSS WITH MAC
+                netCurrs{i,j}=cc3{i};
+                netPCoeff{i,j}=PCoeff{i};
+                netMZ{i,j}=MZ{i};
+                netClust{i,j}=Clust{i};
+                netBC{i,j}=BC{i};
             end
         else
-            netDegree{j,i}=Degree{i};
-            netPathLength{j,i}=AvgPath{i};
-            netCOMM{j,i}=com3{i};
-            netCOMM{j,i}(netCOMM{j,i}==Inf)=0; %NEED TO DISCUSS WITH MAC
-            netCurrs{j,i}=cc3{i};
-            netPCoeff{j,i}=PCoeff{i};
-            netMZ{j,i}=MZ{i};
-            netClust{j,i}=Clust{i};
-            netBC{j,i}=BC{i};
+            netDegree{i,j}=Degree{i};
+            netPathLength{i,j}=AvgPath{i};
+            netCOMM{i,j}=com3{i};
+            netCOMM{i,j}(netCOMM{i,j}==Inf)=0; %NEED TO DISCUSS WITH MAC
+            netCurrs{i,j}=cc3{i};
+            netPCoeff{i,j}=PCoeff{i};
+            netMZ{i,j}=MZ{i};
+            netClust{i,j}=Clust{i};
+            netBC{i,j}=BC{i};
         end
-        progressBar(i,length(thisExplore));
+        progressBar(j,length(thisExplore));
         
     end %for loop
     
     if analysis_type == 'e'
-        category{j}.NaN=sum(isnan(idxTime{j}.Time));
-        category{j}.Never=sum(strcmp(class{j},'Never'));
-        %     category{j}.NeverNotConnected=sum(nonConnected(j,:));
-        %     category{j}.NeverConnected=category{j}.Never-category{j}.NeverNotConnected;
-        category{j}.Early=sum(strcmp(class{j},'Early'));
-        category{j}.Mid=sum(strcmp(class{j},'Mid'));
-        category{j}.Late=sum(strcmp(class{j},'Late'));
+        category{i}.NaN=sum(isnan(idxTime{i}.Time));
+        category{i}.Never=sum(strcmp(class{i},'Never'));
+        %     category{i}.NeverNotConnected=sum(nonConnected(j,:));
+        %     category{i}.NeverConnected=category{i}.Never-category{i}.NeverNotConnected;
+        category{i}.Early=sum(strcmp(class{i},'Early'));
+        category{i}.Mid=sum(strcmp(class{i},'Mid'));
+        category{i}.Late=sum(strcmp(class{i},'Late'));
     else
         counter =[];
-        if j >2
-            counter=j-2;
+        if i >2
+            counter=i-2;
             category{counter}.NaN=sum(isnan(idxTime{j}.Time));
-            %     category{j}.NeverNotConnected=sum(nonConnected(j,:));
-            %     category{j}.NeverConnected=category{j}.Never-category{j}.NeverNotConnected;
+            %     category{i}.NeverNotConnected=sum(nonConnected(j,:));
+            %     category{i}.NeverConnected=category{i}.Never-category{i}.NeverNotConnected;
             category{counter}.Third=sum(strcmp(class{counter},'Third Pulse'));
             category{counter}.MidPulse=sum(strcmp(class{counter},'Mid of Time Delay'));
             category{counter}.EndPulse=sum(strcmp(class{counter},'End of Time Delay'));
@@ -568,10 +566,10 @@ NonConnectedTimes=sum(nonConnected,2);
 
 %% Categorical Processing:
 if analysis_type == 'e'
-    logicalCategory.Early=strcmp(class{j},'Early');
-    logicalCategory.Mid=strcmp(class{j},'Mid');
-    logicalCategory.Late=strcmp(class{j},'Late');
-    logicalCategory.Never=strcmp(class{j},'Never');
+    logicalCategory.Early=strcmp(class{i},'Early');
+    logicalCategory.Mid=strcmp(class{i},'Mid');
+    logicalCategory.Late=strcmp(class{i},'Late');
+    logicalCategory.Never=strcmp(class{i},'Never');
 else
     logicalCategory.Third=strcmp(class{1},'Third Pulse');
     logicalCategory.MidTime=strcmp(class{2},'Mid of Time Delay');
@@ -790,7 +788,7 @@ end
 %
 % clear values Legend
 
-
+%% PLOTTING
 %% Colors
 %CHANGE COLOURS
 lightblue=rgb('cyan');
@@ -818,41 +816,61 @@ bdif=[lightblue(3)-blue(3)];
 b2=lightblue(3):(-bdif)/(length(categories.Clust)-1):blue(3);
 
 clrs2={[r2; g2; b2]'};
-%% Plot Graph
-% p = plot(Explore{end}.GraphView.Graph,'NodeLabel',Explore{end}.GraphView.NodeIndices);
 
-%% Plot Subgraphs
-% Example subgraphs for random Early, Mid and Late/Never:
-% loop=1;
-% while loop==1
-%     randEarly=randi(length(Explore{2}));
-%     count1=1;
-%     randMid=randi(length(Explore{6}));
-%     count2=1;
-%     randLate=randi(length(Explore{10}));
-%     count3=1;
-%     if ~isempty(Explore{2}{randEarly}) && ~isempty(Explore{2}{randEarly}.GraphView.Nodes) && count1==1
-%         fEarly=figure;
-%         pEarly=plot(Explore{2}{randEarly}.GraphView.Graph,'NodeLabel',Explore{2}{randEarly}.GraphView.NodeIndices);
-%         count1=2;
-%         title('Early Subgraph');
-%     end
-%     if ~isempty(Explore{2}{randMid}) && ~isempty(Explore{2}{randMid}.GraphView.Nodes) && count2==1
-%         fMid=figure;
-%         pMid=plot(Explore{2}{randMid}.GraphView.Graph,'NodeLabel',Explore{2}{randMid}.GraphView.NodeIndices);
-%         count2=2;
-%         title('Mid Subgraph');
-%     end
-%     if ~isempty(Explore{2}{randLate}) && ~isempty(Explore{2}{randLate}.GraphView.Nodes) && count3==1
-%         fLate=figure;
-%         pLate=plot(Explore{2}{randLate}.GraphView.Graph,'NodeLabel',Explore{2}{randLate}.GraphView.NodeIndices);
-%         count3=2;
-%         title('Late/Never Subgraph');
-%     end
-%     if ~isempty(Explore{2}{randLate}) && ~isempty(Explore{2}{randLate}.GraphView.Nodes) && ~isempty(Explore{2}{randMid})  && ~isempty(Explore{2}{randMid}.GraphView.Nodes) && ~isempty(Explore{2}{randEarly})  && ~isempty(Explore{2}{randEarly}.GraphView.Nodes)
-%         loop = loop+1;
-%     end
-% end
+%% DEGREE:
+maxFreq=max([max(histcounts(categories.Degree{1})) max(histcounts(categories.Degree{2})) max(histcounts(categories.Degree{3})) max(histcounts(categories.Degree{4}))]);
+
+subplot(2,2,1)
+h(1)=histogram(categories.Degree{1});
+h(1).FaceColor=clrs2{1}(1,:);
+title(num2str(class{1}{1}));
+ylim([0 maxFreq])
+
+subplot(2,2,2)
+h(2)=histogram(categories.Degree{2});
+h(2).FaceColor=clrs2{1}(2,:);
+title(num2str(class{2}{1}));
+ylim([0 maxFreq])
+
+subplot(2,2,3)
+h(3)=histogram(categories.Degree{3});
+h(3).FaceColor=clrs2{1}(3,:);
+title(num2str(class{3}{1}));
+ylim([0 maxFreq])
+
+subplot(2,2,4)
+h(4)=histogram(categories.Degree{4});
+h(4).FaceColor=clrs2{1}(4,:);
+title(num2str(class{4}{1}));
+ylim([0 maxFreq])
+
+suptitle('Degree')
+clear maxFreq
+
+%% COMM
+%Highest frequencies for ylim:
+maxFreq=max([max(histcounts(categories.COMM{1})) max(histcounts(categories.COMM{2})) max(histcounts(categories.COMM{3})) max(histcounts(categories.COMM{4}))]);
+
+figure;
+subplot(2,2,1)
+histogram(categories.COMM{1})
+title(num2str(class{1}{1}));
+ylim([0 maxFreq])
+
+subplot(2,2,2)
+histogram(categories.COMM{2})
+title(num2str(class{2}{1}));
+ylim([0 maxFreq])
+
+subplot(2,2,3)
+histogram(categories.COMM{3})
+title(num2str(class{3}{1}));
+ylim([0 maxFreq])
+subplot(2,2,4)
+histogram(categories.COMM{4})
+title(num2str(class{4}{1}));
+ylim([0 maxFreq])
+suptitle('Communicability')
 
 %% Plot of Max Current (NaNs)
 if analysis_type == 'e'
@@ -871,7 +889,7 @@ else %Find the xticklabels
     % xlabel('Square Pulse Time (mSec)');
 end
 
-% %% Plot timeseries:
+%% Plot timeseries:
 % fTime=figure('Position',[0 0 1920 1080]);
 % plot(Sim{3}.Time, Sim{3}.Data.VSource1);
 % ylim([0 1.5]);
@@ -885,10 +903,9 @@ end
 %% Plot COMM Correlations at Edges:
 fCOMMCurr=figure('Position',[0 0 1920 1080]);
 count = 1;
-for i = 1:length(categories.COMM)
-    s(i)=scatter(categories.COMM{i},categories.Curr{i},[],clrs{1}(i,:));
-    %     h=lsline; %Linear Fit
-    
+for i = [1 4]
+    s(i)=scatter(categories.COMM{i},categories.Curr{i},[],clrs2{1}(i,:));
+
     %     %Polynomial Fits -------
     %     hp=polyfit(categories.COMM{i},categories.Curr{i},2); %2nd Order Polynomial Fit
     %     x2=min(categories.COMM{i}):0.25:max(categories.COMM{i});
@@ -922,11 +939,13 @@ for i = 1:length(categories.COMM)
     [rCorrelation{i}.COMM,pCorrelation{i}.COMM]=corrcoef(categories.COMM{i},categories.Curr{i});
     %     Legend{i}=strcat([num2str(Explore{i}{3}.IndexTime) ' sec']);
 end
+
 % legend(Legend)
 if analysis_type == 'e'
     legend({'Early','Mid','Late','Never'})
 else
-    legend({'Pulse 3','Mid Point of Time Delay','End Point of Time Delay', 'Pulse 4'})
+    legend({'Pulse 3', 'Pulse 4'})
+    %Mid Point of Time Delay','End Point of Time Delay',
 end
 %% log10 Current:
 % flog=figure('Position',[0 0 1920 1080]);
@@ -1048,15 +1067,29 @@ if analysis_type=='e'
     ylabel('Avg Path Length');
     xlabel('Clustering Coefficient');
 else
-    %% Time Delay Clustering & Path Length
+    %% Time Delay Clustering
     clear cc;
-    loadPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Watson Strogatz\';
-    load([loadPath 'beta.mat'])
-    watStr.beta=beta;
-    load([loadPath 'cc.mat']);
-    watStr.cc=cc;
-    load([loadPath 'pl.mat']);
-    watStr.pl=pl;
+%     loadPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Watson Strogatz\';
+%     load([loadPath 'beta.mat'])
+%     watStr.beta=beta;
+%     load([loadPath 'cc.mat']);
+%     watStr.cc=cc;
+%     load([loadPath 'pl.mat']);
+%     watStr.pl=pl;
+    
+    %Seperate into avg path lengths at each time, for each simulation:
+    avgPathLength.P3=[netPathLength{3,:}];
+    avgPathLength.MTD=[netPathLength{4,:}];
+    avgPathLength.ETD=[netPathLength{5,:}];
+    avgPathLength.P4=[netPathLength{6,:}];
+    
+    avgNetCOMM.P3=[netCOMM{3,:}];
+    avgNetCOMM.MTD=[netCOMM{4,:}];
+    avgNetCOMM.ETD=[netCOMM{5,:}];
+    avgNetCOMM.P4=[netCOMM{6,:}];
+       
+    %Find Communicability for different path lengths:
+    
     
     
     fWatts=figure('Position',[0 0 1920 1080]);
@@ -1065,31 +1098,35 @@ else
     %
     %     s(1)=scatter(mean(watStr.cc),watStr.pl,[],[r3; g3; b3]');
     count=0;
-    for i =3:length(Explore) %for each time window
+    for i =3:length(Explore{1}) %for each time window
         count=count+1;
         for j = 1:length(netClust) %for each simulation
             if ~isempty(netClust{i})
-                s(count)=scatter3(nanmean(netClust{i,j}),netPathLength{i,j},j*0.05,[],clrs2{1}(count,:));
+                s(count)=scatter(j*0.05,nanmean(netClust{i,j}),[],clrs2{1}(count,:));
                 hold on
             end
         end
     end
-    axis vis3d
-    ylabel('Avg Path Length');
-    xlabel('Clustering Coefficient');
-    zlabel('Time Delay');
+%     axis vis3d
+%     ylabel('Avg Path Length');
+    ylabel('Clustering Coefficient');
+    xlabel('Time Delay');
     legend(s,{'Pulse 3','Mid Point of Time Delay','End Point of Time Delay','Pulse 4'});
+    
+    %%
+    
+    
     
     %% Time Delay Communicability
     count=0;
     catNums=[double(strcmp(class{1},'Third Pulse')); double(strcmp(class{2},'Mid of Time Delay'))*2; double(strcmp(class{3},'End of Time Delay'))*3; double(strcmp(class{4},'Fourth Pulse'))*4];
-    for i =3:length(Explore) %for each time window
+    for i =3:length(Explore{1}) %for each time window
         count=count+1;
         for j = 1:length(netCOMM) %for each simulation
             if ~isempty(netCOMM{i})
                 commTemp(count,j)=nanmean(netCOMM{i,j});
                 %                 s=plot(0.05:0.05:5,commTemp);
-                s(count)= scatter3(j*0.05,commTemp(count,j),catNums(count,j),[],clrs2{1}(count,:));
+                s(count)= scatter(j*0.05,commTemp(count,j),[],clrs2{1}(count,:));
                 hold on
             end
         end
@@ -1100,11 +1137,11 @@ else
     %     s(count).LineWidth=1.5;
     %     s(count).Color=clrs2{1}(count,:);
     %     end
-    axis vis3d
+%     axis vis3d
     xlabel('Time Delay');
     ylabel('Communicability');
-    zticks([1 2 3 4])
-    zticklabels({'Pulse 3','Mid Point of Time Delay','End Point of Time Delay','Pulse 4'});
+%     zticks([1 2 3 4])
+%     zticklabels({'Pulse 3','Mid Point of Time Delay','End Point of Time Delay','Pulse 4'});
 end
 
 %% 3D Surface Plots
@@ -1289,6 +1326,43 @@ saveas(fCOMMCat,[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(
 print(fCOMMCat,'-painters','-dpdf','-bestfit','-r600',[save_directory num2str(length(Sim{1}.SelDomain)) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeDelay vs Communicability' date '.pdf']);
 
 end 
+
+
+%% Plot Graph
+% p = plot(Explore{end}.GraphView.Graph,'NodeLabel',Explore{end}.GraphView.NodeIndices);
+
+%% Plot Subgraphs
+% Example subgraphs for random Early, Mid and Late/Never:
+% loop=1;
+% while loop==1
+%     randEarly=randi(length(Explore{2}));
+%     count1=1;
+%     randMid=randi(length(Explore{6}));
+%     count2=1;
+%     randLate=randi(length(Explore{10}));
+%     count3=1;
+%     if ~isempty(Explore{2}{randEarly}) && ~isempty(Explore{2}{randEarly}.GraphView.Nodes) && count1==1
+%         fEarly=figure;
+%         pEarly=plot(Explore{2}{randEarly}.GraphView.Graph,'NodeLabel',Explore{2}{randEarly}.GraphView.NodeIndices);
+%         count1=2;
+%         title('Early Subgraph');
+%     end
+%     if ~isempty(Explore{2}{randMid}) && ~isempty(Explore{2}{randMid}.GraphView.Nodes) && count2==1
+%         fMid=figure;
+%         pMid=plot(Explore{2}{randMid}.GraphView.Graph,'NodeLabel',Explore{2}{randMid}.GraphView.NodeIndices);
+%         count2=2;
+%         title('Mid Subgraph');
+%     end
+%     if ~isempty(Explore{2}{randLate}) && ~isempty(Explore{2}{randLate}.GraphView.Nodes) && count3==1
+%         fLate=figure;
+%         pLate=plot(Explore{2}{randLate}.GraphView.Graph,'NodeLabel',Explore{2}{randLate}.GraphView.NodeIndices);
+%         count3=2;
+%         title('Late/Never Subgraph');
+%     end
+%     if ~isempty(Explore{2}{randLate}) && ~isempty(Explore{2}{randLate}.GraphView.Nodes) && ~isempty(Explore{2}{randMid})  && ~isempty(Explore{2}{randMid}.GraphView.Nodes) && ~isempty(Explore{2}{randEarly})  && ~isempty(Explore{2}{randEarly}.GraphView.Nodes)
+%         loop = loop+1;
+%     end
+% end
 
 %% -----------------------------------------------------------------------
 % %% Timestamps
