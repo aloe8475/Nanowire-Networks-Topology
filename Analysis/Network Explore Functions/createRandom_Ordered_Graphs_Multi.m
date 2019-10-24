@@ -36,10 +36,10 @@ for graph=1%:50 %bootstrapping
         progressbar()
     for b = 0:0.05:1
         count = count+1;
-        ws{graph}{1,count} = WattsStrogatz(100,round(mean(full(AgNW.AvgDegree(1)))),b);
-        ws{graph}{2,count} = WattsStrogatz(498,round(mean(full(AgNW.AvgDegree(2)))),b);
-        ws{graph}{3,count} = WattsStrogatz(1000,round(mean(full(AgNW.AvgDegree(3)))),b);
-        ws{graph}{4,count} = WattsStrogatz(2000,round(mean(full(AgNW.AvgDegree(4)))),b);
+        ws{graph}{1,count} = WattsStrogatz(100,round(mean(full(AgNW.AvgDegree(1)))/2),b);
+        ws{graph}{2,count} = WattsStrogatz(498,round(mean(full(AgNW.AvgDegree(2)))/2),b);
+        ws{graph}{3,count} = WattsStrogatz(1000,round(mean(full(AgNW.AvgDegree(3)))/2),b);
+        ws{graph}{4,count} = WattsStrogatz(2000,round(mean(full(AgNW.AvgDegree(4)))/2),b);
         progressbar(b/1)
     end
 end
@@ -65,7 +65,7 @@ for graph=1%:50
             randomOrdered(graph).COMM{i,j} = expm(A);
             
             %Random Path Length
-            randomOrdered(graph).Path{i,j} = path_length(A);
+            randomOrdered(graph).Path{i,j} = path_length(A); %% ALON 24/10 -- PATH LENGTH DOESN'T SEEM TO GO HIGHER THAN 4.5, even in the 2000nw case - this is a bug
             randomOrdered(graph).AvgPath{i,j}=mean(randomOrdered(graph).Path{i,j});
             
             %Small World Propensity:
@@ -104,7 +104,7 @@ for i = 1
     end
 end
 fprintf('Saving Watts-Strogatz \n');
-save([savePath 'Random_Ordered_Graphs_ALL_networks.mat'],'randomOrdered','randomOrdered100','-v7.3');
+save([savePath 'Random_Ordered_Graphs_networks.mat'],'randomOrdered_34','randomOrdered100_34','-v7.3');
 end
 
 % %% Ordered Graph Analysis

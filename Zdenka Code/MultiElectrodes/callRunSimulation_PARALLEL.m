@@ -10,12 +10,13 @@ simType='t';%lower(input('Choose Simulation: C - Continuous DC, P - 10 Pulse DC,
 
 %Initialise Variables
 numSims      = 100;
-numTimes     = 100;
+numTimes     = 200;
 numNanowires = 100;
 inputVoltage =   2;
 computer     = getenv('computername');
 
-
+load('C:\Users\aloe8475\Dropbox (Sydney Uni)\Data\ASN_simulation\Python\ASN\data.mat');
+%^save the variable from above as pairinglist 24/10/19
 switch simType
     case 'c'
         %% Continuous DC
@@ -33,7 +34,7 @@ switch simType
         SimSettings.numSources=1;
         SimSettings.SimulationDuration=2;
         randseed = WorkerID*2;
-        % contactn = randi(100,[1 2]);
+        contactn = pairinglist(WorkerID,:);
         % timeDelay = i*0.05;
         biasType = 'DC';
         SelSims  = runSimulation(SimSettings,contactn, [],randseed,biasType,numNanowires,inputVoltage);
@@ -60,7 +61,7 @@ switch simType
         
         %         for i = WorkerID
         randseed   = WorkerID;
-        contactn   = randi(100,[1 2]);
+        contactn   = pairinglist;
         % timeDelay = i*0.05;
         biasType   = 'DCandWait';
         SelSims{WorkerID} = runSimulation(SimSettings,contactn, [],randseed,biasType,numNanowires,inputVoltage);
@@ -102,23 +103,24 @@ switch simType
                 end 
         end
         cd(savepath)
-        if ~exist(['SelSims_TimeDelay_' num2str(WorkerID) '.mat'],'file') %if we haven't previously saved the file
-            load([loadpath 'SelSims_DCandWait_' num2str(WorkerID) '.mat']) %load contact nodes from previous simulations
+        %if ~exist(['SelSims_TimeDelay_' num2str(WorkerID) '.mat'],'file') %if we haven't previously saved the file
+            %load([loadpath 'SelSims_DCandWait_' num2str(WorkerID) '.mat']) %load contact nodes from previous simulations
             SimSettings.numSources         = 1;
-            SimSettings.SimulationDuration = 12;
+            SimSettings.SimulationDuration = 8+(numTimes/100);
             
             %         for i = WorkerID
-            ElecPos(WorkerID,:) = [SelSims{WorkerID}.Electrodes.PosIndex]; %save electrodes from previous simulation
+			%% Swap this with pairinglist 24/10/19
+            %ElecPos(WorkerID,:) = [SelSims{WorkerID}.Electrodes.PosIndex]; %save electrodes from previous simulation
             %         end
-            clear SelSims
+			% clear SelSims
             SelSims = cell(numSims,numTimes);
             %         for i = WorkerID
             randseed = WorkerID;
             biasType = 'TimeDelay'; % biasType for getStimulus function
-            contactn = ElecPos(WorkerID,:); %load contact nodes from previous simulation (case P)
+            contactn = pairinglist(WorkerID,:); %ElecPos(WorkerID,:); %load contact nodes from previous simulation (case P)
             fprintf([num2str(WorkerID) '\n']);
             for j = 1:numTimes
-                timeDelay    = j*0.05;
+                timeDelay    = j*0.1;
                 fprintf(['Running TimeDelay ' num2str(timeDelay) '...'])
                 SelSims{WorkerID,j} = runSimulation(SimSettings,contactn, timeDelay,randseed,biasType,numNanowires,inputVoltage);
                 fprintf(['\n'])
@@ -164,7 +166,7 @@ switch simType
         
         SimSettings.numSources=2;
         SimSettings.SimulationDuration=12;
-        contactn = contactNodes; %Placement of 4 electrodes: [Source1, Drain1, Source2, Drain2]
+        contactn = pairinglist; %Placement of 4 electrodes: [Source1, Drain1, Source2, Drain2]
         % 16/10/19 - ASK RUOMIN/JOEL/MIKE - NEED TO FIGURE OUT HOW TO TEST THE CONTACT NODES AND SELECT THEM
         % BASED ON THE DIFFERENT PARAMETERS: LowCOMM/LowCOMM, Low/Med, Low/High, Med/Low, Med/Med, Med/High, High/Low, High/Med, High/High.
         % OR can use Early/Mid/Late times from Experiment 2.

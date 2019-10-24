@@ -22,7 +22,10 @@ SimulationOptions.TimeVector = (SimulationOptions.dt:SimulationOptions.dt:Simula
 SimulationOptions.NumberOfIterations = length(SimulationOptions.TimeVector);
 
 if strcmp(biasType,'DC')
-    SimulationOptions.ContactMode     = 'farthest';    % 'farthest' \ 'specifiedDistance' \ 'random' (the only one relevant for 'randAdjMat' (no spatial meaning)) \ 'preSet'
+    SimulationOptions.ContactMode     = 'preSet';    % 'farthest' \ 'specifiedDistance' \ 'random' (the only one relevant for 'randAdjMat' (no spatial meaning)) \ 'preSet'
+	    SimulationOptions.ContactNodes = contactn; % only really required for preSet, other modes will overwrite this
+    SimulationOptions.electrodes = contactn; % only really required for preSet, other modes will overwrite this
+
     % FOR MULTIPLE ELECTRODES NEED TO DEFINE BELOW AND UNCOMMENT BOTH LINES
 else
     SimulationOptions.ContactMode     = 'preSet';    % 'farthest' \ 'specifiedDistance' \ 'random' (the only one relevant for 'randAdjMat' (no spatial meaning)) \ 'preSet'

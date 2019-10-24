@@ -44,9 +44,9 @@ if loadData=='y'
                     fig_dir=['C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Figures\Explore Analysis\Cross-Network Explore\Graph Theory\' num2str(currMultiNet) 'nw Alternate NWs\'];
                 end
             case '' %if on linux
-                explore_location='/suphys/aloe8475/Documents/CODE/Data/Explore Analysis/';
-                savePath='/suphys/aloe8475/Documents/CODE/Data/Explore Analysis/Multi-Network Data/';
-                fig_dir='/suphys/aloe8475/Documents/CODE/Data/Figures/Explore Analysis/Cross-Network Explore/Graph Theory/';
+                explore_location='/headnode2/aloe8475/CODE/Data/Explore Analysis/';
+                savePath='/headnode2/aloe8475/CODE/Data/Explore Analysis/Multi-Network Data/';
+%                 fig_dir='/headnode2/aloe8475/CODE/Data/Figures/Explore Analysis/Cross-Network Explore/Graph Theory/';
                 
             case 'LAPTOP-S1BV3HR7'
                 if loadData=='y' & loadDataMulti=='n'
@@ -1089,7 +1089,7 @@ while 1
     % ylim([2 16])
     for m = 1:length(randomOrdered.GlobalClust(plotNet,:)) %for each watts strogatz point
         if m == 1 | m == length(randomOrdered.GlobalClust(plotNet,:))
-        label{m}=[num2str(AgNW.NumWires(plotNet)) ' Node WS: ?=' num2str((m-1)*0.1)];
+        label{m}=[num2str(AgNW.NumWires(plotNet)) ' Node WS: ?=' num2str((m-1)*0.05)];
         end 
     end 
     
@@ -1144,9 +1144,9 @@ for i = 1:plotNet
     % ylim([2 16])
     
     hold on
-        e3=errorbar((plotNet+3):length(x),x(plotNet+3:end),AgNW.StdSmallWorldProp);
 
 end
+        e3=errorbar((plotNet+3):length(x),x(plotNet+3:end),AgNW.StdSmallWorldProp);
 
 e3.LineStyle='none';
 xticklabels([randomOrderedLabel(1:plotNet),'500node Artificial Neural Nw','C. Elegans Nw','100nw','500nw','1000nw','2000nw']);
