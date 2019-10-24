@@ -25,7 +25,7 @@ switch computer
         currentPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis';
     case '' %if on linux
         currentPath='/headnode2/aloe8475/CODE/ZdenkaCode/MultiElectrodes';
-%             currentPath='/import/silo2/aloe8475/Documents/CODE/Zdenka Code/MultiElectrodes/';
+        %             currentPath='/import/silo2/aloe8475/Documents/CODE/Zdenka Code/MultiElectrodes/';
     case 'LAPTOP-S1BV3HR7'
         currentPath='D:\alon_\Research\PhD\CODE\Analysis';
         %case '' %--- Add other computer paths (e.g. Mike)
@@ -42,11 +42,11 @@ network_load='z';
 % dataPath='/import/silo2/aloe8475/Documents/CODE/Data/Raw/Networks/Zdenka Networks/';
 computer     = getenv('computername');
 switch computer
-            case 'W4PT80T2' %if on desktop at uni - Alon
-                dataPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Networks\Zdenka Networks\';
+    case 'W4PT80T2' %if on desktop at uni - Alon
+        dataPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Raw\Networks\Zdenka Networks\';
     case ''
         dataPath='/headnode2/aloe8475/CODE/Data/Raw/Networks/Zdenka Networks/';
-end 
+end
 load([dataPath 'AdriantoZdenka' num2str(numNW) 'nw_simulation1.mat'],'SelNet');
 network=SelNet;
 network.Simulations=[]; %clear previous simulations saved with the network file
@@ -62,18 +62,18 @@ for currentSimulation=1:length(simulations)
     fprintf(num2str(currentSimulation));
     if load_data_question~='a'
         
-            networkNum=1;%input(['Which Network # do you want to explore? 1 - ' num2str(length(network)) '\n']);
-%             simNum=currentSimulation;%input(['Which Simulation # do you want to explore? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
+        networkNum=1;%input(['Which Network # do you want to explore? 1 - ' num2str(length(network)) '\n']);
+        %             simNum=currentSimulation;%input(['Which Simulation # do you want to explore? 1 - '  num2str(length(network(networkNum).Simulations)) '\n']); %% CHANGE WHICH SIMULATION YOU WANT TO TEST HERE.
     end
     
     %     if size(simulations,1)==1
     %         currentSim=simulations{simNum};
     %     else
     if strcmp(biasType{1},'TimeDelay')
-    currentSim=simulations{currentSimulation};
+        currentSim=simulations{currentSimulation};
     else
         currentSim=simulations;
-    end 
+    end
     %     end
     
     % fprintf(['Simulation: ' network(networkNum).Name currentSim.Name ' selected \n\n\n']);
@@ -83,18 +83,18 @@ for currentSimulation=1:length(simulations)
     i = 1;
     while i == 1
         %Choose Analysis to perform
-            %% CHANGE BETWEEN T AND E HERE
-            if exist('biasType','var') %if bias type exists
-                if length(biasType)>1 %if it's greater than one, we are doing the time-delay LDA
-                    analysis_type='t';
-                else
-                    if strcmp(biasType,'DCandWait')
-                        analysis_type='e';
-                    elseif strcmp(biasType,'TimeDelay')
-                        analysis_type='t'; %lower(input('Which analysis would you like to perform? T = Time b/w Pulses, E = Early/Mid/Late/Never \n','s'));
-                    end
+        %% CHANGE BETWEEN T AND E HERE
+        if exist('biasType','var') %if bias type exists
+            if length(biasType)>1 %if it's greater than one, we are doing the time-delay LDA
+                analysis_type='t';
+            else
+                if strcmp(biasType,'DCandWait')
+                    analysis_type='e';
+                elseif strcmp(biasType,'TimeDelay')
+                    analysis_type='t'; %lower(input('Which analysis would you like to perform? T = Time b/w Pulses, E = Early/Mid/Late/Never \n','s'));
                 end
             end
+        end
         if analysis_type=='e'
             %% Exploratary analysis of simulation
             
@@ -177,12 +177,17 @@ for currentSimulation=1:length(simulations)
                 fprintf(num2str(currentSimulation));
             end
             MAX_PULSE_CENTRES=11;
-            progressbar
             shg
             for time=1:length(pulseCentres)
-                [TimeData(time).Explore{currentSimulation},TimeData(time).threshold{currentSimulation}]=explore_simulation(currentSim,network,network_load,simNum,currentPath,currentSimulation,simulations,pulseCentres,time);
-                progressbar(time/length(pulseCentres))
-                shg
+                if ~isempty(currentSim.Data.Rmat{pulseCentres(time)})
+                    [TimeData(time).Explore{currentSimulation},TimeData(time).threshold{currentSimulation}]=explore_simulation(currentSim,network,network_load,simNum,currentPath,currentSimulation,simulations,pulseCentres,time);
+                    progressBar(time,length(pulseCentres))
+                    shg
+                else
+                    TimeData(time).Explore{currentSimulation}=[];
+                    TimeData(time).threshold{currentSimulation}=[];
+                    progressBar(time,length(pulseCentres))
+                end
             end
             if length(pulseCentres<11)
                 for time=length(pulseCentres)+1:MAX_PULSE_CENTRES
@@ -255,17 +260,17 @@ for currentSimulation=1:length(simulations)
                     
                 end
                 %% Saving Explore
-%                 if currentSimulation==length(simulations)
-                    save_state='n';%lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
+                %                 if currentSimulation==length(simulations)
+                save_state='n';%lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
+                Explore={TimeData.Explore};
+                threshold={TimeData.threshold};
+                if save_state=='y'
                     Explore={TimeData.Explore};
                     threshold={TimeData.threshold};
-                    if save_state=='y'
-                        Explore={TimeData.Explore};
-                        threshold={TimeData.threshold};
-                        save_explore(Explore,network(networkNum),network_load,currentPath,simNum,threshold,simulations,analysis_type);
-                        i=i+1; %get out of while loop this loop finishes
-                    end
-%                 end
+                    save_explore(Explore,network(networkNum),network_load,currentPath,simNum,threshold,simulations,analysis_type);
+                    i=i+1; %get out of while loop this loop finishes
+                end
+                %                 end
                 i=i+1;
             end
         end
@@ -703,282 +708,4 @@ Graph.AdjMat=net_mat;
 
 %save selected time
 Graph.IndexTime=IndexTime;
-
 end
-
-% function Graph=plot_graph(Graph, network,network_load, currentSim,sim_loaded,currentPath,binarise_network,simNum)
-% cd(currentPath)
-% save_directory='..\Data\Figures\Graph Analysis\';
-%
-% IndexTime=Graph.IndexTime;
-% %visualise graph network:
-%
-% %Threshold graph degree:
-% if binarise_network=='y'
-%     threshold_choice='t';
-% else
-%     lower(input('Do you want to plot the entire Graph or the Thresholded Graph (>1 degree)? g - entire, t - threshold \n','s'));
-%     threshold_choice=[];
-% end
-% if threshold_choice=='t'
-%     threshold=Graph.DEG>1; %greater than 1 degree threshold - 04/06/19 do I change this to >= 1?
-%     Graph.networkThreshold=Graph.AdjMat(threshold,threshold); %applying degree threshold
-%     g=graph(Graph.networkThreshold);
-% else
-%     g=graph(Graph.AdjMat);
-% end
-% f1=figure;
-% p1=plot(g);
-%
-% %find electrodes:
-% if threshold_choice=='t'
-%     node_indices=find(threshold==1); %find nodes with threshold == 1
-%     for i=1:size(currentSim.Electrodes.PosIndex,1)
-%         if ~isempty(find(node_indices==currentSim.Electrodes.PosIndex(i)))
-%             new_electrodes(i).PosIndex=find(node_indices==currentSim.Electrodes.PosIndex(i));
-%             new_electrodes(i).Name=currentSim.Electrodes.Name(i);
-%         end
-%     end
-% else
-%     for i=1:size(currentSim.Electrodes.PosIndex,1)
-%         new_electrodes(i).PosIndex=currentSim.Electrodes.PosIndex(i);
-%         new_electrodes(i).Name=currentSim.Electrodes.Name(i);
-%     end
-% end
-% highlightElec={new_electrodes.PosIndex};
-% highlightElec=cell2num(highlightElec);
-% %highlight electrodes on graph
-% if sim_loaded==1
-%     highlight(p1,highlightElec,'NodeColor','green','MarkerSize',5); %change simulation number
-%     labelnode(p1,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
-% end
-%
-% f2=figure;
-% p2=plot(g);
-% %% Closeness graph: (Unweighted)
-% ucc = centrality(g,'closeness');
-% p2.NodeCData=ucc;
-% colormap jet
-% colorbar
-% title(['Closeness Centrality Scores Timestamp ' num2str(IndexTime)])
-% if sim_loaded==1
-%     highlight(p2,highlightElec,'MarkerSize',7); %change simulation number
-%     if threshold_choice=='t'
-%         labelnode(p2,[1:size(node_indices,2)],cellstr(num2str(node_indices'))); %label each node with original node number
-%     end
-%     labelnode(p2,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
-% end
-%
-% %% Node size graph:
-% f3=figure;
-% p3=plot(g);
-% if threshold_choice=='t'
-%     Graph.DEG_threshold=Graph.DEG(threshold);
-%     edges = linspace(min(Graph.DEG_threshold),max(Graph.DEG_threshold),7);
-%     bins = discretize(Graph.DEG_threshold,edges);
-% else
-%     edges = linspace(min(Graph.DEG),max(Graph.DEG),7);
-%     bins = discretize(Graph.DEG,edges);
-% end
-% p3.MarkerSize = bins;
-% p3.NodeColor='r';
-% title(['Degree Size Timestamp ' num2str(IndexTime)]);
-% if sim_loaded==1
-%     highlight(p3,highlightElec,'NodeColor','green'); %change simulation number
-%     if threshold_choice=='t'
-%
-%         labelnode(p3,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
-%     end
-%     labelnode(p3,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
-% end
-% text(-5,-6.2,'Min Degrees - 1 (small dot) | Max Degrees - 44 (large dot)');
-%
-% %% Both combined:
-% f4=figure;
-% p4=plot(g);
-% p4.MarkerSize = bins;
-% p4.NodeCData=ucc;
-% colormap jet
-% colorbar
-% if threshold_choice=='t'
-%     labelnode(p4,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
-% end
-% labelnode(p4,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
-% title(['Centrality Score and Degree Size Timestamp ' num2str(IndexTime)]);
-% text(-5.5,-6.2,'Min Degrees = 1 (small dot) | Max Degrees = 44 (large dot)');
-%
-% %% Histogram of degree distribution:
-% f5=figure;
-% if threshold_choice=='t'
-%     h1=histogram(Graph.DEG_threshold);
-%     Graph.avgDEG=mean(Graph.DEG(threshold));
-%     Graph.stdDEG=std(Graph.DEG(threshold));
-% else
-%     h1=histogram(Graph.DEG);
-%     Graph.avgDEG=mean(Graph.DEG);
-%     Graph.stdDEG=std(Graph.DEG);
-% end
-% title(['Distribution of Connectivity of Nodes Timestamp ' num2str(IndexTime)]);
-% xlabel('Number of Connections (Degrees)');
-% ylabel('Frequency');
-%
-% ylim([0 30]);
-% text(4,16,['Mean: ' num2str(Graph.avgDEG) ' | SD: ' num2str(Graph.stdDEG)]);
-%
-% %% Cluster Analysis:
-% f6=figure;
-% p6=plot(g);
-% p6.MarkerSize = 4;
-% if threshold_choice=='t'
-%     p6.NodeCData=Graph.Ci(threshold);
-%     labelnode(p6,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
-% else
-%     p6.NodeCData=Graph.Ci;
-% end
-% labelnode(p6,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
-% colormap hsv(13) %change number of colors here if there are more/less than 6 clusters
-% title(['Cluster Analysis ' num2str(IndexTime)]);
-%
-% %% Participant Coefficient Analysis:
-% f7=figure;
-% p7=plot(g);
-% if threshold_choice=='t'
-%     p7.NodeCData=Graph.Ci(threshold);
-%     p_ranks=Graph.P(threshold);
-% else
-%     p7.NodeCData=Graph.Ci;
-%     p_ranks=Graph.P;
-% end
-% edges2 = linspace(min(p_ranks),max(p_ranks),7);
-% bins2 = discretize(p_ranks,edges2);
-% p7.MarkerSize=bins2;
-% colormap hsv(6)
-% if threshold_choice=='t'
-%     labelnode(p7,[1:size(node_indices,2)],cellstr(num2str(node_indices'))); %label each node with original node number
-% end
-% labelnode(p7,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
-% if threshold_choice=='t'
-%     text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P(threshold))) ' (large dot)']);
-% else
-%     text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P)) ' (large dot)']);
-% end
-% title(['Participant Coefficient Analysis Timestamp ' num2str(IndexTime)]);
-%
-% %% Module Degree Z-Score:
-% f8=figure;
-% p8=plot(g);
-% if threshold_choice=='t'
-%
-%     p8.NodeCData=Graph.Ci(threshold);
-%     mod_ranks=Graph.MZ(threshold);
-% else
-%
-%     p8.NodeCData=Graph.Ci;
-%     mod_ranks=Graph.MZ;
-% end
-% edges3 = linspace(min(mod_ranks),max(mod_ranks),7);
-% bins3 = discretize(mod_ranks,edges3);
-% p8.MarkerSize=bins3;
-% colormap hsv(6)
-% if threshold_choice=='t'
-%     labelnode(p8,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
-% end
-% labelnode(p8,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
-% if threshold_choice=='t'
-%     text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ(threshold))) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ(threshold))) ' (large dot)']);
-% else
-%     text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ)) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
-% end
-% title(['Module Degree z-Score Analysis Timestamp ' num2str(IndexTime)]);
-%
-%
-% %% Communicability at different times:
-% Adj=(currentSim.Data.AdjMat{IndexTime});%convert 498x498 matrix to EdgeCData ~(1x6065)
-% if threshold_choice=='t'
-%     Adj=Adj(threshold,threshold);
-%     Graph.COMM=Graph.COMM(threshold,threshold);
-% end
-% % extract lower triangular part of Adjacency matrix of Graph.COMM
-% [j,i,~]=find(tril(Adj));
-% wd=zeros(1,length(j));
-%
-% for k=1:length(j)
-%     wd(k)=Graph.COMM(i(k),j(k));
-% end
-%
-% % extract lower triangular part of Adjacency matrix of network
-% Adj2=(currentSim.Data.AdjMat{IndexTime});%convert 498x498 matrix to EdgeCData ~(1x6065)
-% if threshold_choice=='t'
-%
-%     Adj2=Adj2(threshold,threshold);
-% end
-% [j,i,~]=find(tril(Adj2));
-% wd2=zeros(1,length(j));
-%
-% for k=1:length(j)
-%     if threshold_choice=='t'
-%         wd2(k)=Graph.networkThreshold(i(k),j(k));
-%     else
-%         wd2(k)=Graph.AdjMat(i(k),j(k));
-%     end
-% end
-%
-% %Find Graph.COMM in network
-% wd3=wd(logical(wd2));
-%
-% f9=figure;
-% p9=plot(g);
-% p9.EdgeCData=wd3;%log10(wd);
-% p9.MarkerSize=2;
-% colormap jet
-% colorbar
-% if threshold_choice=='t'
-%     labelnode(p9,[1:size(node_indices,2)],cellstr(num2str(node_indices')));  %label each node with original node number
-% end
-% labelnode(p9,highlightElec,[new_electrodes(:).Name]); %need to make this better - change 3:4 to a variable
-%
-% title(['Communicability Analysis Timestamp ' num2str(IndexTime) ' (log10)']);
-%
-%
-% %% CIRCUIT RANK -- measure of recurrent loops (feedback loops)
-% % based on analyze_network.py
-% %circuit rank = num edges - num nodes + num connected components
-% Graph.CircuitRank = numedges(g) - (numnodes(g) - 1);
-% if threshold_choice=='t'
-%     Graph.Indices=node_indices;
-% end
-%
-% %% Save
-% network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
-%
-% saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Network_Timestamp' num2str(IndexTime)],'jpg');
-% saveas(f1,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Network_Timestamp' num2str(IndexTime)],'eps');
-% saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Closeness_Centrality_Timestamp' num2str(IndexTime)],'jpg');
-% saveas(f2,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Closeness_Centrality_Timestamp' num2str(IndexTime)],'eps');
-% saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Degree_Size_Timestamp' num2str(IndexTime)],'jpg');
-% saveas(f3,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Degree_Size_Timestamp' num2str(IndexTime)],'eps');
-% saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Degree_&_Closeness_Timestamp' num2str(IndexTime)],'jpg');
-% saveas(f4,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Degree_&_Closeness_Timestamp' num2str(IndexTime)],'eps');
-% saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Degree_Distribution_Timestamp' num2str(IndexTime)],'jpg');
-% saveas(f5,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Degree_Distribution_Timestamp' num2str(IndexTime)],'eps');
-% saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Cluster_Analysis_Timestamp' num2str(IndexTime)],'jpg');
-% saveas(f6,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Cluster_Analysis_Timestamp' num2str(IndexTime)],'eps');
-% saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Participant_Coefficient_Analysis_Timestamp' num2str(IndexTime)],'jpg');
-% saveas(f7,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Participant_Coefficient_Analysis_Timestamp' num2str(IndexTime)],'eps');
-% saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Module_Degree_Z_Score_Analysis_Timestamp' num2str(IndexTime)],'jpg');
-% saveas(f8,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Module_Degree_Z_Score_Analysis_Timestamp' num2str(IndexTime)],'eps');
-% saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Communicability_Analysis_Timestamp' num2str(IndexTime)],'jpg');
-% saveas(f9,[save_directory num2str(network.Name) 'Simulation' num2str(simNum) '_Graph_Communicability_Analysis_Timestamp' num2str(IndexTime)],'eps');
-%
-% end
-% function save_graph(Graph,network,network_load,currentPath)
-% cd(currentPath);
-% save_directory='..\Data\Graph Analysis (Mac)\';
-% if strcmp(network_load,'z')%Zdenka Code:
-%     save([save_directory 'Zdenka_' num2str(network.number_of_wires) 'nw_Graph_Analysis_' date],'Graph');
-% elseif strcmp(network_load,'a') %adrian code
-%     network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
-%     save([save_directory 'Adrian_' num2str(network.Name) 'Graph_Analysis_' num2str(Graph.IndexTime) '_Timestamp_' date],'Graph');
-% end
-% end
-
