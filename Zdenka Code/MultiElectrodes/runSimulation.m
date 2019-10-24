@@ -88,14 +88,14 @@ if SimSettings.numSources>1 %if multiple types
     StimulusSource(1).BiasType       = biasType{1};           % 'DC' \ 'AC' \ 'DCandWait' \ 'Ramp' \ 'AlonPulse'
     StimulusSource(2).BiasType       = biasType{2};           % 'DC' \ 'AC' \ 'DCandWait' \ 'Ramp' \ 'AlonPulse'
 else
-    StimulusSource.BiasType       = biasType;           % 'DC' \ 'AC' \ 'DCandWait' \ 'Ramp' \ 'AlonPulse'
+    StimulusSource.BiasType       = biasType{1};           % 'DC' \ 'AC' \ 'DCandWait' \ 'Ramp' \ 'AlonPulse'
 end
 %Drain Type
 StimulusDrain.BiasType       = 'Drain';           % 'DC' \ 'AC' \ 'DCandWait' \ 'Ramp'
 
 for bias=1:SimSettings.numSources %for each stimulus source, select the bias type
     
-    switch biasType
+    switch biasType{1}
         
         case 'TimeDelay'
             StimulusSource.AmplitudeOn  = inputVoltage;

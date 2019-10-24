@@ -246,7 +246,7 @@ end
 
 OutputDynamics.electrodeCurrent = electrodeCurrent(1:stopTime,:);
 SelSims.Data.ElectrodeCurrents=electrodeCurrent(1:stopTime,:);
-
+SelSims.Data.ElectrodeCurrents=vertcat(SelSims.Data.ElectrodeCurrents, zeros(niterations-stopTime,numOfElectrodes));
 % SelSims.Data.WireCurrents=OutputDynamics.networkCurrent;
 OutputDynamics.wireVoltage        = sparse(wireVoltage);
 SelSims.Gmat=sparse(Gmat);
@@ -262,4 +262,9 @@ OutputDynamics.junctionFilament   = junctionFilament;
 SelSims.Data.JunctionCurrents=sparse(junctionVoltage./junctionResistance);
 SelSims.Data.Currents=Curr2;
 SelSims.Data.Rmat=Res;
+%Pad array with zeros for analysis
+SelSims.Data.Rmat(stopTime+1:niterations)={[]};
+SelSims.Data.Currents(stopTime+1:niterations)={[]};
+% 
+
 end

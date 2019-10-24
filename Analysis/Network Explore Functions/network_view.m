@@ -16,11 +16,11 @@ Y=full([y1' ; y2']); % Y = Wires 'y' value
 [~,~,Cx]=find(Layout.CX); %CX = Junctions 'x' value
 [~,~,Cy]=find(Layout.CY); % CY = Junctions 'y' value
 Adj=triu(Layout.AdjMat); % Adjacency matrix
-if network_load == 'a'
-NumEl=height(Sim.Electrodes); %Number of electrodes
-else
+% if network_load == 'a'
+% NumEl=height(Sim.Electrodes); %Number of electrodes
+% else
 NumEl=length({Sim.Electrodes}); %Number of electrodes
-end 
+% end 
 % %Plot Network:
 % % f1=figure;
 % currAx=gca; %current axis
@@ -91,15 +91,10 @@ Cxe=(x2(IdxEl)+x1(IdxEl))./2;Cye=(y1(IdxEl)+y2(IdxEl))./2; %Find X and Y (juncti
 
 
 %Plot Resistance
-if network_load=='a'
 Rmat=triu(Sim.Data.Rmat{IndexTime});
-else
-    tempRes=Sim.Data.WireVoltages(IndexTime,1)./Sim.Data.Currents{IndexTime};
-    Rmat=triu(tempRes);
-    clear tempRes
-end 
 Cx=Layout.CX(Adj~=0);
 Cy=Layout.CY(Adj~=0);
+if ~isempty(Rmat)
 Rlist=Rmat(Adj~=0);
 if network_load=='a'
 R=linspace(min([Sim.Settings.Roff Sim.Settings.Ron]),max([Sim.Settings.Roff Sim.Settings.Ron]),10*length(Rlist));
@@ -109,11 +104,11 @@ end
 cmap=flipud(copper(10*length(Rlist)));
 % c=interp1(R,cmap,full(Rlist));
 % PlotNetworkAux(currAx,X,Y,Cx,Cy,'curr',c);
-if network_load=='a'
+% if network_load=='a'
 clim=[min([Sim.Settings.Roff Sim.Settings.Ron]) max([Sim.Settings.Roff Sim.Settings.Ron])];
-else
-    clim=[min([Sim.Settings.Roff; Sim.Settings.Ron]) max([Sim.Settings.Roff; Sim.Settings.Ron])];
-end 
+% else
+%     clim=[min([Sim.Settings.Roff; Sim.Settings.Ron]) max([Sim.Settings.Roff; Sim.Settings.Ron])];
+% end 
 % 
 % %colorbar
 % colormap(currAx,cmap);
@@ -121,8 +116,11 @@ end
 % caxis(currAx,clim);
 % 
 % title(['Resistance Network View Timestamp ' num2str(IndexTime)]);
-
 %Save struct
+else
+    Rlist=[];
+end 
+
 Explore.NetworkView.currents=Ilist; %save currents at each junction at the IndexTime
 Explore.NetworkView.resistance=Rlist; %save currents at each junction at the IndexTime
 Explore.NetworkView.junctions=labels;

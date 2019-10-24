@@ -104,7 +104,7 @@ for i = 1
     end
 end
 fprintf('Saving Watts-Strogatz \n');
-save([savePath 'Random_Ordered_Graphs_networks.mat'],'randomOrdered_34','randomOrdered100_34','-v7.3');
+save([savePath 'Random_Ordered_Graphs_networks.mat'],'randomOrdered','randomOrdered100','-v7.3');
 end
 
 % %% Ordered Graph Analysis

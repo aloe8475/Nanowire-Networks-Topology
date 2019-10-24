@@ -49,7 +49,7 @@ switch computer
 end 
 load([dataPath 'AdriantoZdenka' num2str(numNW) 'nw_simulation1.mat'],'SelNet');
 network=SelNet;
-network.Simulations=[];
+network.Simulations=[]; %clear previous simulations saved with the network file
 network.Simulations=[SelSims];
 simulations=network.Simulations;
 cd(currentPath);
@@ -69,7 +69,7 @@ for currentSimulation=1:length(simulations)
     %     if size(simulations,1)==1
     %         currentSim=simulations{simNum};
     %     else
-    if biasType=='t'
+    if strcmp(biasType{1},'TimeDelay')
     currentSim=simulations{currentSimulation};
     else
         currentSim=simulations;
@@ -85,7 +85,7 @@ for currentSimulation=1:length(simulations)
         %Choose Analysis to perform
             %% CHANGE BETWEEN T AND E HERE
             if exist('biasType','var') %if bias type exists
-                if biasType>1 %if it's greater than one, we are doing the time-delay LDA
+                if length(biasType)>1 %if it's greater than one, we are doing the time-delay LDA
                     analysis_type='t';
                 else
                     if strcmp(biasType,'DCandWait')
@@ -177,8 +177,12 @@ for currentSimulation=1:length(simulations)
                 fprintf(num2str(currentSimulation));
             end
             MAX_PULSE_CENTRES=11;
+            progressbar
+            shg
             for time=1:length(pulseCentres)
                 [TimeData(time).Explore{currentSimulation},TimeData(time).threshold{currentSimulation}]=explore_simulation(currentSim,network,network_load,simNum,currentPath,currentSimulation,simulations,pulseCentres,time);
+                progressbar(time/length(pulseCentres))
+                shg
             end
             if length(pulseCentres<11)
                 for time=length(pulseCentres)+1:MAX_PULSE_CENTRES
