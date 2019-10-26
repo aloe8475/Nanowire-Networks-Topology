@@ -218,10 +218,10 @@ for currentSimulation=1:length(simulations)
                 %Choose a time to Explore Simulation:
                 
                 %Find pulse centres
-                if min(currentSim{simNum}.Data.VSource1) < max(currentSim{simNum}.Data.VSource1)
-                    V1 = currentSim{simNum}.Data.VSource1 - min(currentSim{simNum}.Data.VSource1(currentSim{simNum}.Data.VSource1>0)); %if AmpOff is greater than 0 (which it should be)
+                if min(currentSim.Data.VSource1) < max(currentSim.Data.VSource1)
+                    V1 = currentSim.Data.VSource1 - min(currentSim.Data.VSource1(currentSim.Data.VSource1>0)); %if AmpOff is greater than 0 (which it should be)
                 else
-                    V1=currentSim{simNum}.Data.VSource1;
+                    V1=currentSim.Data.VSource1;
                 end
                 
                 pulseEnds    = [];
@@ -255,7 +255,7 @@ for currentSimulation=1:length(simulations)
                 pulseTimeEnd=pulseStarts(end)-1; %the time just before the last pulse
                 pulseCentres=[pulseCentres(1:end-1) pulseTimeMid pulseTimeEnd pulseCentres(end)];
                 for time=1:length(pulseCentres) %Alon to change to var
-                    [TimeData(time).Explore{currentSimulation},TimeData(time).threshold{currentSimulation}]=explore_simulation(currentSim{simNum},network,network_load,simNum,currentPath,currentSimulation,simulations,pulseCentres,time);
+                    [TimeData(time).Explore{currentSimulation},TimeData(time).threshold{currentSimulation}]=explore_simulation(currentSim,network,network_load,simNum,currentPath,currentSimulation,simulations,pulseCentres,time);
                     progressBar(time,length(pulseCentres));
                     
                 end

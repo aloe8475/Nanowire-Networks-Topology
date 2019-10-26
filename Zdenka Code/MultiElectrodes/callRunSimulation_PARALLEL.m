@@ -5,7 +5,7 @@ function callRunSimulation_PARALLEL(WorkerID)
 
 %% CHANGE SIMULATION TYPE HERE
 % --------------------------------------------------------------------------------------------------------------------------
-simType='p';%lower(input('Choose Simulation: C - Continuous DC, P - 10 Pulse DC, T - Time Delay Analysis, L - LDA \n','s'));
+simType='t';%lower(input('Choose Simulation: C - Continuous DC, P - 10 Pulse DC, T - Time Delay Analysis, L - LDA \n','s'));
 % --------------------------------------------------------------------------------------------------------------------------
 
 %Initialise Variables
@@ -110,7 +110,7 @@ switch simType
                 exploreSavePath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Explore Analysis\Time Delay Analysis\';
                 
             case '' %if on linux
-                linux=0; %% 0 = LVM, 1 = Cluster
+                linux=1; %% 0 = LVM, 1 = Cluster
                 if linux==1
                 savepath ='/headnode2/aloe8475/CODE/Data/Raw/Simulations/Zdenka/Variable Time Delay/';
                 loadpath ='/headnode2/aloe8475/CODE/Data/Raw/Simulations/Zdenka/10 Square Pulses/';
@@ -126,15 +126,15 @@ switch simType
         cd(savepath)
         if ~exist(['SelSims_TimeDelay_' num2str(WorkerID) '.mat'],'file') %if we haven't previously saved the file
             SimSettings.numSources         = 1;
-            SimSettings.SimulationDuration = 8+(numTimes/100);
+            SimSettings.SimulationDuration = numTimes/10;
             SelSims = cell(numSims,numTimes);
             %         for i = WorkerID
             randseed = WorkerID;
-            biasType = 'TimeDelay'; % biasType for getStimulus function
+            biasType{1} = 'TimeDelay'; % biasType for getStimulus function
             contactn = elecPos(WorkerID,:); %ElecPos(WorkerID,:); %load contact nodes from previous simulation (case P)
             fprintf([num2str(WorkerID) '\n']);
             for j = 1:numTimes
-                timeDelay    = j*0.1;
+                timeDelay    = j*0.05;
                 fprintf(['Running TimeDelay ' num2str(timeDelay) '...'])
                 SelSims{WorkerID,j} = runSimulation(SimSettings,contactn, timeDelay,randseed,biasType,numNanowires,inputVoltage);
                 fprintf(['\n'])
