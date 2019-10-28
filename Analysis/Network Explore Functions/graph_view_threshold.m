@@ -40,7 +40,7 @@ for k=1:length(j)
     cc(k)=currs(i(k),j(k));
 end
 
-if network_load=='a'
+% if network_load=='a'
 % extract lower triangular part of Adjacency matrix of network
 [j,i,~]=find(tril(Adj2));
 cc2=zeros(1,length(j));
@@ -51,20 +51,20 @@ for k=1:length(j)
 end
 % remove edges in adj matrix that don't have current
 cc3=cc(logical(cc2));
-end 
+% end 
 
-if network_load=='a'
+% if network_load=='a'
 clim=[Sim.SimInfo.MinI Sim.SimInfo.MaxI];
 p.EdgeCData=cc3;
-
-else
-    clim=[min(min(Sim.Data.Currents{IndexTime})) max(max(Sim.Data.Currents{IndexTime}))];
+% 
+% else
+%     clim=[min(min(Sim.Data.Currents{IndexTime})) max(max(Sim.Data.Currents{IndexTime}))];
 %     p.EdgeCData=cc;
 
-end 
-% colormap(currAx,gcurrmap);%gcurrmap
-% colorbar(currAx);
-% caxis(currAx,clim);
+% end 
+colormap(currAx,gcurrmap);%gcurrmap
+colorbar(currAx);
+caxis(currAx,clim);
 
 %Highlight Electrodes:
 node_indices=find(threshold==1); %find nodes with threshold == 1

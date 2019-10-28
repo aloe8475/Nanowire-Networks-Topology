@@ -819,7 +819,7 @@ b2=lightblue(3):(-bdif)/(length(categories.Clust)-1):blue(3);
 
 clrs2={[r2; g2; b2]'};
 %% Plot Graph
-% p = plot(Explore{end}.GraphView.Graph,'NodeLabel',Explore{end}.GraphView.NodeIndices);
+p = plot(Explore{end}.GraphView.Graph,'NodeLabel',Explore{end}.GraphView.NodeIndices);
 
 %% Plot Subgraphs
 % Example subgraphs for random Early, Mid and Late/Never:

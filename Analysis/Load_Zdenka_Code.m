@@ -189,11 +189,11 @@ if sims_load=='y'
             temp = network.Simulations;%save simulations from test network if it has been changed
         end
         network.Simulations=temp;
-        for i=1:length(network.Simulations)
-            for j = 1:length(network.Simulations{i})
-            network.Simulations{i}.Type='Explore Simulation';
-            end 
-        end
+%         for i=1:length(network.Simulations)
+%             for j = 1:length(network.Simulations)
+            network.Simulations.Type='Explore Simulation';
+%             end 
+%         end
         %Need to change to only allow explore of 1 network
         clear SelSims;
     end

@@ -5,13 +5,13 @@ function callRunSimulation_PARALLEL(WorkerID)
 
 %% CHANGE SIMULATION TYPE HERE
 % --------------------------------------------------------------------------------------------------------------------------
-simType='t';%lower(input('Choose Simulation: C - Continuous DC, P - 10 Pulse DC, T - Time Delay Analysis, L - LDA \n','s'));
+simType='c';%lower(input('Choose Simulation: C - Continuous DC, P - 10 Pulse DC, T - Time Delay Analysis, L - LDA \n','s'));
 % --------------------------------------------------------------------------------------------------------------------------
 
 %Initialise Variables
 numSims      = 100;
 numTimes     = 200;
-numNanowires = 100;
+numNanowires = 2000;
 inputVoltage =   2;
 computer     = getenv('computername');
 switch computer
@@ -46,7 +46,7 @@ switch simType
         SimSettings.numSources=1;
         SimSettings.SimulationDuration=2;
         randseed = WorkerID*2;
-        contactn = elecPos(WorkerID,:);
+        contactn = 'none';
         % timeDelay = i*0.05;
         biasType{1} = 'DC';
         SelSims  = runSimulation(SimSettings,contactn, [],randseed,biasType,numNanowires,inputVoltage);
