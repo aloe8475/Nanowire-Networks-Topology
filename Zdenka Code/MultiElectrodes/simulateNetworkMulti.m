@@ -75,6 +75,8 @@ else
 end
 kk = 1; % Counter
 
+        currentPathFormed = 0;
+
 %% Solve equation systems for every time step and update:
 for ii = 1 : niterations
     % Show progress:
@@ -161,17 +163,22 @@ for ii = 1 : niterations
     % Insert Current Threshold
     %% 4/11/2019 - NEED TO IMPLEMENT FIRST PATH THRESHOLT (RUOMIN)
     
-    isOnCurrentPath(compPtr.comp.OnOrOff,Connectivity,electrodes);
-    
     if strcmp(biasType,'DCandWait')
-        if abs(electrodeCurrent(ii,1))>MaxI
+        checkList=isOnCurrentPath(compPtr.comp.OnOrOff,Connectivity,electrodes);      
+            if checkList & ~currentPathFormed %if current path is formed
+                currentPathTime=ii; 
+                currentPathFormed=1;
+            end
+
+        if ii == niterations & ~currentPathFormed %if current path isn't formed
+            currentPathTime=niterations;
+        end 
+        if abs(electrodeCurrent(ii,1))>MaxI %when max is reached
             stopTime=ii;
             break;
         else
             stopTime=niterations;
-        end
-    else
-        stopTime=niterations;
+        end 
     end
     
     
@@ -269,34 +276,36 @@ SelSims.Data.Rmat=Res;
 %Pad array with zeros for analysis
 SelSims.Data.Rmat(stopTime+1:niterations)={[]};
 SelSims.Data.Currents(stopTime+1:niterations)={[]};
+
+SelSims.currentPathTime=currentPathTime;
+SelSims.stopTime=stopTime;
 % 
 
 end
 
 
-function onSwitchMatrix = getOnSubGraph(onOrOff,Connectivity)
+function onSwitchMatrix = getOnSubGraph(adjMat, onOrOff,Connectivity)
 % Given an adjacency matrix and vector of which switches are onOrOff calculates
 % the adjacency matrix of the subgraph of switches that are On
 % Also pass in the edge list but can modify so this is not essential
-  badPairs = Connectivity.EdgeList(:, ~onOrOff);
+  badPairs = Connectivity.EdgeList(:,~onOrOff);
       % Reminder: EdgeList is a 2XE matrix of vertex indices, where each
       % column represents an edge. The index of an edge is defined as the
       % index of the corresponding column in this list.
   % Get the original adjacency matrix:
-  onSwitchMatrix = Connectivity.weights;
+  onSwitchMatrix = adjMat;
   % Remove the edges which correspond to OFF switches:
   onSwitchMatrix(sub2ind(size(onSwitchMatrix),badPairs(1,:),badPairs(2,:))) = 0;
   onSwitchMatrix(sub2ind(size(onSwitchMatrix),badPairs(2,:),badPairs(1,:))) = 0;
 end 
 
-function isCurrentPath = isOnCurrentPath(onOrOff,Connectivity,electrodes)
+function checkList = isOnCurrentPath(onOrOff,Connectivity,electrodes)
 
-    isCurrentPath = zeros(size(switchV,1),1); %What is switchV?
-
-    for i = 1:size(onOrOff,1)
-       sg               = getOnSubGraph(Connectivity.weights, Connectivity.EdgeList, onOrOff(i,:));
+%     isCurrentPath = zeros(Connectivity.NumberOfEdges,1); 
+       sg               = getOnSubGraph(Connectivity.weights, onOrOff,Connectivity);
        g                = graph(sg);
        bins             = conncomp(g);
-       isCurrentPath(i) = bins(electrodes(1)) == bins(electrodes(2));
-    end
+%        isCurrentPath(i) = bins(electrodes(1)) == bins(electrodes(2));
+       currentBin=bins(electrodes(1));
+       checkList=currentBin == bins(electrodes(2));
 end

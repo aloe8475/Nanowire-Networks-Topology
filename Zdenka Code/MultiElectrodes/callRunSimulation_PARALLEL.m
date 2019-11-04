@@ -5,7 +5,7 @@ function callRunSimulation_PARALLEL(WorkerID)
 
 %% CHANGE SIMULATION TYPE HERE
 % -------------------------------------------------------------------------------------------------------------------------
-simType='t';%lower(input('Choose Simulation: C - Continuous DC, P - 10 Pulse DC, T - Time Delay Analysis, L - LDA \n','s'));
+simType='p';%lower(input('Choose Simulation: C - Continuous DC, P - 10 Pulse DC, T - Time Delay Analysis, L - LDA \n','s'));
 pathLengths='d'; %s = same, d = different;
 % --------------------------------------------------------------------------------------------------------------------------
 
@@ -13,7 +13,7 @@ pathLengths='d'; %s = same, d = different;
 numSims      = 100;
 numTimes     = 200;
 numNanowires = 100;
-inputVoltage =   1.5;
+inputVoltage =   1;
 computer     = getenv('computername');
 switch computer
     case 'W4PT80T2'
