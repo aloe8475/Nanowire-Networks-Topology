@@ -100,7 +100,7 @@ for bias=1:SimSettings.numSources %for each stimulus source, select the bias typ
         case 'TimeDelay'
             StimulusSource.AmplitudeOn  = inputVoltage;
             StimulusSource.AmplitudeOff = 0.005;%1e-3;
-            StimulusSource.Period       = 2; %period of the short pulses
+            StimulusSource.Period       = 4; %period of the short pulses
             StimulusSource.LongWait     = timeDelay; %Waiting time between the first set and second set of pulses
             StimulusSource.NumPulse1    = 3; %number of pulses before the long wait
             StimulusSource.NumPulse2    = 1; %number of pulses after the long wait
