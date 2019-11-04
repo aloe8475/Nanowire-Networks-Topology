@@ -1,11 +1,12 @@
 %% Graph View
 % This function plots graph parameters such as current, voltage and
 % resistance for the chosen Sim at the given timestamp (IndexTime)
-function [f3, f4, f5, G, Adj, Explore,  highlightElec, new_electrodes]= Multigraph_view(Sim,IndexTime,Explore,G, threshold_network,drain_exist,network_load)
+function [fG, f3, f4, f5, G, Adj, Explore,  highlightElec, new_electrodes]= Multigraph_view(Sim,IndexTime,Explore,G, threshold_network,drain_exist,network_load)
 if threshold_network=='t'
     return
     fprintf('Error in graph_view - you should not be seeing this');
 end
+
 %Plot Graph
 % if network_load=='a'
 Adj=Sim.Data.AdjMat{IndexTime};

@@ -11,7 +11,7 @@
 % Changelog:
 % 22/07/2019 - Added Guimera and Amaral (2005) colored rectangular
 % distribution of participant coefficient and module z score
-% 26/06/2019 - Added Participant coefficient, Small World Propensity and
+% 26/06/2019 - Added Participant coefficient, 	 World Propensity and
 % Betweenness centrality measures.
 %-------------------------------------------------------------------------
 dbstop if error
@@ -872,7 +872,7 @@ b2=lightblue(3):(-bdif)/(length(categories.Clust)-1):blue(3);
 
 clrs2={[r2; g2; b2]'};
 %% Plot Graph
-% p = plot(Explore{end}.GraphView.Graph,'NodeLabel',Explore{end}.GraphView.NodeIndices);
+p = plot(Explore{end}.GraphView.Graph,'NodeLabel',Explore{end}.GraphView.NodeIndices);
 
 %% Plot Subgraphs
 % Example subgraphs for random Early, Mid and Late/Never:
