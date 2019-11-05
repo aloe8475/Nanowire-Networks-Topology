@@ -1,12 +1,12 @@
 %Loading 100 different simulations from cluster
 
-function [Explore,threshold,analysis_type,Sim]=loadSimulationsFromCluster(type)
+function [Explore,threshold,analysis_type,Sim]=loadSimulationsFromCluster(type,pathLengthType)
 
 switch type
     case 'Pulse'
 loadpath = '/import/silo2/aloe8475/Documents/CODE/Data/Explore Analysis/DCPulse/';
 for i=1:100
-    temp=load([loadpath 'ExploreAnalysis_DCandWait_' num2str(i) '.mat']);
+    temp=load([loadpath 'ExploreAnalysis_DCandWait_' pathLengthType '_' num2str(i) '.mat']);
     a=temp.Explore{i};
     b=temp.threshold{i};
     for j = 1:length(a)
@@ -21,7 +21,7 @@ end
     case 'Time Delay'
 loadpath = '/import/silo2/aloe8475/Documents/CODE/Data/Explore Analysis/Time Delay Analysis/';
 for i=1:100
-    temp=load([loadpath 'ExploreAnalysis_TimeDelay_' num2str(i) '.mat']);
+    temp=load([loadpath 'ExploreAnalysis_TimeDelay_' pathLengthType '_' num2str(i) '.mat']);
     a=temp.Explore(i,:);
     b=temp.threshold{i};
     for j = 1:length(a)

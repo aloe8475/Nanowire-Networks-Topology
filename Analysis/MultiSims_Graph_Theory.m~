@@ -50,11 +50,11 @@ if load_data_question=='d'
     end
 elseif load_data_question=='c'
     if exist(['ExploreClusterData_' type '.mat'],'file')
-        fprintf('Data Already Combined... Loading Cluster Data... \n');
+        fprintf('Loading Cluster Data... \n');
         load(['ExploreClusterData_' type '.mat']);
         fprintf('Data Loaded \n');
     else
-        fprintf('Combining & Loading Cluster Data... \n');
+        fprintf('Loading Cluster Data... \n');
         
         [Explore,threshold,temp,Sim]=loadSimulationsFromCluster(type,pathLengthType);
         fprintf('Data Loaded \n');
@@ -203,7 +203,7 @@ for j = 1:length(Explore)
                 elseif j==length(Explore{i})
                     counter = 4;
                     if ~isnan(idxTime{j}.Time(i))
-                        class{counter}{i}='Fourth Pulse';i
+                        class{counter}{i}='Fourth Pulse';
                     else
                         class{counter}{i}=class{counter-1}{i};
                     end
@@ -1262,7 +1262,7 @@ end
 if analysis_type=='e'
     %% SWITCH COMPUTER 26/10/19
 %     save_directory='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Figures\Explore Analysis\MultiPulse Categorical Analysis\';
-    save_directory='/import/silo2/aloe8475/Documents/CODE/Data/Figures/Explore Analysis/MultiPulse Categorical Analysis/';
+    save_directory='/import/silo2/aloe8475/Documents/CODE/Data/Explore Analysis/DCPulse/';
     MaxVoltage=num2str(Sim{1}.SimInfo.MaxV);
     MaxVoltage=strrep(MaxVoltage,'.','');
     
@@ -1279,8 +1279,8 @@ if analysis_type=='e'
     % print(fCat4,'-painters','-dpdf','-bestfit','-r600',[save_directory num2str(Sim{1}.NumberOfNodes) 'nw_' num2str(length(network.Simulations)) 'sims_' MaxVoltage 'V_TimeCategories_Communicability_' date '.pdf']);
     saveas(fnan,[save_directory num2str(Sim{1}.NumberOfNodes) 'nw_' num2str(length(Sim)) 'sims_' pathLengthType '_' MaxVoltage 'V_Time_ReachedMaxCurrent_'  date],'jpg');
     print(fnan,'-painters','-dpdf','-bestfit','-r300',[save_directory num2str(Sim{1}.NumberOfNodes) 'nw_' num2str(length(Sim)) 'sims_' pathLengthType '_' MaxVoltage 'V_Time_ReachedMaxCurrent_' date '.pdf']);
-%     saveas(fTime,[save_directory num2str(Sim{1}.NumberOfNodes) 'nw_' num2str(length(network.Simulations)) 'sims_' pathLengthType '_' pathLengthType '_' MaxVoltage 'V_TimeSeries_' date],'jpg');
-%     print(fTime,'-painters','-dpdf','-bestfit','-r300',[save_directory num2str(Sim{1}.NumberOfNodes) 'nw_' num2str(length(Sim)) 'sims_' pathLengthType '_' MaxVoltage 'V_TimeSeries_' date '.pdf']);
+    saveas(fTime,[save_directory num2str(Sim{1}.NumberOfNodes) 'nw_' num2str(length(network.Simulations)) 'sims_' pathLengthType '_' pathLengthType '_' MaxVoltage 'V_TimeSeries_' date],'jpg');
+    print(fTime,'-painters','-dpdf','-bestfit','-r300',[save_directory num2str(Sim{1}.NumberOfNodes) 'nw_' num2str(length(Sim)) 'sims_' pathLengthType '_' MaxVoltage 'V_TimeSeries_' date '.pdf']);
     saveas(fCOMMCurr,[save_directory num2str(Sim{1}.NumberOfNodes) 'nw_' num2str(length(Sim)) 'sims_' pathLengthType '_' MaxVoltage 'V_Current vs Communicability Correlation_' date],'jpg');
     print(fCOMMCurr,'-painters','-dpdf','-bestfit','-r300',[save_directory num2str(Sim{1}.NumberOfNodes) 'nw_' num2str(length(Sim)) 'sims_' pathLengthType '_' MaxVoltage 'V_TCurrent vs Communicability Correlation_' date '.pdf']);
     saveas(FCOMMtable,[save_directory num2str(Sim{1}.NumberOfNodes) 'nw_' num2str(length(Sim)) 'sims_' pathLengthType '_' MaxVoltage 'V_TimeCategories_ANOVA_Table_COMM_' date],'jpg');
@@ -1295,13 +1295,13 @@ if analysis_type=='e'
     print(FClusttable,'-painters','-dpdf','-bestfit','-r300',[save_directory num2str(Sim{1}.NumberOfNodes) 'nw_' num2str(length(Sim)) 'sims_' pathLengthType '_' MaxVoltage 'V_TimeCategories_ANOVA_Table_ClustCoeff_' date '.pdf']);
     saveas(FClustbox,[save_directory num2str(Sim{1}.NumberOfNodes) 'nw_' num2str(length(Sim)) 'sims_' pathLengthType '_' MaxVoltage 'V_TimeCategories_ANOVA_Boxplot_ClustCoeff_' date],'jpg');
     print(FClustbox,'-painters','-dpdf','-bestfit','-r300',[save_directory num2str(Sim{1}.NumberOfNodes) 'nw_' num2str(length(Sim)) 'sims_' pathLengthType '_' MaxVoltage 'V_TimeCategories_PathLength vs ClustCoeff vs Watts-Strogatz' date '.pdf']);
-%     saveas(fWatts,[save_directory num2str(Sim{1}.NumberOfNodes) 'nw_' num2str(length(Sim)) 'sims_' pathLengthType '_' MaxVoltage 'V_TimeCategories_PathLength vs ClustCoeff vs Watts-Strogatz_' date],'jpg');
-%     print(fWatts,'-painters','-dpdf','-bestfit','-r300',[save_directory num2str(Sim{1}.NumberOfNodes) 'nw_' num2str(length(Sim)) 'sims_' pathLengthType '_' MaxVoltage 'V_TimeCategories_PathLength vs ClustCoeff vs Watts-Strogatz_' date '.pdf']);
+    saveas(fWatts,[save_directory num2str(Sim{1}.NumberOfNodes) 'nw_' num2str(length(Sim)) 'sims_' pathLengthType '_' MaxVoltage 'V_TimeCategories_PathLength vs ClustCoeff vs Watts-Strogatz_' date],'jpg');
+    print(fWatts,'-painters','-dpdf','-bestfit','-r300',[save_directory num2str(Sim{1}.NumberOfNodes) 'nw_' num2str(length(Sim)) 'sims_' pathLengthType '_' MaxVoltage 'V_TimeCategories_PathLength vs ClustCoeff vs Watts-Strogatz_' date '.pdf']);
     saveas(fCOMMCat,[save_directory num2str(Sim{1}.NumberOfNodes) 'nw_' num2str(length(Sim)) 'sims_' pathLengthType '_' MaxVoltage 'V_TimeCategories_TimeCategories vs Communicability' date],'jpg');
     print(fCOMMCat,'-painters','-dpdf','-bestfit','-r300',[save_directory num2str(Sim{1}.NumberOfNodes) 'nw_' num2str(length(Sim)) 'sims_' pathLengthType '_' MaxVoltage 'V_TimeCategories vs Communicability' date '.pdf']);
 else
 %     save_directory='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Data\Figures\Explore Analysis\Time Delay Analysis\';
-    save_directory='/import/silo2/aloe8475/Documents/CODE/Data/Figures/Explore Analysis/Time Delay Analysis/';
+    save_directory='/import/silo2/aloe8475/Documents/CODE/Data/Explore Analysis/Time Delay Analysis/';
     MaxVoltage=num2str(Sim{1}.SimInfo.MaxV);
     MaxVoltage=strrep(MaxVoltage,'.','');
     
