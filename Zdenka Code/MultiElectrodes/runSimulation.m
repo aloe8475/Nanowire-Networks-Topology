@@ -21,22 +21,22 @@ SimulationOptions.T  = SimSettings.SimulationDuration;%1e0;    % (sec) duration 
 SimulationOptions.TimeVector = (SimulationOptions.dt:SimulationOptions.dt:SimulationOptions.T)';
 SimulationOptions.NumberOfIterations = length(SimulationOptions.TimeVector);
 
-if strcmp(biasType,'DC')
-    SimulationOptions.ContactMode     = 'farthest';    % 'farthest' \ 'specifiedDistance' \ 'random' (the only one relevant for 'randAdjMat' (no spatial meaning)) \ 'preSet'
-% 	    SimulationOptions.ContactNodes = contactn; % only really required for preSet, other modes will overwrite this
-%     SimulationOptions.electrodes = contactn; % only really required for preSet, other modes will overwrite this
-
-    % FOR MULTIPLE ELECTRODES NEED TO DEFINE BELOW AND UNCOMMENT BOTH LINES
-else
+% if strcmp(biasType,'DC')
+%     SimulationOptions.ContactMode     = 'farthest';    % 'farthest' \ 'specifiedDistance' \ 'random' (the only one relevant for 'randAdjMat' (no spatial meaning)) \ 'preSet'
+% % 	    SimulationOptions.ContactNodes = contactn; % only really required for preSet, other modes will overwrite this
+% %     SimulationOptions.electrodes = contactn; % only really required for preSet, other modes will overwrite this
+% 
+%     % FOR MULTIPLE ELECTRODES NEED TO DEFINE BELOW AND UNCOMMENT BOTH LINES
+% else
     SimulationOptions.ContactMode     = 'preSet';    % 'farthest' \ 'specifiedDistance' \ 'random' (the only one relevant for 'randAdjMat' (no spatial meaning)) \ 'preSet'
     SimulationOptions.ContactNodes = contactn; % only really required for preSet, other modes will overwrite this
     SimulationOptions.electrodes = contactn; % only really required for preSet, other modes will overwrite this
-end
-if strcmp(SimulationOptions.ContactMode,'preSet')
+% end
+% if strcmp(SimulationOptions.ContactMode,'preSet')
     SimulationOptions.numOfElectrodes = length(SimulationOptions.electrodes);
-else
-    SimulationOptions.numOfElectrodes = 2;
-end
+% else
+%     SimulationOptions.numOfElectrodes = 2;
+% end
 %% Choose  contacts:
 
 if ~strcmp(SimulationOptions.ContactMode,'preSet')

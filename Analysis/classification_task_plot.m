@@ -1,6 +1,16 @@
 %% CLASSIFICATION ANALYSIS
-filename='exp4_classification_v1.5_PathLength4_sp1000.mat';
-filepath= 'C:\Users\aloe8475\Dropbox (Sydney Uni)\Data\ASN_simulation\Python\ASN\data\Collapsed\Path Length 4\';
+
+type='s'; %s - same, d - different
+
+if type =='d'
+    filepath='C:\Users\aloe8475\Dropbox (Sydney Uni)\Data\ASN_simulation\Python\ASN\data\Collapsed\Variable Path Length\';
+        filename='exp4_classification_v1_variablePathLength_sp1000.mat';
+
+elseif type =='s'
+    filepath= 'C:\Users\aloe8475\Dropbox (Sydney Uni)\Data\ASN_simulation\Python\ASN\data\Collapsed\Path Length 4\';
+    filename='exp4_classification_v1_PathLength4_sp1000.mat';
+
+end
 load([filepath filename]);
 
 %Reshape data

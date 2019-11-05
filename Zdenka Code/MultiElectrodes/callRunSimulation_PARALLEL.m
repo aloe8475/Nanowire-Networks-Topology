@@ -5,7 +5,7 @@ function callRunSimulation_PARALLEL(WorkerID)
 
 %% CHANGE SIMULATION TYPE HERE
 % -------------------------------------------------------------------------------------------------------------------------
-simType='p';%lower(input('Choose Simulation: C - Continuous DC, P - 10 Pulse DC, T - Time Delay Analysis, L - LDA \n','s'));
+simType='c';%lower(input('Choose Simulation: C - Continuous DC, P - 10 Pulse DC, T - Time Delay Analysis, L - LDA \n','s'));
 pathLengths='d'; %s = same, d = different;
 % --------------------------------------------------------------------------------------------------------------------------
 
@@ -25,15 +25,15 @@ end
 
 if pathLengths=='s'
     load([loadpairing 'ElecPosPathLength.mat']); %load electrode pairing positions.
-    elecPos=ElecPos;
+    elecPos=ElecPos+1;
     clear ElecPos
 else
     load([loadpairing 'ElecPos.mat']); %load electrode pairing positions.
     % load([loadpairing 'ElecPosPathLength.mat']);%- IF WE WANT ALL OF SAME PATHLENGTH
     %Modify some electrode positions that were the same as others:
-    elecPos(1,:)=[4,17];
-    elecPos(81,:) =[22, 80];
-    elecPos(82,:) = [99, 81];
+    elecPos(1,:)=[5,18];
+    elecPos(81,:) =[23, 81];
+    elecPos(82,:) = [100, 82];
 end
 switch simType
     case 'c'
@@ -49,12 +49,11 @@ switch simType
                 %         currentPath='D:\alon_\Research\PhD\CODE\Analysis';
                 %case '' %--- Add other computer paths (e.g. Mike)
         end
-        
-        
+       
         SimSettings.numSources=1;
         SimSettings.SimulationDuration=2;
         randseed = WorkerID*2;
-        contactn = 'none';
+        contactn = elecPos(WorkerID,:);
         % timeDelay = i*0.05;
         biasType{1} = 'DC';
         SelSims  = runSimulation(SimSettings,contactn, [],randseed,biasType,numNanowires,inputVoltage);

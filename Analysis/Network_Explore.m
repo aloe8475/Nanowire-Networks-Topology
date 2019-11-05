@@ -124,11 +124,11 @@ else %if we're not looping
             i=i+1;
         elseif analysis_type=='e'
             %% Exploratary analysis of simulation
-            Explore=explore_simulation(currentSim,network,network_load,simNum,currentPath,loop);
+            [threshold,Explore]=explore_simulation(currentSim,network,network_load,simNum,currentPath,loop);
             %% Saving Explore
             save_state=lower(input('Would you like to save the Exploration Analysis? y or n \n','s'));
             if save_state=='y'
-                save_explore(Explore,network(networkNum),network_load,currentPath,simNum,loop,currentSim);
+                save_explore(Explore,network(networkNum),network_load,currentPath,simNum,loop,currentSim,threshold);
                 i=i+1; %get out of while loop this loop finishes
             end
             i=i+1;
@@ -415,7 +415,7 @@ end
 
 fprintf(['\n \n Network ' num2str(networkNum) ' Finished \n \n']);
 end
-function Explore = explore_simulation(Sim,network,network_load,simNum,currentPath,loop)
+function [threshold,Explore]= explore_simulation(Sim,network,network_load,simNum,currentPath,loop)
 
 % IMPORTANT:
 % Threshold = Degree of greater than 0
@@ -501,6 +501,7 @@ if threshold_network=='t'
     node_indices=find(threshold==1); %find nodes with threshold == 1
 else
     G=graph(Graph.AdjMat);
+    threshold=Graph.DEG>0;
 end
 
 %% Graph View
@@ -671,7 +672,7 @@ if save_explore_plots=='y'
     end
 end
 end
-function save_explore(Explore,network,network_load,currentPath,simNum,loop,currentSim)
+function save_explore(Explore,network,network_load,currentPath,simNum,loop,currentSim,threshold)
 cd(currentPath);
 % save_directory='..\Data\Explore Analysis\';
 if loop==0
@@ -685,7 +686,8 @@ elseif loop ==1
 end
 if strcmp(network_load,'z')%Zdenka Code:
         network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
-    save([save_directory 'Zdenka_' num2str(network.Name) 'Length_' num2str(network.NetworkSettings.Length) '_Disp_' num2str(network.NetworkSettings.Disp) '_Sim_' num2str(simNum) '_Source_' num2str(Explore{1}.GraphView.ElectrodePosition(1)) '_Drain_' num2str(Explore{1}.GraphView.ElectrodePosition(2)) '_Explore_Timestamp_' num2str(Explore{1}.IndexTime)],'Explore');
+                save([save_directory 'Zdenka_' num2str(network.Name) 'Length_' num2str(network.NetworkSettings.Length) '_Disp_' num2str(network.NetworkSettings.Disp) '_Sim_' num2str(simNum) '_Source_' num2str(Explore{1}.GraphView.ElectrodePosition(1)) '_Drain_' num2str(Explore{1}.GraphView.ElectrodePosition(2)) '_Explore_Timestamp_' num2str(Explore{1}.IndexTime)],'Explore','currentSim','threshold','network');
+        save([save_directory 'Zdenka_' num2str(network.Name) 'Length_' num2str(network.NetworkSettings.Length) '_Disp_' num2str(network.NetworkSettings.Disp) '_Sim_' num2str(simNum) '_Source_' num2str(Explore{1}.GraphView.ElectrodePosition(1)) '_Drain_' num2str(Explore{1}.GraphView.ElectrodePosition(2)) '_Explore_THRESHOLDED_Timestamp_' num2str(Explore{1}.IndexTime)],'Explore','currentSim','threshold','network');
 elseif strcmp(network_load,'a') %adrian code
     network.Name(regexp(network.Name,'[/:]'))=[]; %remove '/' character because it gives us saving problems
     if loop

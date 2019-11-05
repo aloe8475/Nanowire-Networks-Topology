@@ -49,7 +49,7 @@ function [OutputDynamics, SimulationOptions, snapshots, SelSims] = simulateNetwo
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Initialize:
-MaxI=1e-4;
+MaxI=1e-4; %NEED TO CHANGE THIS!!! ASK ZDENKA, RUOMIN AND JOEL 
 compPtr         = ComponentsPtr(Components);        % using this matlab-style pointer to pass the Components structure by reference
 niterations     = SimulationOptions.NumberOfIterations;
 electrodes      = SimulationOptions.electrodes;
@@ -75,7 +75,7 @@ else
 end
 kk = 1; % Counter
 
-        currentPathFormed = 0;
+currentPathFormed = 0;
 
 %% Solve equation systems for every time step and update:
 for ii = 1 : niterations
@@ -142,45 +142,46 @@ for ii = 1 : niterations
     Imat(index) = junctionVoltage(ii,:)./junctionResistance(ii,:);
     Imat = Imat + Imat.';
     
-%     [rows,cols,~]=find(Connectivity.weights);
-%     Curr=zeros(size((Gmat)));
-%     voltdif=zeros(size((Gmat)));
-%     for i=1:length(rows)
-%         Curr(cols(i),rows(i))=(sol(cols(i))-sol(rows(i)))...
-%             *Gmat(cols(i), rows(i));
-%         voltdif(cols(i),rows(i))=(sol(cols(i))-sol(rows(i)));
-%     end
-%     currSwitch = compPtr.comp.OnOrOff;
-
+    %     [rows,cols,~]=find(Connectivity.weights);
+    %     Curr=zeros(size((Gmat)));
+    %     voltdif=zeros(size((Gmat)));
+    %     for i=1:length(rows)
+    %         Curr(cols(i),rows(i))=(sol(cols(i))-sol(rows(i)))...
+    %             *Gmat(cols(i), rows(i));
+    %         voltdif(cols(i),rows(i))=(sol(cols(i))-sol(rows(i)));
+    %     end
+    %     currSwitch = compPtr.comp.OnOrOff;
+    
     index = sub2ind(size(Gmat), edgeList(:,1),edgeList(:,2));
     Rmat = zeros(Connectivity.NumberOfNodes, Connectivity.NumberOfNodes);
     Rmat(index) = junctionResistance(ii,:);
     Rmat = abs(Rmat + Rmat.');
     
-%     Resistance=abs(voltdif)./abs(Curr); %Do you use volt dif or wire voltage here?
-%     Resistance(isnan(Resistance))=0;
+    %     Resistance=abs(voltdif)./abs(Curr); %Do you use volt dif or wire voltage here?
+    %     Resistance(isnan(Resistance))=0;
     
     % Insert Current Threshold
     %% 4/11/2019 - NEED TO IMPLEMENT FIRST PATH THRESHOLT (RUOMIN)
     
     if strcmp(biasType,'DCandWait')
-        checkList=isOnCurrentPath(compPtr.comp.OnOrOff,Connectivity,electrodes);      
-            if checkList & ~currentPathFormed %if current path is formed
-                currentPathTime=ii; 
-                currentPathFormed=1;
-            end
-
+        checkList=isOnCurrentPath(compPtr.comp.OnOrOff,Connectivity,electrodes);
+        if checkList & ~currentPathFormed %if current path is formed
+            currentPathTime=ii;
+            currentPathFormed=1;
+        end
+        
         if ii == niterations & ~currentPathFormed %if current path isn't formed
             currentPathTime=niterations;
-        end 
+        end
         if abs(electrodeCurrent(ii,1))>MaxI %when max is reached
             stopTime=ii;
             break;
         else
             stopTime=niterations;
-        end 
+        end
+    else %if not DC and Wait
+        stopTime=niterations;
     end
-    
     
     % Record the activity of the whole network
     if find(snapshots_idx == ii)
@@ -276,10 +277,11 @@ SelSims.Data.Rmat=Res;
 %Pad array with zeros for analysis
 SelSims.Data.Rmat(stopTime+1:niterations)={[]};
 SelSims.Data.Currents(stopTime+1:niterations)={[]};
-
-SelSims.currentPathTime=currentPathTime;
+if strcmp(biasType,'DCandWait')
+    SelSims.currentPathTime=currentPathTime;
+end
 SelSims.stopTime=stopTime;
-% 
+%
 
 end
 
@@ -288,24 +290,24 @@ function onSwitchMatrix = getOnSubGraph(adjMat, onOrOff,Connectivity)
 % Given an adjacency matrix and vector of which switches are onOrOff calculates
 % the adjacency matrix of the subgraph of switches that are On
 % Also pass in the edge list but can modify so this is not essential
-  badPairs = Connectivity.EdgeList(:,~onOrOff);
-      % Reminder: EdgeList is a 2XE matrix of vertex indices, where each
-      % column represents an edge. The index of an edge is defined as the
-      % index of the corresponding column in this list.
-  % Get the original adjacency matrix:
-  onSwitchMatrix = adjMat;
-  % Remove the edges which correspond to OFF switches:
-  onSwitchMatrix(sub2ind(size(onSwitchMatrix),badPairs(1,:),badPairs(2,:))) = 0;
-  onSwitchMatrix(sub2ind(size(onSwitchMatrix),badPairs(2,:),badPairs(1,:))) = 0;
-end 
+badPairs = Connectivity.EdgeList(:,~onOrOff);
+% Reminder: EdgeList is a 2XE matrix of vertex indices, where each
+% column represents an edge. The index of an edge is defined as the
+% index of the corresponding column in this list.
+% Get the original adjacency matrix:
+onSwitchMatrix = adjMat;
+% Remove the edges which correspond to OFF switches:
+onSwitchMatrix(sub2ind(size(onSwitchMatrix),badPairs(1,:),badPairs(2,:))) = 0;
+onSwitchMatrix(sub2ind(size(onSwitchMatrix),badPairs(2,:),badPairs(1,:))) = 0;
+end
 
 function checkList = isOnCurrentPath(onOrOff,Connectivity,electrodes)
 
-%     isCurrentPath = zeros(Connectivity.NumberOfEdges,1); 
-       sg               = getOnSubGraph(Connectivity.weights, onOrOff,Connectivity);
-       g                = graph(sg);
-       bins             = conncomp(g);
+%     isCurrentPath = zeros(Connectivity.NumberOfEdges,1);
+sg               = getOnSubGraph(Connectivity.weights, onOrOff,Connectivity);
+g                = graph(sg);
+bins             = conncomp(g);
 %        isCurrentPath(i) = bins(electrodes(1)) == bins(electrodes(2));
-       currentBin=bins(electrodes(1));
-       checkList=currentBin == bins(electrodes(2));
+currentBin=bins(electrodes(1));
+checkList=currentBin == bins(electrodes(2));
 end
