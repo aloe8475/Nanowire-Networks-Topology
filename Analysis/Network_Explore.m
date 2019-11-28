@@ -422,58 +422,58 @@ function [threshold,Explore]= explore_simulation(Sim,network,network_load,simNum
 % Binarise Threshold = Only low resistence junctions + wires
 % Full Graph = all degrees, all resistences
 
-[NodeList.String,NodeList.UserData]=GetNodeList(Sim,network_load);
-NodeList.Value=1:length([Sim.Electrodes.PosIndex]);
+% [NodeList.String,NodeList.UserData]=GetNodeList(Sim,network_load);
+% NodeList.Value=1:length([Sim.Electrodes.PosIndex]);
 
 %% Timeseries View
 %Plot Current
-f=figure;
-drainIndex=find(contains(NodeList.String,'Drain'));
-if isempty(drainIndex)
-    drain_exist=0;
-end
-sourceIndex=find(contains(NodeList.String,'Source'));
-for i = 1:length(sourceIndex)
-    if ismember(['ISource' num2str(i)],fieldnames(Sim.Data))
-    source(:,i)=full(Sim.Data.(['ISource' num2str(i)]));
-    sourceV(:,i)=full(Sim.Data.(['VSource' num2str(i)]));
-    source_exist=1;
-    end 
-end
-for i = 1:length(drainIndex)
-    if ismember(['IDrain' num2str(i)], fieldnames(Sim.Data))
-        drain(:,i)=full(Sim.Data.(['IDrain' num2str(i)]));
-        drainV(:,i)=full(Sim.Data.(['VDrain' num2str(i)]));
-        drain_exist=1;
-    end
-end
-if drain_exist
-    subplot(1,2,1)
-    plot(-source)
-    title('Source')
-    xlabel('Timestamp (0.01sec)')
-    ylabel('Current (A)');
-    subplot(1,2,2)
-    plot(-drain)
-    title('Drain');
-    xlabel('Timestamp (0.01sec)')
-    ylabel('Current (A)');
-else
-    plot(-source)
-    title('Source')
-    xlabel('Timestamp (0.01sec)')
-    ylabel('Current (A)');
-end
-
-%Plot conductance
-f1=figure;
-plot(-source./sourceV)
-title('Source')
-xlabel('Timestamp (0.01sec)')
-ylabel('Conductance');
+% f=figure;
+% drainIndex=find(contains(NodeList.String,'Drain'));
+% if isempty(drainIndex)
+%     drain_exist=0;
+% end
+% sourceIndex=find(contains(NodeList.String,'Source'));
+% for i = 1:length(sourceIndex)
+%     if ismember(['ISource' num2str(i)],fieldnames(Sim.Data))
+%     source(:,i)=full(Sim.Data.(['ISource' num2str(i)]));
+%     sourceV(:,i)=full(Sim.Data.(['VSource' num2str(i)]));
+%     source_exist=1;
+%     end 
+% % end
+% for i = 1:length(drainIndex)
+%     if ismember(['IDrain' num2str(i)], fieldnames(Sim.Data))
+%         drain(:,i)=full(Sim.Data.(['IDrain' num2str(i)]));
+%         drainV(:,i)=full(Sim.Data.(['VDrain' num2str(i)]));
+%         drain_exist=1;
+%     end
+% end
+% if drain_exist
+%     subplot(1,2,1)
+%     plot(-source)
+%     title('Source')
+%     xlabel('Timestamp (0.01sec)')
+%     ylabel('Current (A)');
+%     subplot(1,2,2)
+%     plot(-drain)
+%     title('Drain');
+%     xlabel('Timestamp (0.01sec)')
+%     ylabel('Current (A)');
+% else
+%     plot(-source)
+%     title('Source')
+%     xlabel('Timestamp (0.01sec)')
+%     ylabel('Current (A)');
+% end
+% 
+% %Plot conductance
+% f1=figure;
+% plot(-source./sourceV)
+% title('Source')
+% xlabel('Timestamp (0.01sec)')
+% ylabel('Conductance');
 
 %Choose a time to Explore Simulation:
-IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(length(Sim.Time)) '\n']); %CHOOSE TIMESTAMP
+IndexTime=input(['What Timestamp do you want to analyse? 1-' num2str(length(Sim{1}.Time)) '\n']); %CHOOSE TIMESTAMP
 
 %% Network View
 % Function that plots network view of current and resistance
@@ -1051,7 +1051,7 @@ if binarise_network=='y' %Binarise so we can use Resistance for graph theory ana
     fprintf('Binarisation Complete \n');
 else
     fprintf('Binarising... \n');
-    net_mat=currentSim.SelLayout.AdjMat; %use standard adjacency matrix
+    net_mat=currentSim{1}.SelLayout.AdjMat; %use standard adjacency matrix
     Graph.binarised='No';
     fprintf('Binarisation Complete \n');
 end

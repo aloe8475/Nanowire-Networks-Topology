@@ -154,7 +154,7 @@ if loadDataMulti=='n' %if we are doing our normal analysis without multiple netw
     if loadData == 'y'
         [sizeNetwork,randomOrdered,randomOrdered100]=randomOrderedFun(loadPathRandomOrdered,currentLocation,AgNW,loadDataMulti);%e100,e500,e1000,e2000);
     end
-    
+   
     %Plot graphs
     plotAll(sizeNetwork,randomOrdered,randomOrdered100, human, e100, e500, e1000, e2000, AgNW,cElegans,ANN,fig_dir)
     
@@ -167,6 +167,55 @@ else % if we are looping through
     %     if loadData == 'y'
     [sizeNetwork,randomOrdered,randomOrdered100]=randomOrderedFun(loadPathRandomOrdered,currentLocation,AgNW,loadDataMulti);
     %     end
+    
+        %% ANOVAS
+for i = 1:length(e100Multi.Explore)
+P100nw{i}=e100Multi.Explore{i}.GraphTheory.P;
+MZ100nw{i}=e100Multi.Explore{i}.GraphTheory.MZ;
+SW100nw{i}=e100Multi.Explore{i}.GraphTheory.SmallWorldProp;
+end
+for i = 1:length(e500Multi.Explore)
+P500nw{i}=e500Multi.Explore{i}.GraphTheory.P;
+MZ500nw{i}=e500Multi.Explore{i}.GraphTheory.MZ; 
+SW500nw{i}=e500Multi.Explore{i}.GraphTheory.SmallWorldProp;
+end
+
+for i = 1:length(e1000Multi.Explore)
+P1000nw{i}=e1000Multi.Explore{i}.GraphTheory.P;
+MZ1000nw{i}=e1000Multi.Explore{i}.GraphTheory.MZ; 
+SW1000nw{i}=e1000Multi.Explore{i}.GraphTheory.SmallWorldProp;
+end
+
+for i = 1:length(e2000Multi.Explore)
+P2000nw{i}=e2000Multi.Explore{i}.GraphTheory.P;
+MZ2000nw{i}=e2000Multi.Explore{i}.GraphTheory.MZ; 
+SW2000nw{i}=e2000Multi.Explore{i}.GraphTheory.SmallWorldProp;
+end
+        % PCoeff
+PCoeff={vertcat(P500nw{:}) randomOrdered.P{2,1} randomOrdered.P{2,21} cElegans.P};
+maxlength = max(cellfun(@numel, PCoeff));
+PCoeffTemp = cellfun(@(v) [v', nan(1, maxlength-numel(v))], PCoeff, 'UniformOutput', false);
+
+[ANOVA.P.p,ANOVA.P.AnovaTab,ANOVA.P.Stats]=anova1([PCoeffTemp{1}',PCoeffTemp{2}',PCoeffTemp{3}',PCoeffTemp{4}'],{'500nw ASN','WS {\beta} = 0','WS {\beta} = 1', '{\it C. Elegans}'});
+[POSTHOC.P.c, POSTHOC.P.m, POSTHOC.P.h, POSTHOC.P.nms]=multcompare(ANOVA.P.Stats,'alpha',.05/4,'ctype','bonferroni');
+ %MZ 
+MZ={vertcat(MZ100nw{:}) randomOrdered.MZ{1,1} randomOrdered.MZ{1,21} cElegans.MZ};
+maxlength = max(cellfun(@numel, MZ));
+MZTemp = cellfun(@(v) [v', nan(1, maxlength-numel(v))], MZ, 'UniformOutput', false);
+
+[ANOVA.MZ.p,ANOVA.MZ.AnovaTab,ANOVA.MZ.Stats]=anova1([MZTemp{1}',MZTemp{2}',MZTemp{3}',MZTemp{4}'],{'100nw ASN','WS {\beta} = 0','WS {\beta} = 1', '{\it C. Elegans}'});
+[POSTHOC.MZ.c, POSTHOC.MZ.m, POSTHOC.MZ.h, POSTHOC.MZ.nms]=multcompare(ANOVA.MZ.Stats,'alpha',.05/4,'ctype','bonferroni');
+
+%SMALL-WORLD
+SW={vertcat(SW100nw{:}) randomOrdered.SmallWorldProp{1,1} randomOrdered.SmallWorldProp{1,21} cElegans.SmallWorldProp};
+maxlength = max(cellfun(@numel, SW));
+SWTemp = cellfun(@(v) [v', nan(1, maxlength-numel(v))], SW, 'UniformOutput', false);
+
+[ANOVA.SW.p,ANOVA.SW.AnovaTab,ANOVA.SW.Stats]=anova1([SWTemp{1}',SWTemp{2}',SWTemp{3}',SWTemp{4}'],{'100nw ASN','WS {\beta} = 0','WS {\beta} = 1', '{\it C. Elegans}'});
+[POSTHOC.SW.c, POSTHOC.SW.m, POSTHOC.SW.h, POSTHOC.SW.nms]=multcompare(ANOVA.SW.Stats,'alpha',.05,'ctype','bonferroni');
+
+
+%% PLOT ALL
     
     plotMulti(sizeNetwork,randomOrdered,randomOrdered100, human, e100Multi, e500Multi, e1000Multi, e2000Multi, AgNW,cElegans,ANN,fig_dir)
 end
@@ -717,7 +766,11 @@ for i = 1:length(AgNW.Degree)
     xlabel('Degree');
     ylabel('Frequency');
 end
+
 sgtitle('Degree Distribution Comparison of Nanowire Networks')
+
+
+%
 
 %% WATTS STROGATZ
 % Small World Analysis
@@ -824,6 +877,18 @@ end
 
 fprintf('Figure 1 Complete \n');
 
+%%  DEGREE Of Watts Strogatz
+
+h2=randomOrdered
+histogram(degree(h2),'BinMethod','integers','FaceAlpha',0.9);
+hold on
+histogram(degree(h3),'BinMethod','integers','FaceAlpha',0.9);
+histogram(degree(h4),'BinMethod','integers','FaceAlpha',0.8);
+hold off
+title('Node degree distributions for Watts-Strogatz Model Graphs')
+xlabel('Degree of node')
+ylabel('Number of nodes')
+legend('\beta = 1.0','\beta = 0.50','\beta = 0.15','Location','NorthWest')
 %% Small World Log
 % f1=figure;
 % logx=log10(x);
@@ -954,16 +1019,17 @@ fprintf('Figure 4 Complete \n');
 
 %% Plot Guimera & Amaral rectangles:
 f5=figure;
-for i=1:plotNet
-    subplot(2,2,i)
+for i=1:2%plotNet
+    subplot(2,1,i)
     if i == 1
         network{i}=e100;
     elseif i==2
         network{i}=e500;
-    elseif i==3
-        network{i}=e1000;
-    elseif i==4
-        network{i}=e2000;
+        %     elseif i==3
+        %         network{i}=e1000;
+        %     elseif i==4
+        %         network{i}=e2000;
+        %     end
     end
     guimera(network{i},randomOrdered100,i); %change network here
     fprintf(['Figure 5 part ' num2str(i) ' Complete \n']);
@@ -1048,10 +1114,10 @@ set(f4,'PaperOrientation','landscape');
 set(f4,'Position',[0 0 1920 1080]);
 print(f4,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Participant Coefficient vs Module z-Score all networks.pdf']);
 
-set(f5,'PaperPositionMode','auto');
-set(f5,'PaperOrientation','landscape');
-set(f5,'Position',[0 0 1920 1080]);
-print(f5,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Guimera PC vs Module z-Score all networks.pdf']);
+set(f5b,'PaperPositionMode','auto');
+set(f5b,'PaperOrientation','landscape');
+set(f5b,'Position',[0 0 1920 1080]);
+print(f5b,'-painters','-dpdf','-bestfit','-r150',[fig_dir 'Guimera PC vs Module z-Score ASN networks 1000&2000.pdf']);
 % print(f6,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Communicability all networks.pdf']);
 
 set(f7,'PaperPositionMode','auto');
@@ -1118,8 +1184,30 @@ e3.Color='black';
 e4.Color='black';
 % xlim([0.05 0.6])
 fprintf('Figure 1 Complete \n');
+%%  DEGREE Of Watts Strogatz
+fDEGws=figure;
+sizes=[100 500 1000 2000];
+for i=1:plotNet
+    hWS1{i}=randomOrdered.Graph{i,21};
+    hWS05{i}=randomOrdered.Graph{i,11};
+    hWS015{i}=randomOrdered.Graph{i,3};
+    % hWS0{i}=randomOrdered.Graph{i,1};
+    subplot(2,2,i);
+    % histogram(degree(hWS0{i}),'BinMethod','integers','FaceAlpha',0.9);
+    % hold on
+    histogram(degree(hWS015{i}),'BinMethod','integers','FaceAlpha',0.9);
+    hold on
+    histogram(degree(hWS05{i}),'BinMethod','integers','FaceAlpha',0.9);
+    histogram(degree(hWS1{i}),'BinMethod','integers','FaceAlpha',0.8);
+    hold off
+    title(['Node degree distributions for ' num2str(sizes(i)) ' Node Watts-Strogatz Model Graphs'])
+    xlabel('Degree of node')
+    ylabel('Number of nodes')
+    legend('\beta = 0.15','\beta = 0.5','\beta = 1','Location','NorthWest')
+end
 
 %%
+
 %Small World Prop
 
 
@@ -1235,24 +1323,61 @@ p4.LineWidth=1.5;
 hold on
 
 fprintf('Figure 4 Complete \n');
-
-%% Plot Guimera & Amaral rectangles:
-f5=figure;
-for i=1:plotNet
-    subplot(2,2,i)
+%% 
+% % Plot Guimera & Amaral rectangles:
+% f5a=figure;
+% for i=2
+% %     subplot(2,1,i)
+% %     if i == 1
+% %         network=[];
+% %         WS.b0network{i}.MZ=randomOrdered.MZ{i,1};
+% %         WS.b0network{i}.P=randomOrdered.P{i,1};
+% %         WS.b05network{i}.MZ=randomOrdered.MZ{i,11};
+% %         WS.b05network{i}.P=randomOrdered.P{i,11};
+% %         WS.b1network{i}.MZ=randomOrdered.MZ{i,21};
+% %         WS.b1network{i}.P=randomOrdered.P{i,21};
+% %     elseif i==2
+%         network=[];
+%         WS.b0network{i}.MZ=randomOrdered.MZ{i,1};
+%         WS.b0network{i}.P=randomOrdered.P{i,1};
+%         WS.b05network{i}.MZ=randomOrdered.MZ{i,11};
+%         WS.b05network{i}.P=randomOrdered.P{i,11};
+%         WS.b1network{i}.MZ=randomOrdered.MZ{i,21};
+%         WS.b1network{i}.P=randomOrdered.P{i,21};
+%         %     elseif i==3
+%         %         network{i}=e1000Multi;
+%         %         WS.b0network{i}.MZ=randomOrdered.MZ{i,1};
+%         %         WS.b0network{i}.P=randomOrdered.P{i,1};
+%         %         WS.b05network{i}.MZ=randomOrdered.MZ{i,11};
+%         %         WS.b05network{i}.P=randomOrdered.P{i,11};
+%         %         WS.b1network{i}.MZ=randomOrdered.MZ{i,21};
+%         %         WS.b1network{i}.P=randomOrdered.P{i,21};
+%         %     elseif i==4
+%         %         WS.b0network{i}.MZ=randomOrdered.MZ{i,1};
+%         %         WS.b0network{i}.P=randomOrdered.P{i,1};
+%         %         WS.b05network{i}.MZ=randomOrdered.MZ{i,11};
+%         %         WS.b05network{i}.P=randomOrdered.P{i,11};
+%         %         WS.b1network{i}.MZ=randomOrdered.MZ{i,21};
+%         %         WS.b1network{i}.P=randomOrdered.P{i,21};
+%     end
+%     guimera(network,WS,cElegans, i,sizeNetwork(i),AgNW); %change network here
+%     fprintf(['Figure 5a part ' num2str(i) ' Complete \n']);
+% % end
+f5b=figure;
+for i=1:2
+    subplot(2,1,i)
     if i == 1
-        network{i}=e100Multi;
-    elseif i==2
-        network{i}=e500Multi;
-    elseif i==3
         network{i}=e1000Multi;
-    elseif i==4
+        WS=[];
+    elseif i == 2   
         network{i}=e2000Multi;
-    end
-    guimera(network{i},randomOrdered100,i,sizeNetwork(i),AgNW); %change network here
-    fprintf(['Figure 5 part ' num2str(i) ' Complete \n']);
+        WS=[];
 end
+    guimera(network{i},WS,cElegans, i+2,sizeNetwork(i+2),AgNW); %change network here
+    fprintf(['Figure 5b part ' num2str(count) ' Complete \n']);
 
+    
+end 
 fprintf('Figure 5 Complete \n');
 %%
 % %%
@@ -1306,14 +1431,20 @@ fprintf('Figure 5 Complete \n');
 % set(f4,'PaperOrientation','landscape');
 % set(f4,'Position',[0 0 1920 1080]);
 % print(f4,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'PC vs MZ all networks w Variance.pdf']);
-set(f5,'PaperPositionMode','auto');
-set(f5,'PaperOrientation','landscape');
-set(f5,'Position',[0 0 1920 1080]);
-print(f5,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'PC vs MZ Guimera-Amaral all networks.pdf']);
+set(f5a,'PaperPositionMode','auto');
+set(f5a,'PaperOrientation','landscape');
+set(f5a,'Position',[0 0 1920 1080]);
+print(f5a,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'PC vs MZ Guimera-Amaral OTHER networks 500.pdf']);
+
+set(f5b,'PaperPositionMode','auto');
+set(f5b,'PaperOrientation','landscape');
+set(f5b,'Position',[0 0 1920 1080]);
+print(f5b,'-painters','-dpdf','-bestfit','-r150',[fig_dir 'Guimera PC vs Module z-Score ASN networks 100&500.pdf']);
+% print(f6,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Communicability all networks.pdf']);
 % print(f7,'-painters','-dpdf','-bestfit','-r600',[fig_dir 'Betweenness Centrality all networks with Variance.pdf']);
 end
 
-function guimera(network, randomOrdered100,plotNet,sizeNetwork,varargin)
+function guimera(network, WS, cElegans, plotNet,sizeNetwork,varargin)
 
 dbstop if error
 % Set up rectangles:
@@ -1335,12 +1466,12 @@ R4=patch(xR4,yR1234,'blue','LineStyle','none','FaceAlpha',0.2);
 R5=patch(xR5,yR567,'yellow','LineStyle','none','FaceAlpha',0.2);
 R6=patch(xR6,yR567,[255 204 153]./255,'LineStyle','none','FaceAlpha',0.2);
 R7=patch(xR7,yR567,[0.7 0.7 0.7],'LineStyle','none','FaceAlpha',0.2);
-
-PCoeff=zeros(length(network.Explore),sizeNetwork);
-MZ=zeros(length(network.Explore),sizeNetwork);
-
+if ~isempty(network)
+    PCoeff=zeros(length(network.Explore),sizeNetwork);
+    MZ=zeros(length(network.Explore),sizeNetwork);
+end
 % Plot Guimera & Amaral Participant Coefficient & Module z-Score:
-if ~isempty(varargin)
+if ~isempty(varargin) & ~isempty(network)
     for j = 1:length(network.Explore)
         A=PCoeff(j,:);
         B=[network.Explore{j}.GraphTheory.P]';
@@ -1354,88 +1485,338 @@ if ~isempty(varargin)
         
     end
     
+    
     avgP=mean(PCoeff);
+%     tempPC{1}=PCoeff(1,:);
+    tempPC{1}=PCoeff(end,:);
     stdP=std(PCoeff);
     avgMZ=mean(MZ);
+    tempMZ{1}=MZ(1,:);
+    tempMZ{2}=MZ(end,:);
     stdMZ=std(MZ);
-%     avgMZ(avgMZ==0)=[];
-%     avgP(avgP==0)=[];
-    PCoeffRandom=randomOrdered100.AvgPCoeff(plotNet,:);
-    % PCoeffOrdered= ordered100.AvgPCoeff;
-    MZRandom=randomOrdered100.AvgMZ(plotNet,:);
-    % MZOrdered=ordered100.AvgMZ;
+    clear PCoeff MZ
     
-else
-    PCoeff=[network.Explore.GraphTheory.P];
-    MZ=[network.Explore.GraphTheory.MZ];
-    PCoeffRandom=randomOrdered100.AvgPCoeff;
-    % PCoeffOrdered= ordered100.AvgPCoeff;
-    MZRandom=randomOrdered100.AvgMZ;
-    % MZOrdered=ordered100.AvgMZ;
+    PCoeff{1}=tempPC;
+    MZ{1}=tempMZ;
+elseif ~isempty(varargin) & isempty(network)
+    PCoeff{1}=[];
+    MZ{1}=[];
+    PCoeff{2}=[WS.b0network{plotNet}.P];
+    PCoeff{3}=[WS.b05network{plotNet}.P];
+    PCoeff{4}=[WS.b1network{plotNet}.P];
+    PCoeff{5}=[cElegans.P];
+    MZ{2}=[WS.b0network{plotNet}.MZ];
+    MZ{3}=[WS.b05network{plotNet}.MZ];
+    MZ{4}=[WS.b1network{plotNet}.MZ];
+    MZ{5}=[cElegans.MZ];
+    
+elseif isempty(varargin)
+    PCoeff{1}=[network.Explore.GraphTheory.P];
+    MZ{1}=[network.Explore.GraphTheory.MZ];
+    PCoeff{2}=[WS.b0network.P];
+    PCoeff{3}=[WS.b05network.P];
+    PCoeff{4}=[WS.b1network.P];
+    PCoeff{5}=[cElegans.P];
+    MZ{2}=[WS.b0network.MZ];
+    MZ{3}=[WS.b05network.MZ];
+    MZ{4}=[WS.b1network.MZ];
+    MZ{5}=[cElegans.MZ];
 end
 if ~isempty(varargin)
-    for i = 1:length(avgP)
-        if avgMZ(i)<2.5 && avgP(i)>=0 && avgP(i)<0.025
-            RegionsMap(i)=1;
-        elseif avgMZ(i)<2.5 && avgP(i)>=0.025 && avgP(i)<=0.625
-            RegionsMap(i)=2;
-        elseif avgMZ(i)<2. && avgP(i) >0.625 && avgP(i) <=0.8
-            RegionsMap(i)=3;
-        elseif avgMZ(i)<2.5 && avgP(i) >0.8
-            RegionsMap(i)=4;
-        elseif avgMZ(i)>=2.5 && avgP(i)>=0 && avgP(i)<=0.36
-            RegionsMap(i)=5;
-        elseif avgMZ(i)>=2.5 && avgP(i)>0.36 && avgP(i)<=0.75
-            RegionsMap(i)=6;
-        elseif avgMZ(i)>=2.5 && avgP(i) >0.75
-            RegionsMap(i)=7;
+    for i = 1:length(PCoeff)
+        for j = 1:length(PCoeff{i})
+            if ~isempty(network)
+                for k = 1:length(PCoeff{i}{j})
+                    if MZ{i}{j}(k)<2.5 && PCoeff{i}{j}(k)>=0 && PCoeff{i}{j}(k)<0.025
+                        RegionsMap{i}(k,j)=1;
+                    elseif  MZ{i}{j}(k)<2.5 && PCoeff{i}{j}(k)>=0.025 && PCoeff{i}{j}(k)<=0.625
+                        RegionsMap{i}(k,j)=2;
+                    elseif  MZ{i}{j}(k)<2. && PCoeff{i}{j}(k) >0.625 && PCoeff{i}{j}(k) <=0.8
+                        RegionsMap{i}(k,j)=3;
+                    elseif  MZ{i}{j}(k)<2.5 && PCoeff{i}{j}(k) >0.8
+                        RegionsMap{i}(k,j)=4;
+                    elseif  MZ{i}{j}(k)>=2.5 && PCoeff{i}{j}(k)>=0 && PCoeff{i}{j}(k)<=0.36
+                        RegionsMap{i}(k,j)=5;
+                    elseif  MZ{i}{j}(k)>=2.5 && PCoeff{i}{j}(k)>0.36 && PCoeff{i}{j}(k)<=0.75
+                        RegionsMap{i}(k,j)=6;
+                    elseif  MZ{i}{j}(k)>=2.5 && PCoeff{i}{j}(k) >0.75
+                        RegionsMap{i}(k,j)=7;
+                    end
+                end 
+            else
+                if MZ{i}(j)<2.5 && PCoeff{i}(j)>=0 && PCoeff{i}(j)<0.025
+                    RegionsMap{i}(j)=1;
+                elseif  MZ{i}(j)<2.5 && PCoeff{i}(j)>=0.025 && PCoeff{i}(j)<=0.625
+                    RegionsMap{i}(j)=2;
+                elseif  MZ{i}(j)<2. && PCoeff{i}(j) >0.625 && PCoeff{i}(j) <=0.8
+                    RegionsMap{i}(j)=3;
+                elseif  MZ{i}(j)<2.5 && PCoeff{i}(j) >0.8
+                    RegionsMap{i}(j)=4;
+                elseif  MZ{i}(j)>=2.5 && PCoeff{i}(j)>=0 && PCoeff{i}(j)<=0.36
+                    RegionsMap{i}(j)=5;
+                elseif  MZ{i}(j)>=2.5 && PCoeff{i}(j)>0.36 && PCoeff{i}(j)<=0.75
+                    RegionsMap{i}(j)=6;
+                elseif  MZ{i}(j)>=2.5 && PCoeff{i}(j) >0.75
+                    RegionsMap{i}(j)=7;
+                end
+            end
         end
     end
     
+    
+%    Find the max std value out of all the values:
+if ~isempty(network)
+        [c,idxMax]=max(avgP+stdP);
+        [cmin,idxMin]=min(avgP-stdP);
+        [c2,idx2Max]=max(avgMZ+stdMZ);
+        [c2min,idx2Min]=min(avgMZ-stdMZ);
+    
+        l=line([cmin, c],[(c2min+c2)/2,(c2min+c2)/2]);
+        l2=line([(cmin+c)/2,(cmin+c)/2],[c2min, c2]);
+        l.Color='black';
+        l2.Color='black';
+        l.LineWidth=1.5;
+        l2.LineWidth=1.5;
     hold on;
-    
-       %Find the max std value out of all the values:
-    [c,idxMax]=max(avgP+stdP);
-    [cmin,idxMin]=min(avgP-stdP);
-    [c2,idx2Max]=max(avgMZ+stdMZ);
-    [c2min,idx2Min]=min(avgMZ-stdMZ);
-    
-    l=line([cmin, c],[(c2min+c2)/2,(c2min+c2)/2]);
-     l2=line([(cmin+c)/2,(cmin+c)/2],[c2min, c2]);
-     l.Color='black';
-     l2.Color='black';
-     l.LineWidth=1.5;
-     l2.LineWidth=1.5;
-        hold on;
-
-    for i = 1:length(avgP)
-        switch RegionsMap(i)
-            case 1
-                r1=scatter(avgP(i),avgMZ(i),'black','filled');
-                r1.MarkerEdgeColor='black';
-            case 2
-                r2=scatter(avgP(i),avgMZ(i),'red','filled');
-                r2.MarkerEdgeColor='black';
-            case 3
-                r3=scatter(avgP(i),avgMZ(i),'green','filled');
-                r3.MarkerEdgeColor='black';
-            case 4
-                r4=scatter(avgP(i),avgMZ(i),'blue','filled');
-                r4.MarkerEdgeColor='black';
-            case 5
-                r5=scatter(avgP(i),avgMZ(i),'yellow','filled');
-                r5.MarkerEdgeColor='black';
-            case 6
-                r6=scatter(avgP(i),avgMZ(i),[],[255 204 153]/255,'filled');
-                r6.MarkerEdgeColor='black';
-            case 7
-                r7=scatter(avgP(i),avgMZ(i),[],[0.7 0.7 0.7],'filled');
-                r7.MarkerEdgeColor='black';
+end 
+    for i = 1:length(RegionsMap)
+        for j = 1:size(RegionsMap{i},2)
+            if ~isempty(network)
+                for k = 1:length(PCoeff{i}{j})
+                    switch RegionsMap{i}(k,j)
+                        case 1
+                            if i ==1
+                                r1{i}{j}(k)=scatter(PCoeff{i}{j}(k),MZ{i}{j}(k),'black','filled');
+                                r1{i}{j}(k).MarkerEdgeColor='black';
+                                r1CE1.MarkerEdgeColor='black';
+%                                 if j == 1
+%                                 r1{i}{j}(k).SizeData=10;                                    
+%                                 else
+                                r1{i}{j}(k).SizeData=60;
+%                                 end 
+                            end
+                        case 2
+                            if i == 1
+                                r2{i}{j}(k)=scatter(PCoeff{i}{j}(k),MZ{i}{j}(k),'red','filled');
+                                r2{i}{j}(k).MarkerEdgeColor='black';
+%                                  if j == 1
+%                                 r2{i}{j}(k).SizeData=10;                                    
+%                                 else
+                                r2{i}{j}(k).SizeData=60;
+%                                 end 
+                            end
+                        case 3
+                            
+                            if i ==1
+                                r3{i}{j}(k)=scatter(PCoeff{i}{j}(k),MZ{i}{j}(k),'green','filled');
+                                
+                                r3{i}{j}(k).MarkerEdgeColor='black';
+%                               if j == 1
+%                                 r3{i}{j}(k).SizeData=10;                                    
+%                                 else
+                                r3{i}{j}(k).SizeData=60;
+%                                 end 
+                            end
+                        case 4
+                            
+                            if i ==1
+                                r4{i}{j}(k)=scatter(PCoeff{i}{j}(k),MZ{i}{j}(k),'blue','filled');
+                                
+%                                 if j == 1
+%                                 r4{i}{j}(k).SizeData=10;                                    
+%                                 else
+                                r4{i}{j}(k).SizeData=60;
+%                                 end 
+                                
+                                r4{i}{j}(k).MarkerEdgeColor='black';
+                            end
+                        case 5
+                            
+                            if i ==1
+                                r5{i}{j}(k)=scatter(PCoeff{i}{j}(k),MZ{i}{j}(k),'yellow','filled');
+                                
+                                r5{i}{j}(k).MarkerEdgeColor='black';
+%                               if j == 1
+%                                 r5{i}{j}(k).SizeData=10;                                    
+%                                 else
+                                r5{i}{j}(k).SizeData=60;
+%                                 end 
+                            end
+                        case 6
+                            if i ==1
+                                r6{i}{j}(k)=scatter(PCoeff{i}{j}(k),MZ{i}{j}(k),[],[255 204 153]/255,'filled');
+                                
+                                r6{i}{j}(k).MarkerEdgeColor='black';
+%                                  if j == 1
+%                                 r6{i}{j}(k).SizeData=10;                                    
+%                                 else
+                                r6{i}{j}(k).SizeData=60;
+%                                 end 
+                            end
+                        case 7
+                            if i ==1
+                                r7{i}{j}(k)=scatter(PCoeff{i}{j}(k),MZ{i}{j}(k),[],[0.7 0.7 0.7],'filled');
+                                r7{i}{j}(k).MarkerEdgeColor='black';
+%                                if j == 1
+%                                 r7{i}{j}(k).SizeData=10;                                    
+%                                 else
+                                r7{i}{j}(k).SizeData=60;
+%                                 end 
+                            end
+                    end
+                end
+            else
+                switch RegionsMap{i}(j)
+                    case 1
+                        if i == 1
+                            r1=scatter(PCoeff{i}(:,k,j),MZ{i}(:,k,j),'black','filled');
+                        elseif i == 2
+                            r1WS1=scatter(PCoeff{i}(j),MZ{i}(j),'black','filled','x');
+                        elseif i == 4
+                            r1WS3=scatter(PCoeff{i}(j),MZ{i}(j),'black','filled','p');
+                        elseif i ==5
+                            r1CE1=scatter(PCoeff{i}(j),MZ{i}(j),'black','filled','s');
+                        end
+                        r1.MarkerEdgeColor='black';
+                        r1.SizeData=50;
+                        r1WS1.MarkerEdgeColor='black';
+                        r1WS3.MarkerEdgeColor='black';
+                        r1CE1.MarkerEdgeColor='black';
+                        
+                    case 2
+                        if i == 1
+                            r2=scatter(PCoeff{i}(:,j),MZ{i}(:,j),'red','filled');
+                        elseif i == 2
+                            
+                            r2WS1=scatter(PCoeff{i}(j),MZ{i}(j),'red','filled','x');
+                        elseif i == 4
+                            
+                            r2WS3=scatter(PCoeff{i}(j),MZ{i}(j),'red','filled','p');
+                        elseif i ==5
+                            r2CE1=scatter(PCoeff{i}(j),MZ{i}(j),'red','filled','s');
+                        end
+                        r2.MarkerEdgeColor='black';
+                        r2.SizeData=50;
+                        
+                        r2WS1.MarkerEdgeColor='black';
+                        r2WS3.MarkerEdgeColor='black';
+                        r2CE1.MarkerEdgeColor='black';
+                    case 3
+                        if i == 1
+                            
+                            r3=scatter(PCoeff{i}(:,j),MZ{i}(:,j),'green','filled');
+                        elseif i == 2
+                            
+                            r3WS1=scatter(PCoeff{i}(j),MZ{i}(j),'green','filled','x');
+%                         elseif i == 3
+%                             
+%                             r3WS2=scatter(PCoeff{i}(j),MZ{i}(j),'green','filled','^');
+                        elseif i == 4
+                            
+                            r3WS3=scatter(PCoeff{i}(j),MZ{i}(j),'green','filled','p');
+                        elseif i ==5
+                            r3CE1=scatter(PCoeff{i}(j),MZ{i}(j),'green','filled','s');
+                        end
+                        r3.MarkerEdgeColor='black';
+                        r3.SizeData=50;
+                        
+                        r3WS1.MarkerEdgeColor='black';
+%                         r3WS2.MarkerEdgeColor='black';
+                        r3WS3.MarkerEdgeColor='black';
+                        r3CE1.MarkerEdgeColor='black';
+                    case 4
+                        if i == 1
+                            
+                            r4=scatter(PCoeff{i}(:,j),MZ{i}(:,j),'blue','filled');
+                        elseif i == 2
+                            
+                            r4WS1=scatter(PCoeff{i}(j),MZ{i}(j),'blue','filled','x');
+%                         elseif i == 3
+%                             
+%                             r4WS2=scatter(PCoeff{i}(j),MZ{i}(j),'blue','filled','^');
+                        elseif i == 4
+                            
+                            r4WS3=scatter(PCoeff{i}(j),MZ{i}(j),'blue','filled','p');
+                        elseif i ==5
+                            r4CE1=scatter(PCoeff{i}(j),MZ{i}(j),'blue','filled','s');
+                        end
+                        r4.SizeData=50;
+                        
+                        r4.MarkerEdgeColor='black';
+                        r4WS1.MarkerEdgeColor='black';
+%                         r4WS2.MarkerEdgeColor='black';
+                        r4WS3.MarkerEdgeColor='black';
+                        r4CE1.MarkerEdgeColor='black';
+                    case 5
+                        if i == 1
+                            
+                            r5=scatter(PCoeff{i}(:,j),MZ{i}(:,j),'yellow','filled');
+                        elseif i == 2
+                            
+                            r5WS1=scatter(PCoeff{i}(j),MZ{i}(j),'yellow','filled','x');
+%                         elseif i == 3
+%                             
+%                             r5WS2=scatter(PCoeff{i}(j),MZ{i}(j),'yellow','filled','^');
+                        elseif i == 4
+                            
+                            r5WS3=scatter(PCoeff{i}(j),MZ{i}(j),'yellow','filled','p');
+                        elseif i ==5
+                            r5CE1=scatter(PCoeff{i}(j),MZ{i}(j),'yellow','filled','s');
+                        end
+                        r5.MarkerEdgeColor='black';
+                        r5.SizeData=50;
+                        
+                        r5WS1.MarkerEdgeColor='black';
+%                         r5WS2.MarkerEdgeColor='black';
+                        r5WS3.MarkerEdgeColor='black';
+                        r5CE1.MarkerEdgeColor='black';
+                    case 6
+                        if i == 1
+                            
+                            r6=scatter(PCoeff{i}(:,j),MZ{i}(:,j),[],[255 204 153]/255,'filled');
+                        elseif i == 2
+                            
+                            r6WS1=scatter(PCoeff{i}(j),MZ{i}(j),[],[255 204 153]/255,'filled','x');
+%                         elseif i == 3
+%                             
+%                             r6WS2=scatter(PCoeff{i}(j),MZ{i}(j),[],[255 204 153]/255,'filled','^');
+                        elseif i == 4
+                            r6WS3=scatter(PCoeff{i}(j),MZ{i}(j),[],[255 204 153]/255,'filled','p');
+                        elseif i ==5
+                            r6CE1=scatter(PCoeff{i}(j),MZ{i}(j),[],[255 204 153]/255,'filled','s');
+                        end
+                        r6.MarkerEdgeColor='black';
+                        r6.SizeData=50;
+                        
+                        r6WS1.MarkerEdgeColor='black';
+%                         r6WS2.MarkerEdgeColor='black';
+                        r6WS3.MarkerEdgeColor='black';
+                        r6CE1.MarkerEdgeColor='black';
+                        
+                    case 7
+                        if i == 1
+                            r7=scatter(PCoeff{i}(:,j),MZ{i}(:,j),[],[0.7 0.7 0.7],'filled');
+                        elseif i == 2
+                            r7WS1=scatter(PCoeff{i}(j),MZ{i}(j),[],[0.7 0.7 0.7],'filled','x');
+%                         elseif i == 3
+%                             r7WS2=scatter(PCoeff{i}(j),MZ{i}(j),[],[0.7 0.7 0.7],'filled','^');
+                        elseif i == 4
+                            r7WS3=scatter(PCoeff{i}(j),MZ{i}(j),[],[0.7 0.7 0.7],'filled','p');
+                        elseif i ==5
+                            r7CE1=scatter(PCoeff{i}(j),MZ{i}(j),[],[0.7 0.7 0.7],'filled','s');
+                        end
+                        r7.MarkerEdgeColor='black';
+                        r6.SizeData=50;
+                        
+                        r7WS1.MarkerEdgeColor='black';
+%                         r7WS2.MarkerEdgeColor='black';
+                        r7WS3.MarkerEdgeColor='black';
+                        r7CE1.MarkerEdgeColor='black';
+                end
+            end
         end
     end
- 
-%                     e1h=errorbar(idxMax,[cmin:c],'horizontal');
-%                 e1=errorbar(avgP,avgMZ,stdMZ);
+    
 else
     for i = 1:length(PCoeff)
         if MZ(i)<2.5 && PCoeff(i)>=0 && PCoeff(i)<0.025
@@ -1486,6 +1867,6 @@ ylim([-3 8]);
 xlim([0,1]);
 xlabel('Participant Coefficient')
 ylabel('Within-Module Degree z-Score');
-title(['Avg Across 11 ' num2str(sizeNetwork) 'nw Networks']);
+% title(['Avg Across 11 ' num2str(sizeNetwork) 'nw Networks']);
 hold on
 end

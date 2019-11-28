@@ -2,7 +2,7 @@
 % This function plots graph theory parameters overlayed on graph view of
 % currents for the chosen Sim at the given timestamp (IndexTime)
 
-function [f6, f7, f8, f9, f10, f11, f12,f13, Explore, sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj, Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices,drain_exist,source_exist,network_load)
+function [f6, f7, f8, f9, f10, f11, f12,f13, Explore, sourceElec, drainElec]= graph_theory_explore_threshold(Sim,G,Adj, Adj2, IndexTime,threshold,threshold_network, Explore, Graph, highlightElec, new_electrodes,node_indices,drain_exist,source_exist,network_load,biasType)
 %% Find Source and Drain Electrodes:
 
 %NOTE: This only works with 1 source and 1 drain:
@@ -105,8 +105,13 @@ caxis(currAx,clim);
 hold on
 
 % Plot Participant Coefficients
-p3.NodeCData=Graph.Ci(threshold);
+if strcmp(biasType{1},'DC') & ~isempty(Graph.Ci)
+p3.NodeCData=Graph.Ci;
+p_ranks=Graph.P;
+else 
+    p3.NodeCData=Graph.Ci(threshold);
 p_ranks=Graph.P(threshold);
+end 
 if ~noPath
     edges2 = linspace(min(p_ranks),max(p_ranks),7);
     bins2 = discretize(p_ranks,edges2);
@@ -118,7 +123,11 @@ if ~noPath
     labelnode(p3,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
 end
 %Need to figure out how to change colormap for Nodes seperately.
+if strcmp(biasType{1},'DC')
+text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P)) ' (large dot)']);
+else
 text(-5.5,-6.2,['Min P Coeff = 0 (small dot) | Max P Coeff = ' num2str(max(Graph.P(threshold))) ' (large dot)']);
+end 
 title(['Participant Coeff, Thresholded | T= ' num2str(IndexTime)]);
 
 %% Modular z-Score:
@@ -169,9 +178,13 @@ colorbar(currAx);
 caxis(currAx,clim);
 
 hold on
-
-p4.NodeCData=Graph.Ci(threshold);
+if strcmp(biasType{1},'DC') & ~isempty(Graph.Ci)
+p4.NodeCData=Graph.Ci;
+mod_ranks=Graph.MZ;
+else
+    p4.NodeCData=Graph.Ci(threshold);
 mod_ranks=Graph.MZ(threshold);
+end 
 if ~noPath
     edges3 = linspace(min(mod_ranks),max(mod_ranks),7);
     bins3 = discretize(mod_ranks,edges3);
@@ -180,8 +193,11 @@ if ~noPath
     %Label Source
     labelnode(p4,highlightElec,[new_electrodes(:).Name]); %need to make this automated.
 end
-
-text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ(threshold))) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
+if strcmp(biasType{1},'DC')
+text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ)) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ)) ' (large dot)']);
+else
+text(-6,-6.2,['Min MZ Coeff = ' num2str(min(Graph.MZ(threshold))) ' (small dot) | Max MZ Coeff = ' num2str(max(Graph.MZ(threshold))) ' (large dot)']);
+end 
 title(['Within Module z-Score, Thresholded | T= ' num2str(IndexTime)]);
 
 %% Connectivity
@@ -364,7 +380,7 @@ currAx=gca;
 p9=plot(currAx,G);
 
 Adj=Adj(threshold,threshold);
-Graph.COMM=Graph.COMM(threshold,threshold);
+Graph.COMM=Graph.COMM;
 % extract lower triangular part of Adjacency matrix of Graph.COMM
 [j,i,~]=find(tril(Adj));
 com=zeros(1,length(j));
@@ -427,7 +443,12 @@ currAx=gca;
 p11=plot(currAx,G);
 p11.MarkerSize = 4;
 % set(currAx,'Color',[0.35 0.35 0.35]);% change background color to gray
-p11.NodeCData=Graph.Ci(threshold);
+if strcmp(biasType{1},'DC') & ~isempty(Graph.Ci)
+p11.NodeCData=Graph.Ci;
+else
+    p11.NodeCData=Graph.Ci(threshold);
+
+end 
 % Ci_ranks=Graph.Ci(threshold);
 % edges3 = linspace(min(Ci_ranks),max(Ci_ranks),7);
 % bins3 = discretize(Ci_ranks,edges3);

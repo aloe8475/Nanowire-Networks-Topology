@@ -26,7 +26,7 @@ function updateComponentStateMulti(compPtr, dt)
                                   *dt;
         case 'atomicSwitch'
             wasOpen = abs(compPtr.comp.filamentState) >= compPtr.comp.criticalFlux;
-            
+            lastSign = sign(compPtr.comp.filamentState);
             % compPtr.comp that have voltage bigger than setVoltage 
             % experience  polarity-dependent cation migration (filament can
             % either grow or shrink). The rate of change is determined by
@@ -51,8 +51,12 @@ function updateComponentStateMulti(compPtr, dt)
             compPtr.comp.filamentState (compPtr.comp.filamentState >  compPtr.comp.maxFlux) =  compPtr.comp.maxFlux(compPtr.comp.filamentState >  compPtr.comp.maxFlux);
             compPtr.comp.filamentState (compPtr.comp.filamentState < -compPtr.comp.maxFlux) = -compPtr.comp.maxFlux(compPtr.comp.filamentState < -compPtr.comp.maxFlux);
             
+            %making sure filament doesn't go to negative
+            thisSign = sign(compPtr.comp.filamentState);
+            change = abs(thisSign-lastSign);
+            compPtr.comp.filamentState(change==2) = 0;
             % Filaments that have just disconnected suffer a blow:
-            %justClosed = wasOpen & (abs(compPtr.comp.filamentState) < compPtr.comp.criticalFlux);
-            %compPtr.comp.filamentState(justClosed) = compPtr.comp.filamentState(justClosed) / 10;
+            justClosed = wasOpen & (abs(compPtr.comp.filamentState) < compPtr.comp.criticalFlux);
+            compPtr.comp.filamentState(justClosed) = compPtr.comp.filamentState(justClosed) / 10;
     end
 end

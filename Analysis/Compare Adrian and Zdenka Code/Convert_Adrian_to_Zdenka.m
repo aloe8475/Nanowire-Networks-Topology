@@ -1,7 +1,7 @@
 %% Convert Adrian Code to Zdenka Code (Connectivity):
 clear all
 
-numWires=2000;
+numWires=300;
 
 computer=getenv('computername');
 switch computer

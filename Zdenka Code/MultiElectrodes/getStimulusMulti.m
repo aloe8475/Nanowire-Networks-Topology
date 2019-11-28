@@ -157,9 +157,9 @@ T(T>0)=0;
         case 'TimeDelay'
             Stimulus.Signal = max(Stimulus.AmplitudeOff,Stimulus.AmplitudeOn*square(2*pi*Stimulus.TimeAxis/Stimulus.Period));
             Stimulus.Signal(Stimulus.TimeAxis >= Stimulus.NumPulse1*Stimulus.Period) = Stimulus.AmplitudeOff;
-            SecondSetStart =  Stimulus.NumPulse1*Stimulus.Period + Stimulus.LongWait; %second set of pulses starts here
+            SecondSetStart =  Stimulus.NumPulse1*Stimulus.Period - (Stimulus.Period/2) + Stimulus.LongWait; %second set of pulses starts here. - half the period because we don't want the 2sec wait after the 3rd pulse
             Stim1          = max(Stimulus.AmplitudeOff,Stimulus.AmplitudeOn*square(2*pi*(Stimulus.TimeAxis-SecondSetStart)/Stimulus.Period));
-            SecondSetEnd   = SecondSetStart + Stimulus.NumPulse2*Stimulus.Period;
+            SecondSetEnd   = SecondSetStart + Stimulus.NumPulse2*Stimulus.Period2;
             Stimulus.Signal(Stimulus.TimeAxis >= SecondSetStart) = Stim1(Stimulus.TimeAxis >= SecondSetStart);
             Stimulus.Signal(Stimulus.TimeAxis >= SecondSetEnd)   = Stimulus.AmplitudeOff;
             

@@ -470,7 +470,7 @@ s=load(f);
 if ~isfield(s,'SelNet')
     return;
 end
-cd('C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian''s Code\NETWORK_sims_2\FIGS');
+cd('C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Adrian Code\NETWORK_sims_2\FIGS');
 
 ParNet=s.SelNet;
 [handles.Networks,handles.NetList.String,handles.NetList.Value]=AddDeleteDataList('add',...
@@ -609,7 +609,7 @@ if ~isequal(SelDir,0)
 else
     return;
 end
-cd('..\FIGS');
+
 
 %uisave('SelNet',Name);
 

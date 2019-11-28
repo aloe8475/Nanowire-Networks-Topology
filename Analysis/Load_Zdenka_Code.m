@@ -191,7 +191,7 @@ if sims_load=='y'
         network.Simulations=temp;
 %         for i=1:length(network.Simulations)
 %             for j = 1:length(network.Simulations)
-            network.Simulations.Type='Explore Simulation';
+%             network.Simulations.Type='Explore Simulation';
 %             end 
 %         end
         %Need to change to only allow explore of 1 network

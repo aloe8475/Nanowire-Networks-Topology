@@ -6,7 +6,7 @@
             e1000=load([explore_location_origin 'Zdenka_Net_Sx20_NoW1000_0606-2019_113353_Length_6_Disp_0_Sim_1_Source_997_Drain_408_Explore_Timestamp_200.mat']);
             e2000=load([explore_location_origin 'Zdenka_Net_Sx20_NoW2000_0618-2019_125103_Length_6_Disp_0_Sim_1_Source_1999_Drain_935_Explore_Timestamp_200.mat']);
      
-G=cell(6,1);            
+G=cell(18,1);            
 G{1}=e100.Explore.GraphView.Graph;
 G{2}=e500.Explore.GraphView.Graph;
 G{3}=e1000.Explore.GraphView.Graph;
