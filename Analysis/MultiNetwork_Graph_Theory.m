@@ -755,7 +755,7 @@ AgNW.NumWires=[100 500 1000 2000];%[length(e100Multi.Explore{1}.GraphView.AdjMat
 end
 
 %% Plot:
-function plotAll(Net, randomOrdered100, human, e100, e500, e1000, e2000, AgNW,cElegans,ANN,fig_dir)
+function plotAll(Net,randomOrdered,randomOrdered100, human, e100, e500, e1000, e2000, AgNW,cElegans,ANN,fig_dir)
 
 % DEGREE
 fDeg=figure;

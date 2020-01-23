@@ -300,7 +300,7 @@ function [Explore,randomOrdered100] = load_data()
             [FileName,PathName] = uigetfile('*.mat','Select the Explore saved data');
             f=fullfile(PathName,FileName);
             load(f);       
-            wattsPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Network Explore Functions';
+            wattsPath='C:\Users\aloe8475\Documents\PhD\GitHub\CODE\Analysis\Network Explore Functions\';
             load([wattsPath 'Random_Ordered_Graphs_ALL_networks.mat']);
 end
 
