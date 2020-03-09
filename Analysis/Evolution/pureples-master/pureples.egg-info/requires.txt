@@ -1,0 +1,5 @@
+numpy
+neat-python
+graphviz
+matplotlib
+gym

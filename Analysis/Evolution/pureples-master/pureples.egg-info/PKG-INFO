@@ -1,0 +1,21 @@
+Metadata-Version: 1.2
+Name: pureples
+Version: 0.0
+Summary: HyperNEAT and ES-HyperNEAT implemented in pure Python
+Home-page: https://github.com/ukuleleplayer/pureples
+Author: adrian, simon
+Author-email: mail@adrianwesth.dk
+Maintainer: simon, adrian
+Maintainer-email: mail@adrianwesth.dk
+License: MIT
+Description: Python implementation of HyperNEAT and ES-HyperNEAT developed by Adrian Westh and Simon Krabbe Munck for evolving arbitrary neural networks. HyperNEAT and ES-HyperNEAT is originally developed by Kenneth O. Stanley and Sebastian Risi
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Education
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Classifier: Topic :: Scientific/Engineering
