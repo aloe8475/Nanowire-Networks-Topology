@@ -1,0 +1,232 @@
+# Functional Connectivity
+
+**Alon Loeffler | 18/05/2020**
+
+This document holds an overview of the Structural + Functional Connectivity analyses completed from Jan 2020 until presently (May 2020). 
+
+In this project, I generate 300 ASN networks of varying parameters (i.e. differing Mean Path Length, Std Path Length and Centrality Dispersion). I perform a parameter sweep to find networks between 277-300 nodes, with varying density and degree distribution, in order to compare structural and functional parameters with a *C. Elegans* structural network. 
+
+I then run a simple Linear Transformation task, feeding in a **training signal** of a **sine wave** via a single node input to each network. The network processes the sine wave, and I read out the outputs after 5 seconds from each node in the network (or less nodes 50/100/150/200/250/all nodes). I then perform linear regression, with a **target signal** of a **square wave**, and receive an accuracy value of how well each network (as a black box) can perform on this task, with only a simple linear regression on the outputs of the network. 
+
+In this document, I look at structural differences across networks, to see if topology influences functionality (i.e. accuracy) on this task.
+
+<div style="page-break-after: always;"></div>
+
+---
+
+## Network Level Analyses:
+
+### Topological Measures:
+
+#### <u>All Networks Graph View:</u>
+
+<img src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\Networks.png" alt="Networks" />
+
+<div style="page-break-after: always;"></div>
+
+#### <u>All Networks Degree Distribution</u>
+
+![Degree All Networks](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\Degree All Networks.png)
+
+<div style="page-break-after: always;"></div>
+
+#### <u>All Networks Guimera Amaral Planes</u>
+
+![GuimeraAmaralPlane](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\GuimeraAmaralPlane.png)
+
+<div style="page-break-after: always;"></div>
+
+---
+
+### Functional Measures:
+
+#### <u>Network Parameters:</u>
+
+![Parameters_vs_LinearTransformationAccuracy](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\Nonlinear Transformation\Parameters_vs_LinearTransformationAccuracy.png)
+
+There is no clear pattern showing that certain parameter combinations will create networks that perform better on this task.
+
+<div style="page-break-after: always;"></div>
+
+#### <u>Small Worldness</u>
+
+![SmallWorldness_vs_LinearTransformationAccuracy](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\Nonlinear Transformation\SmallWorldness_vs_LinearTransformationAccuracy.png)
+
+$swp$ is a measure of Small World Propensity [(Muldoon et al., 2016)][https://www.nature.com/articles/srep22057].
+
+It looks like there is a slight inverse relationship between accuracy and small worldness - in which networks that have a lower small worldness ($0.6 < swp < 0.65$), tend to have higher accuracy than networks with higher small worldness ($swp> 0.65$).	
+
+<div style="page-break-after: always;"></div>
+
+#### <u>Degree</u>
+
+<img src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\Nonlinear Transformation\Degree_vs_LinearTransformationAccuracy.png" alt="Degree_vs_LinearTransformationAccuracy" style="zoom:5%;" />
+
+**<u>Semilogx plot:</u>**
+
+<img src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\Nonlinear Transformation\logDegree_vs_LinearTransformationAccuracy.png" alt="logDegree_vs_LinearTransformationAccuracy" style="zoom:5%;" />
+
+<div style="page-break-after: always;"></div>
+
+#### <u>Modularity</u>
+
+![ASN_ModularityQ_vs_LinearTransformationAccuracy](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\Nonlinear Transformation\ASN_ModularityQ_vs_LinearTransformationAccuracy.png)
+
+The Modularity $q$ score is the **maximized modularity score**:
+$$
+\begin{align*}q =  \frac{1}{l}\sum_{i,j}(A_{ij} - \frac{k_i k_j}{l})\delta m_i m_j \\\end{align*}
+$$
+Where $\frac{1}{l} $ is normalisation, $A_{ij}$ is the adjacency matrix of all nodes $i$ and $j$, and $k_i k_j$ is the probability a random edge would be placed between node $i$ and node $j$. 
+
+$m_i$ is a module containing node $i$, and  $\delta m_i m_j= 1$ if $m_i = m_j$, or $0$ otherwise. 
+
+Derived from these papers:
+
+- Newman (2006) -- Phys Rev E 74:036104, PNAS 23:8577-8582 AND
+- Reichardt and Bornholdt (2006) Phys Rev E 74:016110.
+- Rubinov & Sporns, 2010 
+
+Newman: "If the number of edges between groups is significantly less *than we expect by chance*, or equivalent if the number within groups is significantly more, then it is reasonable to conclude that something interesting is going on."
+
+<div style="page-break-after: always;"></div>
+
+#### <u>Small Worldness + Path Length</u>
+
+![AvgPL_vs_SmallWorldness_vs_LinearTransformationAccuracy](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\Nonlinear Transformation\AvgPL_vs_SmallWorldness_vs_LinearTransformationAccuracy.png)
+
+<div style="page-break-after: always;"></div>
+
+#### <u>Small Worldness + Modularity (q)</u>
+
+![ASN_Modularity_vs_SmallWorldness_vs_LinearTransformationAccuracy](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\Nonlinear Transformation\ASN_Modularity_vs_SmallWorldness_vs_LinearTransformationAccuracy.png)
+
+<div style="page-break-after: always;"></div>
+
+#### <u>Path Length + Avg Degree</u>
+
+![AvgPL_vs_AvgDEG_vs_LinearTransformationAccuracy](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\Nonlinear Transformation\AvgPL_vs_AvgDEG_vs_LinearTransformationAccuracy.png)
+
+<div style="page-break-after: always;"></div>
+
+#### <u>Small Worldness + Degree</u>
+
+![Degree_vs_SmallWorldness_vs_LinearTransformationAccuracy](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\Nonlinear Transformation\Degree_vs_SmallWorldness_vs_LinearTransformationAccuracy.png)
+
+<div style="page-break-after: always;"></div>
+
+---
+
+## Node Level Analyses:
+
+Next, I picked the top 50 performing networks (i.e. highest accuracy) and the worst 5 performing networks (lowest accuracy), in order to compare node-level topological measures. 
+
+### Max and Min Accuracy ASNs
+
+#### <u>Small Worldness</u>
+
+### ![5Best_5WorstAccuracies_SmallWorldness_vs_LinearTransformationAccuracy](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\50 Min 50 Max\Vi (Shortest Path) Voltage\50 Min_Max Accuracies_SmallWorldness_vs_LinearTransformationAccuracy.png)
+
+Small worldness refers to propensity ($swp$)
+
+- Find a accuracy cut for Random + Grid - categorisation based on Vi
+
+<div style="page-break-after: always;"></div>
+
+#### <u>Degree</u>
+
+![50 Min_Max Accuracies_Degree_vs_LinearTransformationAccuracy](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\50 Min 50 Max\Vi (Shortest Path) Voltage\50 Min_Max Accuracies_Degree_vs_LinearTransformationAccuracy.png)
+
+Avg + Median Degree Histograms (5 networks)
+
+![Degree Min_Max Accuracy Networks](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\5 Min 5 Max\Degree Min_Max Accuracy Networks.png)
+
+50 networks:
+
+![MZ 50 Min_Max Accuracy Histograms](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\50 Min 50 Max\Vi (Shortest Path) Voltage\MZ 50 Min_Max Accuracy Histograms.png)
+
+---
+
+
+
+#### <u>Small Worldness + Avg Degree</u>
+
+![5Best_5WorstAccuracies_Degree_vs_SmallWorldness_vs_LinearTransformationAccuracy](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\5 Min 5 Max\5Best_5WorstAccuracies_Degree_vs_SmallWorldness_vs_LinearTransformationAccuracy.png)
+
+<div style="page-break-after: always;"></div>
+
+#### <u>Modularity</u>
+
+![Modularity Min_Max Accuracy Networks](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\5 Min 5 Max\Modularity Min_Max Accuracy Networks.png)
+
+Modules are calculated using the *community louvain* algorithm.
+
+To Do: 
+
+- **sub categories patterns - random walk to trace out paths (e.g. Mapper)**
+
+<div style="page-break-after: always;"></div>
+
+#### <u>Centrality</u>
+
+<img src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\5 Min 5 Max\Betweenness Centrality Min_Max Accuracy Networks.png" alt="Betweenness Centrality Min_Max Accuracy Networks"/>
+
+- this shows integration vs segragation (diversifying the topologies)
+
+
+
+Betweenness Centrality is calculated for each node $n$ as:
+$$
+C_B(n) = \sum_{s\neq v \neq t \epsilon N} \frac{\sigma_{st} (n)}{\sigma_{st}}
+$$
+
+1. For each pair of nodes (*s*,*t*), compute the shortest paths between them $=\sigma_{st}$
+2. For each pair of nodes (*s*,*t*), determine the fraction of shortest paths that pass through the node in question (node $n$) $= \sigma_{st} (n)$
+3. Sum this fraction over all pairs of nodes(*s*,*t*)
+
+<div style="page-break-after: always;"></div>
+
+#### <u>Guimera Amaral Plane (MZ & PCoeff)</u>
+
+![PCoeff vs Module Z Max_Min Accuracy Networks](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\PCoeff vs Module Z Max_Min Accuracy Networks.png)
+
+<u>Participation Coefficient</u> 
+
+Participation Coefficient ($P_i$ or PCoeff) of node $i$: 
+$$
+P_i=1−\sum_{s=1}^{N_M}{(\frac{k_{is}}{k_i})^2}
+$$
+Where $k_{is}$ is the number of links of node *i* to nodes in module *s*, and $k_i$ is the total degree of node *i* [(Power, Schlagger, Lessov-Schlagger & Peterson, 2013)][https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3838673/] & [Guimera & Amaral, 2005][https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2175124/]
+
+PCoeff measures the distribution of a node's edges among the communities of a graph:
+
+- If a node’s edges are entirely restricted to its community, its participation coefficient is 0. 
+- If the node’s edges are evenly distributed among all communities, the participation coefficient is a maximal value that approaches 1
+
+Hubs with **low participation coefficients** are called “**provincial**” hubs because their edges are not distributed widely among communities, whereas hubs with **higher participation coefficients** are called “**connector**” hubs.
+
+<u>Within-Module Degree z Score:</u>
+$$
+Z_i=\frac{K_i−\overline{K}_{s_i}}{σ_{s_i}},
+$$
+Where $K_i$ is the number of edges  of node $i$ to other nodes in its module $s_i$, and $\overline{K}_{s_i}$ s the average of κ over all the nodes in $s_i$ and $\sigma_{s_i}$ is the standard deviation of $K$ in $s_i$ [(Power, Schlagger, Lessov-Schlagger & Peterson, 2013)][https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3838673/] & [Guimera & Amaral, 2005][https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2175124/]
+
+- Z-scores greater than 2.5 denote **hub status**
+
+<u>PCoeff & MZ Histograms:</u>
+
+![PCoeff Min_Max Accuracy Histograms](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\5 Min 5 Max\PCoeff Min_Max Accuracy Histograms.png)
+
+![MZ Min_Max Accuracy Histograms](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\5 Min 5 Max\MZ Min_Max Accuracy Histograms.png)
+
+<u>Graphical Representation:</u>
+
+PCoeff Max Accuracy Networks (red) vs PCoeff Min Accuracy Networks (blue)
+
+![PCoeff Min_Max Accuracy Graph View](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\5 Min 5 Max\PCoeff Min_Max Accuracy Graph View.png)
+
+MZ Max Accuracy Networks (red) vs MZ Min Accuracy Networks (blue)
+
+![MZ Min_Max Accuracy Graph View](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\5 Min 5 Max\MZ Min_Max Accuracy Graph View.png)
+
+<div style="page-break-after: always;"></div>
+

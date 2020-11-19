@@ -85,6 +85,10 @@ if diff_path > 1
     diff_path = 1;
 end
 
+if diff_path < -1
+    diff_path = -1;
+end
+
 
 %compute all clustering calculations for the network
 reg_clus = avg_clus_matrix(W_reg,varargin{1});
@@ -102,6 +106,8 @@ if isnan(reg_clus) || isnan(rand_clus) || isnan(net_clus)
 end
 if diff_clus > 1
     diff_clus = 1;
+elseif diff_clus < -1
+    diff_clus = -1;
 end
 
 %calculate small world value, the root sum of the squares of

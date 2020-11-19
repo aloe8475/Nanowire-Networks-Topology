@@ -1,0 +1,167 @@
+# Comparing NWN with BetaSweep Structures
+
+## Nonlinear Transform
+
+### Small Worldness + Modularity:
+
+NWN vs BetaSweep 																														
+
+<div class="row">  
+<img src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\ASN Networks\NLT\ASN SW vs Modularity - NLT.png" alt="NWN" style="width:49%">  
+<img src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\BetaSweep\NLT\All networks\BetaSweep SW vs Modularity - NLT.png" alt="NWN" style="width:49%">  
+</div>
+Beta Sweep Networks:
+
+- B-A networks - TO DO
+  - **Artificial Lesioning of networks** - how does pulling out nodes blindly change the performance?
+    - Remove most communicable nodes, or most clustered nodes, etc.
+
+- Munoz Networks - TO DO
+
+### Separated by Beta Values:
+
+<div class="row">  
+<img title="Beta 0.1" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\BetaSweep\NLT\All networks\Beta Values\Beta01 Subset SW vs Modularity NLT Scatter.png" alt="NWN" style="width:33%">  
+<img title="Beta 0.2" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\BetaSweep\NLT\All networks\Beta Values\Beta02 Subset SW vs Modularity NLT Scatter.png" alt="Beta0.2" style="width:33%">  
+<img title="Beta 0.3" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\BetaSweep\NLT\All networks\Beta Values\Beta03 Subset SW vs Modularity NLT Scatter.png" alt="Beta0.2" style="width:33%">  
+</div>
+
+<div class="row">  
+<img title="Beta 0.4" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\BetaSweep\NLT\All networks\Beta Values\Beta04 Subset SW vs Modularity NLT Scatter.png" alt="NWN" style="width:33%">  
+<img title="Beta 0.5" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\BetaSweep\NLT\All networks\Beta Values\Beta05 Subset SW vs Modularity NLT Scatter.png" alt="Beta0.2" style="width:33%">  
+<img title="Beta 0.6" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\BetaSweep\NLT\All networks\Beta Values\Beta06 Subset SW vs Modularity NLT Scatter.png" alt="Beta0.2" style="width:33%">  
+</div>
+
+<div class="row">  
+<img title="Beta 0.7" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\BetaSweep\NLT\All networks\Beta Values\Beta07 Subset SW vs Modularity NLT Scatter.png" alt="NWN" style="width:33%">  
+<img title="Beta 0.8" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\BetaSweep\NLT\All networks\Beta Values\Beta08 Subset SW vs Modularity NLT Scatter.png" alt="Beta0.2" style="width:33%">  
+<img title="Beta 0.9" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\BetaSweep\NLT\All networks\Beta Values\Beta09 Subset SW vs Modularity NLT Scatter.png" alt="Beta0.2" style="width:33%">  
+</div>
+
+
+
+### Separated by Avg Degree: 
+
+<div class="row">  
+<img title="Beta 0.1" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\BetaSweep\NLT\All networks\Avg Degree Values\Avg Degree 2 Subset SW vs Modularity NLT Scatter.png" alt="AvgDeg 2" style="width:49%">  
+<img title="Beta 0.2" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\BetaSweep\NLT\All networks\Avg Degree Values\Avg Degree 4 Subset SW vs Modularity NLT Scatter.png" alt="AvgDeg 4" style="width:49%">  
+</div>
+
+<div class="row">  
+<img title="Beta 0.1" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\BetaSweep\NLT\All networks\Avg Degree Values\Avg Degree 8 Subset SW vs Modularity NLT Scatter.png" alt="AvgDeg 8" style="width:49%">  
+<img title="Beta 0.2" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\BetaSweep\NLT\All networks\Avg Degree Values\Avg Degree 16 Subset SW vs Modularity NLT Scatter.png" alt="AvgDeg 16" style="width:49%">  
+</div>
+
+<div class="row">  
+<img title="Beta 0.1" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\BetaSweep\NLT\All networks\Avg Degree Values\Avg Degree 32 Subset SW vs Modularity NLT Scatter.png" alt="AvgDeg 32" style="width:49%">  
+</div>
+
+
+
+### Other Graph Theory Measures:
+
+Nanowire Networks:
+
+<div class="row">  
+<img title="Nanowire Networks" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\ASN Networks\NLT\NWN NetworkLevelMeasures - NLT.png" alt="Nanowire Networks" style="width:49%">  
+<img title="BetaSweep" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\BetaSweep\NLT\All networks\BetaSweep_NonlinearTransform_NetworkLevelMeasures_AllNetworks.png" alt="BetaSweep" style="width:49%">  
+</div>
+
+
+
+## Memory Capacity
+
+## NLT vs MC:
+
+### Network-Level Measures:
+
+#### Task Performance:
+
+<div class="row">  
+<img title="Nanowire Networks" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\ASN Networks\Standardized MC vs Standardized NLT vs NLT minus MC.png" alt="Nanowire Networks" style="width:49%">  
+<img title="BetaSweep" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\BetaSweep\Standardized MC vs Standardized NLT vs NLT minus MC - BetaSweep.png" alt="BetaSweep" style="width:49%">  
+</div>
+
+### Node-Level Measures:
+
+#### Delta
+
+$$
+\begin{equation}
+NLT_1=\frac{NLT - NLT_{min}} {range(NLT) }
+\tag{1}
+\end{equation}
+$$
+
+$$
+\begin{equation}
+MC_1=\frac{MC - MC_{min}} {range(MC) }
+\tag{2}
+\end{equation}
+$$
+
+$$
+\begin{equation}
+\Delta_i=NLT_1 - MC_1
+\tag{3}
+\end{equation}
+$$
+
+<div class="row">  
+<img title="Nanowire Networks" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\ASN Networks\NLT minus MC standardized accuracy correlation with PC and MZ.png" alt="Nanowire Networks" style="width:49%">  
+<img title="BetaSweep" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\BetaSweep\NLT minus MC standardized accuracy correlation with PC and MZ - BetaSweep.png" alt="BetaSweep" style="width:49%">  
+</div>
+
+#### Mean Accuracy:
+
+<div class="row">  
+<img title="Nanowire Networks" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\ASN Networks\NLT and MC Mean Accuracy correlations with PC and MZ.png" alt="Nanowire Networks" style="width:49%">  
+<img title="BetaSweep" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\BetaSweep\Mean NLT and MC accuracy correlations with PC and MZ - BetaSweep.png" alt="BetaSweep" style="width:49%">  
+</div>
+
+#### Visualised Data (PC vs MZ):
+
+<div class="row">  
+<img title="Nanowire Networks" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\ASN Networks\50 Min 50 Max\Vi (Shortest Path) Voltage\PCoeff MZ Histograms 50MinMax ALL Networks - NLT + MC.png" alt="Nanowire Networks" style="width:49%">  
+<img title="BetaSweep" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\BetaSweep\PCoeff MZ Histograms 50MinMax Beta ALL Networks - NLT + MC.png" alt="BetaSweep" style="width:49%">  
+</div>
+
+<div class="row">  
+<img title="Nanowire Networks" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\ASN Networks\50 Min 50 Max\Vi (Shortest Path) Voltage\GuimeraAmeral 50MinMax Networks Avg - NLT + MC.png" alt="Nanowire Networks" style="width:49%">  
+<img title="BetaSweep" src="C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\BetaSweep\GuimeraAmeral 50MinMax Networks Beta Avg - NLT + MC.png" alt="BetaSweep" style="width:49%">  
+</div>
+
+
+
+## Voltage Issues:
+
+Since we used *Vi* (see below) as the input voltage for each network, we need to make sure that the voltage/shortest path don't affect or skew our results.
+$$
+V_i = \frac{\sigma{_{sd}}}{5}
+$$
+
+- Where $\sigma_{sd}$ is the shortest path between source node $s$ and drain node $d$. 
+- 5 was chosen as an arbitrary denominator, in order to allow for each network to reach a stable conductance level. 
+
+To check this we plotted accuracy vs voltage for each network:
+
+<div class="row">  
+<img title="Nanowire Networks" src="Z:\Documents\CODE\Data\Figures\Functional Connectivity\Voltage Amplitude vs NLT and MC.png" alt="Nanowire Networks" style="width:49%">  
+<img title="BetaSweep" src="Z:\Documents\CODE\Data\Figures\Functional Connectivity\Voltage Amplitude BetaSweep vs NLT and MC.png" alt="BetaSweep" style="width:49%">  
+</div>
+
+Here we see that certain amplitudes have a wide range of accuracies (Voltage <= 2 seems to be best represented). Therefore, there in networks with lower than 2V input, there is no strong effect of input voltage on accuracy, and the topology is largely the driving force:
+
+### Using Networks with 2V or less:
+
+Nanowire Networks voltage <=2: 
+
+![Standardized MC vs Standardized NLT vs NLT minus MC - Voltage Less than 2](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Network Level Comparisons\ASN Networks\Standardized MC vs Standardized NLT vs NLT minus MC - Voltage Less than 2.png)
+
+![NLT minus MC standardized accuracy correlation with PC and MZ - Less2Volts](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\ASN Networks\NLT minus MC standardized accuracy correlation with PC and MZ - Less2Volts.png)
+
+![NLT and MC Mean accuracy correlations with PC and MZ - Less2Volts](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\ASN Networks\NLT and MC Mean accuracy correlations with PC and MZ - Less2Volts.png)
+
+![PCoeff MZ Histograms 50MinMax Amp Two or Less Networks - NLT + MC](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\ASN Networks\50 Min 50 Max\Vi (Shortest Path) Voltage\PCoeff MZ Histograms 50MinMax Amp Two or Less Networks - NLT + MC.png)
+
+![GuimeraAmeral 50MinMax Networks Avg Amp Two or Less - NLT + MC](C:\Users\61424\Documents\GitHub\CODE\Data\Figures\Functional Connectivity\Node Level Comparisons\ASN Networks\50 Min 50 Max\Vi (Shortest Path) Voltage\GuimeraAmeral 50MinMax Networks Avg Amp Two or Less - NLT + MC.png)
