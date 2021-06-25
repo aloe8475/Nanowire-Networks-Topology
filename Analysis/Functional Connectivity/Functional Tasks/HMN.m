@@ -1,4 +1,4 @@
-function adjMat = HMN(HMtype, M0, b, alpha, numLevels, p, seed)
+function adjMat = HMN(HMtype, M0, b, alpha,alphaN, numLevels, p,adj, seed)
 %{
     Constucts Hierierchical modular networks by process outlined by
     Moretti + Munoz Nature Comms 2013 (https://doi.org/10.1038/ncomms3521)
@@ -30,13 +30,26 @@ function adjMat = HMN(HMtype, M0, b, alpha, numLevels, p, seed)
     %% Defining important variables
     Nd      = M0*b^numLevels; %number of nodes
     nBlock0 = b^numLevels; %number of blocks at the base level 
+    %load pre-constructed adjMats
+    
     adjMat  = zeros(Nd);
-    baseMod = ones(M0) - eye(M0);  %adjMat of fully connected module size M0
+%     E=Nd/0.2; %num edges based on density
+    
+%     baseMod = ones(M0) - eye(M0);  %adjMat of fully connected module size M0
+    
+    % Reduce number of connections in each module - create adj matrices for
+    % each module:
+%     
+%     adj = spalloc(M0, M0, E);
+%     idx = randperm(M0 * M0, E);
+%     adj(idx) = 1;
+%     adj = full(min( adj + adj.', 1)); 
+    
     bComb   = combnk([1:b],2)'; %is the possible combinations of blocks
     nbComb  = size(bComb,2); %number of combination of blocks
     %% Generate level 0 modules
     for i = 1:nBlock0
-       adjMat((i-1)*M0 + 1:i*M0, (i-1)*M0 + 1:i*M0) = baseMod;
+       adjMat((i-1)*M0 + 1:i*M0, (i-1)*M0 + 1:i*M0) = adj;
     end
     %% connect modules
     if HMtype == 1
@@ -65,6 +78,11 @@ function adjMat = HMN(HMtype, M0, b, alpha, numLevels, p, seed)
         end 
     elseif HMtype == 2
         for l = 1:numLevels
+            if l == 1 % num connections between modules in level 1
+                alphaL=alpha;
+            else
+                alphaL=alphaN; % num connections between modules (i.e. level 1) in level 2
+            end 
             NdBlockl = M0*b^(l-1); %number of nodes per block
             nBlockl  =  b^(numLevels - l); %number of blocks at l-th level
             for i = 1:nBlockl
@@ -73,7 +91,7 @@ function adjMat = HMN(HMtype, M0, b, alpha, numLevels, p, seed)
                 %of all possible edge choices
                 % we randomly generate unique integers corresponding to
                 % possible edge choices and re-map them to 3d indices.
-                Edgs = randperm(nbComb*NdBlockl^2, alpha);
+                Edgs = randperm(nbComb*NdBlockl^2, alphaL);
                 [bidx, Ndx, Ndy] = ind2sub([nbComb,NdBlockl,NdBlockl],Edgs);                
                 Ex = Ndx + (b*(i - 1) + bComb(1,bidx) - 1)*NdBlockl; 
                 Ey = Ndy + (b*(i - 1) + bComb(2,bidx) - 1)*NdBlockl; 

@@ -75,7 +75,7 @@ colorbar
 clearvars PC MZ MeanAcc Delta jh_net jh_delta jh_mean_acc data PCtemp MZtemp MeanAcctemp Deltatemp
 %Voltage Sweep:
 networkType='NWN';
-analType='Mod';%Mod 
+analType='Density';%Mod 
 if strcmp(networkType,'BA')
     onAmp={'0p2','0p5','0p75','1','1p25','1p5','2','5','10'};
     for i = 1:length(onAmp)
@@ -87,7 +87,7 @@ elseif strcmp(networkType,'NWN')
         if strcmp(analType, 'Mod')
             data{i}=load(['Delta_MeanAcc_NWN_9modules_' onAmp{i} 'V.mat']);
         else
-            data{i}=load(['Delta_MeanAcc_NWN_AllDensities_' onAmp{i} 'V.mat']);
+            data{i}=load(['Delta_MeanAcc_NWN_AllDensities_Weighted' onAmp{i} 'V.mat']);
         end 
     end 
 elseif strcmp(networkType,'HNW')
@@ -110,13 +110,12 @@ for i = 1:length(data) %for each voltage
     count=1;
     for j = 1:size(data{i}.MZ,1) %for each modularity
         for k = 1:size(data{i}.MZ,2) %for each network
-            if ~all(data{i}.MZ{j,k}==0) %remove all networks with only MZ = 0
-                PCtemp{i,j,k}=data{i}.PC{j,k};
-                MZtemp{i,j,k}=data{i}.MZ{j,k};
-                MeanAcctemp{i,j,k}=data{i}.MeanAcc(count);
-                Deltatemp{i,j,k}=data{i}.Delta(count);
-                count=count+1;
-            end 
+%             if ~all(data{i}.MZ{j,k}==0) && ~all(data{i}.PC{j,k}==0) %remove all networks with only MZ = 0
+            PCtemp{i,j,k}=data{i}.PC{j,k};
+            MZtemp{i,j,k}=data{i}.MZ{j,k};
+            MeanAcctemp{i,j,k}=data{i}.MeanAcc(count);
+            Deltatemp{i,j,k}=data{i}.Delta(count);
+            count=count+1;
         end 
     end
 end 
@@ -225,8 +224,8 @@ for i=1:size(NWNdelta,2) %for each density/modularity
                 saveas(f2,['../../../Data/Figures/Functional Connectivity/Node Level Comparisons//NWN/Voltage Sweep/Modularity Comparison/' networkType ' VSweep Mean Accuracy (NLT+MC) PC+MZ Correlations mod_' int2str(mod(i)) '.png']);
             else
                 avgDeg=[4,   5,   5,   6,   7,   8,   9,  10,  12,  14,  17, 20,  27,  34,  45,  68,  98, 170, 238, 285];
-                saveas(f,['../../../Data/Figures/Functional Connectivity/Node Level Comparisons/' networkType ' Networks/Voltage Sweep/Density Comparison/' networkType ' VSweep Delta (NLT-MC) PC+MZ Corr avgDeg_' int2str(avgDeg(i)) '.png']);
-                saveas(f2,['../../../Data/Figures/Functional Connectivity/Node Level Comparisons/' networkType ' Networks/Voltage Sweep/Density Comparison/' networkType ' VSweep Mean Accuracy (NLT+MC) PC+MZ Corr avgDeg_' int2str(avgDeg(i)) '.png']);
+                saveas(f,['../../../Data/Figures/Functional Connectivity/Node Level Comparisons/' networkType '/Voltage Sweep/Density Comparison/' networkType ' VSweep Delta (NLT-MC) PC+MZ Corr avgDeg_' int2str(avgDeg(i)) '.png']);
+                saveas(f2,['../../../Data/Figures/Functional Connectivity/Node Level Comparisons/' networkType '/Voltage Sweep/Density Comparison/' networkType ' VSweep Mean Accuracy (NLT+MC) PC+MZ Corr avgDeg_' int2str(avgDeg(i)) '.png']);
                 close all
             end
         end

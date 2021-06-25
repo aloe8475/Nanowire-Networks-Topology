@@ -17,4 +17,8 @@ To do: Talk to Mac's PostDocs
 
 
 
-Evolution Type 2: HyperNEAT
+
+
+Evolution Type 2: GENETIC ALGORITHMS - 
+
+![image-20210203154315155](C:\Users\61424\AppData\Roaming\Typora\typora-user-images\image-20210203154315155.png)

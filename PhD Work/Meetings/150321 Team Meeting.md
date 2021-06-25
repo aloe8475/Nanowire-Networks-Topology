@@ -1,0 +1,6 @@
+- [x] Keep NLT constant (e.g. 2V), and change MC Voltage (0.2-10V) to compare 'noise' like effect in integrated network. vs segregated
+  - [x] Make sure to fix normalization to same min/max scale
+- [x] Change network shown in Figure 7 to show clear differences
+- [x] Make movie of Multitasking perfomance functional for 1 network
+- [x] Keep 5 seconds for NLT + re-run with 10 seconds NLT
+- [x] Increase dt for MC in multitasking

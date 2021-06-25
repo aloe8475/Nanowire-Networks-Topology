@@ -1,34 +1,6 @@
-To Do - 01/10/2020:
+GENERATE MOVIES FOR FULLY SEPARATED NETWORKS
 
-~~Double check colorbars in 2D Histrograms:~~
+-- check if MC is only picking up fading memory from recurrent network structure from negligible contribution from **filaments** (i.e. not much network activation)
 
-- ~~Compare NWN with Hierarchical at high modularity & for same small worldness~~
+-- NLT provides boost to MC from the filament formations
 
-- ~~Control at low, medium high densities (best perfoming networks?)~~
-
-- ~~How do we get higher average degrees for our networks?~~
-
-- ~~Density Colorbar for Smallworldness  - NWN~~
-  
-  - Path length and clustering how do they change?
-  
-- ~~Functional Connectivity~~
-
-  
-
-Do networks with more junctions (more computing resources) do better regardless of number of nodes?
-
-- Compare networks with same number of junctions, but different number of nodes
-
-  
-
-**PLOT SUBGRAPHS + CURRENT OVERLAY** 
-
-	- at what density does the current path form for each voltage? 
-	- at what density does current flow too much?
-
-**IS CURRENT PATH FORMED AT A CERTAIN VOLTAGE FOR EACH DENSITY?** 
-
-
-
-**--- Case study for network with different NLT (min vs max)**
