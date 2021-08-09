@@ -1,7 +1,8 @@
 # Neuromorphic AI Project 2019
 PhD Project of Alon Loeffler
+Updated 09/08/2021
 
-Supervisors: Zdenka Kuncic & Mac Shine | Collaborators: Mike Li
+Supervisors: Zdenka Kuncic & Mac Shine | Collaborators: Mike Li, Adrian Diaz Alvarez, Joel Hochstetter, Ruomin Zhu, Natesh Ganesh, Tomonobu Nakayama
 
 
 ## Contents of this Repository:
