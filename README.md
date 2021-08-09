@@ -15,10 +15,10 @@ The code is split into a number of sections:
 2) **Adrian's Model** - This is a gui-based simulation of the AgNWs, allowing for multiple electrodes. This code can apply the HP nanowire network model, or Zdenka's.
 3) **Analysis** - This houses the analysis code written by Alon Loeffler. Within this folder, there are a number of analyses that can be conducted:
   - **LDA Analysis**
-  PAPER 1) https://www.frontiersin.org/articles/10.3389/fnins.2020.00184/full?report=reader
+ - PAPER 1) https://www.frontiersin.org/articles/10.3389/fnins.2020.00184/full?report=reader
   - **Graph Theory Analysis**
   - **Network Exploration**
-  PAPER 2) https://iopscience.iop.org/article/10.1088/2634-4386/ac156f/meta
+ - PAPER 2) https://iopscience.iop.org/article/10.1088/2634-4386/ac156f/meta
   - **Nonlinear Transformation + Memory Capacity Tasks**
   - **Multitasking + Modularity**
 4) **Data** - This folder houses the data saved from Adrian and Zdenka's models, as well as any figures or analysis data from the Analysis folder. This folder is not included in the repository, as it is much too large for GitHub. To access any of the Data, please email Alon Loeffler at aloe8475@uni.sydney.edu.au to request an upload to our shared Dropbox.
