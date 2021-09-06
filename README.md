@@ -22,4 +22,6 @@ The code is split into a number of sections:
   - [PAPER 2 - Modularity and Multitasking in Neuro-memristive Nanowire Networks](https://iopscience.iop.org/article/10.1088/2634-4386/ac156f/meta)
     - **Nonlinear Transformation + Memory Capacity Tasks**
     - **Multitasking + Modularity**
+  - **Associative Learning + Equilibrium Propagation"
+    - Work on Associative Learning is housed in the EquiProp branch
 4) **Data** - This folder houses the data saved from Adrian and Zdenka's models, as well as any figures or analysis data from the Analysis folder. This folder is not included in the repository, as it is much too large for GitHub. To access any of the Data, please email Alon Loeffler at aloe8475@uni.sydney.edu.au to request an upload to our shared Dropbox.
