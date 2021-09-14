@@ -23,5 +23,5 @@ The code is split into a number of sections:
     - **Nonlinear Transformation + Memory Capacity Tasks**
     - **Multitasking + Modularity**
   - **Associative Learning + Equilibrium Propagation**
-    - Work on Associative Learning is housed in /Training/Associative Learning/
+    - Work on Associative Learning is housed in Analysis/Training/Associative Learning/
 4) **Data** - This folder houses the data saved from Adrian and Zdenka's models, as well as any figures or analysis data from the Analysis folder. This folder is not included in the repository, as it is much too large for GitHub. To access any of the Data, please email Alon Loeffler at aloe8475@uni.sydney.edu.au to request an upload to our shared Dropbox.
