@@ -1,14 +1,17 @@
 "Created on Thu Jul  1 13:16:32 2021 "
 " @author: gnate "
 # Define some noise functions
+import numpy as np
+import pandas as pd
+
 def zero_bit_noise(N):
-	noise_list = []
-	noise_vec = np.zeros((1,N))
-	noise_list.append(noise_vec)
-	return noise_list
+    noise_list = []
+    noise_vec = np.zeros((1,N))
+    noise_list.append(noise_vec)
+    return noise_list
 
 def one_bit_noise(N):
-noise_list = []
+    noise_list = []
     for i in range(0,N):
         noise_vec = np.zeros((1,N))
         noise_vec[0,i] = 1
@@ -32,46 +35,38 @@ def hamming_dist(x,y):
 ## Main program
   
 def generate_data():
-	#Generate 3x3 noiseless data
-	N = 9
-	orig_inputs = ['111010111', '101010010', '101111101']
-	orig_inputs_matrix = np.zeros((len(orig_inputs), 1, N), dtype = 'uint')
-	for i in range(0,len(orig_inputs)):
-		input_tuple = tuple(orig_inputs[i])
-		for j in range(0, N):
-			if input_tuple[j] == '1': orig_inputs_matrix[i,0,j] = 1
-	#print('Input Matrix -', orig_inputs_matrix)
-				   
-	# Generate 5x5 noisy data
-	noise_vectors = []
-	noise_vectors.append(zero_bit_noise(N))
-	noise_vectors.append(one_bit_noise(N))
-	#print('Noise vectors - ', noise_vectors)
+    N = 9
+    orig_inputs = ['111010111', '101010010', '101111101']
+    orig_inputs_matrix = np.zeros((len(orig_inputs), 1, N), dtype = 'uint')
+    for i in range(0,len(orig_inputs)):
+        input_tuple = tuple(orig_inputs[i])
+        for j in range(0, N):
+            if input_tuple[j] == '1': orig_inputs_matrix[i,0,j] = 1
+    # Generate 5x5 noisy data
+    noise_vectors = []
+    noise_vectors.append(zero_bit_noise(N))
+    noise_vectors.append(one_bit_noise(N))
+    #print('Noise vectors - ', noise_vectors)
+    count_vec = np.zeros(2, dtype = 'uint')
+    for i in range(0,2):
+        count_vec[i] = np.math.factorial(N)/(np.math.factorial(i)*np.math.factorial(N-i))
 
-	count_vec = np.zeros(2, dtype = 'uint')
-	for i in range(0,2):
-		count_vec[i] = np.math.factorial(N)/(np.math.factorial(i)*np.math.factorial(N-i))
+    noisy_data_matrix = np.zeros((len(orig_inputs)*int(sum(count_vec)), 1, N), dtype = 'uint')
+    row_count = 0
+    for i in range(0,len(orig_inputs)):
+        for j in range(0,2):
+            bit_noise = np.array(noise_vectors[j], dtype = 'uint')
+            for k in range(0, int(count_vec[j])):
+                noisy_data_matrix[row_count] = xor_array(orig_inputs_matrix[i], bit_noise[k])
+                row_count += 1
 
-	noisy_data_matrix = np.zeros((len(orig_inputs)*int(sum(count_vec)), 1, N), dtype = 'uint')
-	row_count = 0
-	for i in range(0,len(orig_inputs)):
-		for j in range(0,2):
-			bit_noise = np.array(noise_vectors[j], dtype = 'uint')
-			for k in range(0, int(count_vec[j])):
-				noisy_data_matrix[row_count] = xor_array(orig_inputs_matrix[i], bit_noise[k])
-				row_count += 1
-				
-	final_data_matrix = np.zeros((len(orig_inputs)*int(sum(count_vec)), 1, N+1), dtype = 'uint')
-	final_data_matrix[0:len(orig_inputs)*int(sum(count_vec)), 0, 0:N] = noisy_data_matrix.reshape(len(orig_inputs)*int(sum(count_vec)), N)
+    final_data_matrix = np.zeros((len(orig_inputs)*int(sum(count_vec)), 1, N+1), dtype = 'uint')
+    final_data_matrix[0:len(orig_inputs)*int(sum(count_vec)), 0, 0:N] = noisy_data_matrix.reshape(len(orig_inputs)*int(sum(count_vec)), N)
 
-	for i in range(0,len(orig_inputs)):
-		final_data_matrix[int(sum(count_vec))*i: int(sum(count_vec))*(i+1), 0, N] = i
-		
-	 
-	#Save data as csv file
-	np.savetxt(\"3x3image_gen.csv\ final_data_matrix.reshape(len(orig_inputs)*int(sum(count_vec)), N+1), delimiter=\\")
-    
-	
+    for i in range(0,len(orig_inputs)):
+        final_data_matrix[int(sum(count_vec))*i: int(sum(count_vec))*(i+1), 0, N] = i
+
+    np.savetxt("3x3image_gen.csv", final_data_matrix.reshape(len(orig_inputs)*int(sum(count_vec)), N+1), delimiter=",")	
 	
  
 def create_target(t):
@@ -96,58 +91,57 @@ def create_single_target(t):
 
 # Load 3x3 dataset
 def load_data():
-	letters = pd.read_csv(\"./3x3image_gen.csv\ sep=',', header = None)
-	data = letters.values[:, 0:9]
-
-	sample_num = 30      # Number of data samples
-
-	# Target labels: 0 - 'z', 1 - 'v', 2 - 'n'
-	targets = letters.values[:, 9]
-	inputs = np.zeros((sample_num,10))
-	inputs[:,0:9] = data
-	inputs[:,9] = np.ones(sample_num)   #Bias input
-	
+    letters = pd.read_csv("./3x3image_gen.csv", sep=',', header = None)
+    data = letters.values[:, 0:9]
+    sample_num = 30      # Number of data samples
+    
+    # Target labels: 0 - 'z', 1 - 'v', 2 - 'n
+    targets = letters.values[:, 9]
+    inputs = np.zeros((sample_num,10))
+    inputs[:,0:9] = data
+    inputs[:,9] = np.ones(sample_num)   #Bias input
+    
     # One-hot encoding of outputs
     onehot_outputs = create_target(targets) #1 0 0 = z, 0 1 0 = v, 0 0 1 = n
-	
-	# Standardize data - Uncomment to standardize data, not necessary
-	# inputs = data - np.mean(data)
+    
+    # Standardize data - Uncomment to standardize data, not necessary
+    # inputs = data - np.mean(data)
 	# inputs = inputs/(np.std(data))"
-	return inputs, onehot_outputs, sample_num, targets
+    return inputs, onehot_outputs, sample_num, targets
     
     
     
 # OTHER FUNCTIONS:
 #Generating Electrode positions in Network - Written by Ruomin Zhu
-  def genGridNW(xa,xb,ya,yb,ex,ey):
-      e = []
-      for i in range(len(ex)):
-          d = np.zeros(len(xa))
-          for j in range(len(xa)):
-              d[j]=dist((xa[j], ya[j]), (xb[j], yb[j]), (ex[i], ey[i]))
-          e.append(np.argmin(d))
-      return np.array(e)
+def genGridNW(xa,xb,ya,yb,ex,ey):
+  e = []
+  for i in range(len(ex)):
+      d = np.zeros(len(xa))
+      for j in range(len(xa)):
+          d[j]=dist((xa[j], ya[j]), (xb[j], yb[j]), (ex[i], ey[i]))
+      e.append(np.argmin(d))
+  return np.array(e)
+
+def point_on_line(a, b, p):
+  ap = p - a
+  ab = b - a
+  result = a + np.dot(ap, ab) / np.dot(ab, ab) * ab
+  return result
+
+def dist(p1,p2,p3):
+  p1=np.array(p1) #xa ya
+  p2=np.array(p2) #xb yb
+  p3=np.array(p3) # ex ey (electrode placement)
   
-  def point_on_line(a, b, p):
-      ap = p - a
-      ab = b - a
-      result = a + np.dot(ap, ab) / np.dot(ab, ab) * ab
-      return result
-  
-  def dist(p1,p2,p3):
-      p1=np.array(p1) #xa ya
-      p2=np.array(p2) #xb yb
-      p3=np.array(p3) # ex ey (electrode placement)
-      
-      #determine whether closest point to electrode is on the line, or outside the line 
-      t=point_on_line(p1,p2,p3)
-      if t[1]<p1[1]:
-          r = np.linalg.norm(p3-p1) #if point is outside left (xvalues)
-      elif t[1] > p2[1]:
-          r = np.linalg.norm(p3-p2) #if point is outside right (xvalues)
-      else:
-          r = np.linalg.norm(np.cross(p2-p1, p1-p3))/np.linalg.norm(p2-p1) #if point is inside xvalues
-      return r
+  #determine whether closest point to electrode is on the line, or outside the line 
+  t=point_on_line(p1,p2,p3)
+  if t[1]<p1[1]:
+      r = np.linalg.norm(p3-p1) #if point is outside left (xvalues)
+  elif t[1] > p2[1]:
+      r = np.linalg.norm(p3-p2) #if point is outside right (xvalues)
+  else:
+      r = np.linalg.norm(np.cross(p2-p1, p1-p3))/np.linalg.norm(p2-p1) #if point is inside xvalues
+  return r
       
       
  #VISUALISE NETWORK STATE
@@ -181,12 +175,12 @@ def draw_network_state(connectivity,nwState):
 #     G.remove_edges_from((e for e, w in edge_weights.items() if w <1e-5)) ,
     edges=G.edges()
     weights=[G[u][v]['weight'] for u,v in edges]
-,
+    
     #draw OG graph,
     pos=nx.kamada_kawai_layout(OGgraph)
     h=nx.draw_networkx_nodes(OGgraph,pos=pos,node_color='grey',node_size=10,ax=ax)
     h.set_zorder(1),
-,
+    
     h2=nx.draw_networkx_edges(G,pos=pos,ax=ax,edge_color=weights,edge_cmap=plt.cm.bwr,edge_vmin=minWeights,edge_vmax=maxWeights)
 #     if h2:,
 #         h2.set_norm(clrs.SymLogNorm(10)),
