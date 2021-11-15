@@ -176,7 +176,7 @@ def getNWState(training_stimulus,connectivity,state,drain_pool,sources,dt=0.01,r
                        findFirst = False,
                        start_state = state,
                        disable_tqdm=False,
-                       criticalFlux=0.01)  
+                       criticalFlux=0.1)  
     JS1 = getJunctionState(training_sim, -1) #save state
     #     else: 
     #         print('Bless you Joel :)')
