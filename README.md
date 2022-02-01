@@ -22,4 +22,5 @@ The code is split into a number of sections:
     - **Multitasking + Modularity** - path: /Analysis/Functional Connectivity/Functional Tasks/NWN/
   - [PAPER 3 - Tuning pathways in Nanowire networks using only external feedback]
     - **Associative Learning + Equilibrium Propagation** - path: /Analysis/Training/EquilProp/
+    
 **Data** - This folder houses the data saved from Adrian and Zdenka's models, as well as any figures or analysis data from the Analysis folder. This folder is not included in the repository, as it is much too large for GitHub. To access any of the Data, please email Alon Loeffler at aloe8475@uni.sydney.edu.au to request an upload to our shared Dropbox.
