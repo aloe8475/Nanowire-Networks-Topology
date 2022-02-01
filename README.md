@@ -1,4 +1,4 @@
-# Neuromorphic AI Project 2019
+# Neuromorphic AI Project 2019 - 2022 (expected)
 PhD Project of Alon Loeffler
 Updated 01/02/2022
 
