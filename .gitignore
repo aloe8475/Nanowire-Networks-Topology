@@ -48,7 +48,8 @@ $RECYCLE.BIN/
 *.pkl
 
 # Directories 
-/Adrian's Code/NETWORK_sims_2/Saved Networks/Simulations Only/OLD/
+/Adrian Code/
+/Zdenka Code/
 /ASN_simulation/
 /Data/*
 /PhD Work/
