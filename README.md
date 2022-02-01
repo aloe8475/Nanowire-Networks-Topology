@@ -12,16 +12,14 @@ created by Zdenka Kuncic in collaboration with Tomonobu Nakayama and Adrian Diaz
 
 The code is split into a number of sections:
 
-1) **Zdenka's Model** - This is a non-gui simulation of the AgNWs, currently allowing for one source electrode and one drain electrode
-2) **Adrian's Model** - This is a gui-based simulation of the AgNWs, allowing for multiple electrodes. This code can apply the HP nanowire network model, or Zdenka's.
-3) **Analysis** - This houses the analysis code written by Alon Loeffler. The nanowire network model used is created by [Ruomin Zhu](https://github.com/rzhu40)  Within this folder, there are a number of analyses that can be conducted:
+**Analysis** - This houses PhD code written by Alon Loeffler. The nanowire network model (edamame) used is created by [Ruomin Zhu](https://github.com/rzhu40)  Within this folder, there are a number of analyses that can be conducted:
   - **LDA Analysis**
   - [PAPER 1 - Topological Properties of Nanowire Networks](https://www.frontiersin.org/articles/10.3389/fnins.2020.00184/full?report=reader)
     - **Graph Theory Analysis**
     - **Network Exploration**
   - [PAPER 2 - Modularity and Multitasking in Neuro-memristive Nanowire Networks](https://iopscience.iop.org/article/10.1088/2634-4386/ac156f/meta)
-    - **Nonlinear Transformation + Memory Capacity Tasks**
-    - **Multitasking + Modularity**
-  - **Associative Learning + Equilibrium Propagation**
-    - Work on Associative Learning is housed in Analysis/Training/Associative Learning/
-4) **Data** - This folder houses the data saved from Adrian and Zdenka's models, as well as any figures or analysis data from the Analysis folder. This folder is not included in the repository, as it is much too large for GitHub. To access any of the Data, please email Alon Loeffler at aloe8475@uni.sydney.edu.au to request an upload to our shared Dropbox.
+    - **Nonlinear Transformation + Memory Capacity Tasks** - path: /Analysis/Functional Connectivity/Functional Tasks/NWN/
+    - **Multitasking + Modularity** - path: /Analysis/Functional Connectivity/Functional Tasks/NWN/
+  - [PAPER 3 - Tuning pathways in Nanowire networks using only external feedback]
+    - **Associative Learning + Equilibrium Propagation** - path: /Analysis/Training/EquilProp/
+**Data** - This folder houses the data saved from Adrian and Zdenka's models, as well as any figures or analysis data from the Analysis folder. This folder is not included in the repository, as it is much too large for GitHub. To access any of the Data, please email Alon Loeffler at aloe8475@uni.sydney.edu.au to request an upload to our shared Dropbox.
