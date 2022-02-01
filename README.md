@@ -10,9 +10,9 @@ This repository houses the main code to run, save, load and analyse the computat
 created by Zdenka Kuncic in collaboration with Tomonobu Nakayama and Adrian Diaz Alvarez of the MANA institute in Japan.
 
 
-The code is split into a number of sections:
+The code is organized as follows:
 
-**Analysis** - This houses PhD code written by Alon Loeffler. The nanowire network model (edamame) used is created by [Ruomin Zhu](https://github.com/rzhu40)  Within this folder, there are a number of analyses that can be conducted:
+**Analysis** - This houses PhD code written by Alon Loeffler. The nanowire network model (edamame) used is created by [Ruomin Zhu](https://github.com/rzhu40). Within this folder, there are a number of analyses that can be conducted:
   - **LDA Analysis**
   - [PAPER 1 - Topological Properties of Nanowire Networks](https://www.frontiersin.org/articles/10.3389/fnins.2020.00184/full?report=reader)
     - **Graph Theory Analysis**
