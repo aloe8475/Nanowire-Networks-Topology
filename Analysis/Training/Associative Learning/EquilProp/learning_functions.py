@@ -206,9 +206,9 @@ def calcOutputs(sim2, sources,all_drains):
     for i, d in enumerate(all_drains): #for each drain electrode
         #current
         cc[i]=sim2.electrodeCurrent.T[i]#[idx]#/(sim2.wireVoltage.T[sources[0]][idx]-sim2.wireVoltage.T[d][idx])
-        #resistance
+        #voltage
         volt[i]=sim2.wireVoltage.T[d]#[idx]#/sim2.electrodeCurrent.T[i][idx]
-        
+       
         # Conductance = Current Drain / (Voltage Source - Voltage Drain)
     return cc
 
